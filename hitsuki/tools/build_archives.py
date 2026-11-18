@@ -26,6 +26,11 @@ for s in SHO:
 KBY = {m['id']: m for m in KOJ}
 # 英語版のデータ（あれば日本語ページに English のリンクを出す）
 HAS_EN = os.path.exists(os.path.join(HIT, 'kojiki', 'data', 'myths.en.json')) and os.path.exists(os.path.join(HIT, 'shoki', 'data', 'episodes.en.json'))
+# 「読みもの」の型（扉絵・場面の小見出し・挿絵）。書いてある話だけ新しい型で作る。無い話は今までの型のまま
+_LP = os.path.join(HIT, 'kojiki', 'data', 'layout.json')
+LAYOUT = json.load(open(_LP, encoding='utf-8'))['pages'] if os.path.exists(_LP) else {}
+ART = '../assets/kiki/book/'
+ART_SIZE = {'tall': (810, 1440), 'port': (900, 1125), 'wide': (1152, 768)}
 
 GA = '''<!-- Google tag (gtag.js) -->
 <script>
@@ -97,6 +102,38 @@ CSS = '''
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
 '''
 
+BK_CSS = '''    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
+'''
+
 BOOK = {
     'kojiki': {'name': '古事記アーカイブ', 'mark': '古記', 'nav': [('./', '話の一覧'), ('../shoki/', '日本書紀アーカイブ'), ('../kiki.html', '古事記と日本書紀')]},
     'shoki': {'name': '日本書紀アーカイブ', 'mark': '書紀', 'nav': [('./', 'ページの一覧'), ('../kojiki/', '古事記アーカイブ'), ('../kiki.html', '古事記と日本書紀')]},
@@ -108,7 +145,7 @@ def en_url(canon):  # 日本語ページの英語版のURL（kojiki/xxx.html →
         if bk in canon: return canon.replace(bk, bk + 'en/')
     return None
 
-def head(book, title, desc, canon):
+def head(book, title, desc, canon, extra_css=''):
     b = BOOK[book]
     nav = ''.join(f'\n      <a href="{h}">{e(t)}</a>' for h, t in b['nav'])
     en = en_url(canon) if HAS_EN else None
@@ -129,7 +166,7 @@ def head(book, title, desc, canon):
   <meta property="og:description" content="{e(desc)}">
   <meta property="og:type" content="article">
   <link rel="stylesheet" href="../styles.css">
-  <style>{CSS}  </style>
+  <style>{CSS}{extra_css}  </style>
 </head>
 <body>
   <header class="site-header">
@@ -224,8 +261,73 @@ def shoki_vols(refs):
 # ---------- 古事記 ----------
 def klabel(m): return f'{m["kan"]}・第{m["no"]}話'
 
+def fig_html(f, eager=False):
+    w, h = f.get('size') or ART_SIZE[f.get('shape', 'tall')]
+    load = 'fetchpriority="high"' if eager else 'loading="lazy"'
+    return (f'<figure class="f-{e(f.get("shape", "tall"))}"><img src="{ART}{e(f["img"])}" width="{w}" height="{h}" alt="{e(f["cap"])}" {load} decoding="async">'
+            f'<figcaption>{e(f["cap"])}（想像図・AI生成）</figcaption></figure>')
+
+def kojiki_book_page(i, lay):
+    """読みものの型：扉絵と導入 → 場面ごとの物語 → 要点 → 神と神社 → 日本書紀との違い → 資料編。文章は myths.json のまま。"""
+    m = KOJ[i]
+    kan = m['kan']; cnt = sum(1 for x in KOJ if x['kan'] == kan)
+    if len(lay['heads']) != len(m['story']): raise SystemExit(f'{m["id"]}: layout.json の heads が {len(lay["heads"])}個、story は {len(m["story"])}段です')
+    title = f"{m['title']}｜古事記 {kan} 第{m['no']}話｜古事記アーカイブ"
+    out = [head('kojiki', title, m['lead'], SITE + 'kojiki/' + m['id'] + '.html', BK_CSS)]
+    xl = ''.join(f'<a href="../shoki/{s["id"]}.html">日本書紀で読む：{e(s["title"])} ›</a>' for s in K2S.get(m['id'], []))
+    mins = max(1, -(-sum(len(s['text']) for s in m['story']) // 500))
+    hero = dict(lay['hero'], shape='tall')
+    out.append(f'''  <main class="pg-main bk">
+    <header class="bk-open">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 {kan}・第{m['no']}話（全{cnt}話）</p>
+        <h1>{e(m['title'])}</h1>
+      </div>
+      <div class="bk-hero">{fig_html(hero, eager=True)}</div>
+      <div class="bk-intro">
+        <p class="bk-lead">{e(m['lead'])}</p>
+        <p class="bk-meta">物語を読む時間の目安：約{mins}分　／　<a href="#pts-title">要点だけ読む</a></p>
+        {f'<div class="xlink">{xl}</div>' if xl else ''}
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>''')
+    for n, s in enumerate(m['story']):
+        out.append(f'      <h3>{e(lay["heads"][n])}</h3>\n      <p class="t">{e(s["text"])}</p>')
+        fs = [f for f in lay.get('figs', []) if f['after'] == n]
+        if fs: out.append(f'      <div class="bk-figs{" two" if len(fs) == 2 else ""}">' + ''.join(fig_html(f) for f in fs) + '</div>')
+    out.append('      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>\n    </section>\n')
+    out.append(points_html(m, 'kojiki').replace('覚えておくポイント', 'この話の要点'))
+    out.append(''); out.append(who_html(m))
+    out.append(cmp_html(m.get('nihonshoki'), '日本書紀との違い'))
+    base = [WS(KOJ_WS[kan], f'古事記 {kan} 校訂本文')] + shoki_vols([n.get('ref', '') for n in m.get('nihonshoki', [])])
+    qs = ''.join(f'\n          <div class="q"><blockquote lang="zh-Hant">{e(q["text"])}</blockquote><p>{e(q["note"])}</p></div>' for q in m['quotes'])
+    out.append(f'''
+    {pager_html(KOJ, i, klabel, '話')}
+
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（{len(m['quotes'])}か所）</summary>{qs}
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          {src_list(m.get('sources', []), base)}
+        </ul>
+      </details>
+      <a class="pg-back" href="./">← 話の一覧へ</a>
+    </section>
+  </main>
+''')
+    out.append(FOOT)
+    return '\n'.join(out)
+
 def kojiki_page(i):
     m = KOJ[i]
+    if m['id'] in LAYOUT: return kojiki_book_page(i, LAYOUT[m['id']])
     kan = m['kan']; cnt = sum(1 for x in KOJ if x['kan'] == kan)
     title = f"{m['title']}｜古事記 {kan} 第{m['no']}話｜古事記アーカイブ"
     out = [head('kojiki', title, m['lead'], SITE + 'kojiki/' + m['id'] + '.html')]

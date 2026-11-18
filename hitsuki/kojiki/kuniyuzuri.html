@@ -80,6 +80,36 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +127,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 上巻・第13話（全17話）</p>
-    <h1>国譲り</h1>
-    <p class="pg-lead">高天原から遣わされた建御雷神は、出雲の伊耶佐の浜で大国主神に国を譲るよう迫り、子の事代主神は承知し、力比べを挑んだ建御名方神は科野の州羽海まで追われて降参した。大国主神は自分の住まいを立派に造ることを条件に葦原中国を差し出し、建御雷神は平定を報告した。</p>
-    <div class="xlink"><a href="../shoki/dan09.html">日本書紀で読む：葦原中国の平定と天孫降臨（第九段） ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 上巻・第13話（全17話）</p>
+        <h1>国譲り</h1>
+      </div>
+      <div class="bk-hero"><figure class="f-tall"><img src="../assets/kiki/book/kuniyuzuri-hero.jpg" width="810" height="1440" alt="伊耶佐の小浜。波頭に突き立てた剣の先に座る建御雷神" fetchpriority="high" decoding="async"><figcaption>伊耶佐の小浜。波頭に突き立てた剣の先に座る建御雷神（想像図・AI生成）</figcaption></figure></div>
+      <div class="bk-intro">
+        <p class="bk-lead">高天原から遣わされた建御雷神は、出雲の伊耶佐の浜で大国主神に国を譲るよう迫り、子の事代主神は承知し、力比べを挑んだ建御名方神は科野の州羽海まで追われて降参した。大国主神は自分の住まいを立派に造ることを条件に葦原中国を差し出し、建御雷神は平定を報告した。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/dan09.html">日本書紀で読む：葦原中国の平定と天孫降臨（第九段） ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>建御雷神を遣わす</h3>
+      <p class="t">天若日子の失敗のあと、天照大御神がまた誰を遣わすかを問うと、思金神と神々は、天安河の上流の天石屋にいる伊都之尾羽張神か、その子の建御雷之男神を推した。伊都之尾羽張神は天安河の水をせき止めて道をふさいでいるので、ほかの神は行けず、天迦久神が使いに出された。伊都之尾羽張神は引き受けたうえで、息子の建御雷神を差し出した。こうして建御雷神に天鳥船神が付き添って遣わされた。</p>
+      <h3>伊耶佐の小浜で問う</h3>
+      <p class="t">二柱の神は出雲国の伊耶佐の小浜に降り、十掬剣を抜いて波頭にさかさまに突き立て、その剣の先にあぐらをかいて座った。そして大国主神に「天照大御神と高木神の命令で問う。あなたが治めている葦原中国は、われらの御子が治める国として任された。あなたの考えはどうか」とたずねた。大国主神は、自分では答えられない、子の八重言代主神が答えるべきだが、鳥や魚をとりに御大の岬に出かけてまだ戻っていない、と答えた。</p>
+      <h3>事代主神の答え</h3>
+      <p class="t">天鳥船神が事代主神を呼び寄せて問うと、事代主神は父に「恐れ多いことです。この国は天つ神の御子にさしあげましょう」と言った。そして乗ってきた船を踏み傾け、天の逆手を打って船を青柴垣に変え、その中に隠れた。</p>
+      <h3>建御名方神との力比べ</h3>
+      <p class="t">ほかに答えるべき子はいるかと問われ、大国主神は建御名方神の名を挙げた。そこへ建御名方神が千人で引くほどの大石を指先にさし上げてやって来て、力比べを挑み、建御雷神の手をつかんだ。すると建御雷神の手は氷柱に変わり、さらに剣の刃に変わったので、建御名方神はおそれて退いた。今度は建御雷神が建御名方神の手を若い葦のようにつかんでにぎりつぶし、投げ飛ばすと、建御名方神は逃げ出した。建御雷神は科野国の州羽の海まで追いつめ、殺そうとしたとき、建御名方神は「殺さないでください。この地から外へは出ず、父や事代主神の言葉にも背きません。葦原中国は天つ神の御子の命令どおりさしあげます」と願った。</p>
+      <h3>大国主神の答えと、住まいの願い</h3>
+      <p class="t">建御雷神が戻って改めて問うと、大国主神は、二人の子が言ったとおりで自分も背かず、葦原中国はさしあげると答えた。ただし自分の住む所を、天つ神の御子が住まう宮殿と同じように、地の底の岩に太い柱をしっかり立て、高天原に届くほど氷木を高くそびえさせて造ってくれるなら、自分は遠い隅に隠れてお仕えする、と述べた。また、自分の大勢の子どもの神々は、八重事代主神が先頭に立って仕えるなら、背く神はいないだろう、とも言った。</p>
+      <h3>多芸志の小浜の天之御舎</h3>
+      <p class="t">出雲国の多芸志の小浜に天之御舎が造られ、水戸神の孫の櫛八玉神が料理役となって、天のごちそうを献上した。櫛八玉神は鵜になって海の底にもぐって土をくわえ出し、たくさんの平たい器を作り、海藻の茎で火をおこす道具を作って火をきり出した。そして、この火は高天原では神産巣日御祖命の新しい宮にすすが長く垂れるまで燃え上がり、地の下では底の岩まで焼き固め、漁師が釣り上げた大きな鱸を料理して献上する、という祝いの言葉が述べられた。その後、建御雷神は高天原に帰り、葦原中国を平定したことを報告した。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>国譲りの使いとして、伊都之尾羽張神の子の建御雷神が、天鳥船神を付き添いにして遣わされた。二柱は出雲の伊耶佐の小浜で十掬剣を波頭にさかさまに立て、その先に座って大国主神に国を譲るよう問いただした。</li>
         <li><span class="kind ">本文</span>大国主神は答えを子に任せ、事代主神は「この国は天つ神の御子にさしあげましょう」と承知したうえで、船を踏み傾け、天の逆手を打って青柴垣の中に隠れた。</li>
@@ -115,35 +170,16 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>天若日子の失敗のあと、天照大御神がまた誰を遣わすかを問うと、思金神と神々は、天安河の上流の天石屋にいる伊都之尾羽張神か、その子の建御雷之男神を推した。伊都之尾羽張神は天安河の水をせき止めて道をふさいでいるので、ほかの神は行けず、天迦久神が使いに出された。伊都之尾羽張神は引き受けたうえで、息子の建御雷神を差し出した。こうして建御雷神に天鳥船神が付き添って遣わされた。</p>
-      <p>二柱の神は出雲国の伊耶佐の小浜に降り、十掬剣を抜いて波頭にさかさまに突き立て、その剣の先にあぐらをかいて座った。そして大国主神に「天照大御神と高木神の命令で問う。あなたが治めている葦原中国は、われらの御子が治める国として任された。あなたの考えはどうか」とたずねた。大国主神は、自分では答えられない、子の八重言代主神が答えるべきだが、鳥や魚をとりに御大の岬に出かけてまだ戻っていない、と答えた。</p>
-      <p>天鳥船神が事代主神を呼び寄せて問うと、事代主神は父に「恐れ多いことです。この国は天つ神の御子にさしあげましょう」と言った。そして乗ってきた船を踏み傾け、天の逆手を打って船を青柴垣に変え、その中に隠れた。</p>
-      <p>ほかに答えるべき子はいるかと問われ、大国主神は建御名方神の名を挙げた。そこへ建御名方神が千人で引くほどの大石を指先にさし上げてやって来て、力比べを挑み、建御雷神の手をつかんだ。すると建御雷神の手は氷柱に変わり、さらに剣の刃に変わったので、建御名方神はおそれて退いた。今度は建御雷神が建御名方神の手を若い葦のようにつかんでにぎりつぶし、投げ飛ばすと、建御名方神は逃げ出した。建御雷神は科野国の州羽の海まで追いつめ、殺そうとしたとき、建御名方神は「殺さないでください。この地から外へは出ず、父や事代主神の言葉にも背きません。葦原中国は天つ神の御子の命令どおりさしあげます」と願った。</p>
-      <p>建御雷神が戻って改めて問うと、大国主神は、二人の子が言ったとおりで自分も背かず、葦原中国はさしあげると答えた。ただし自分の住む所を、天つ神の御子が住まう宮殿と同じように、地の底の岩に太い柱をしっかり立て、高天原に届くほど氷木を高くそびえさせて造ってくれるなら、自分は遠い隅に隠れてお仕えする、と述べた。また、自分の大勢の子どもの神々は、八重事代主神が先頭に立って仕えるなら、背く神はいないだろう、とも言った。</p>
-      <p>出雲国の多芸志の小浜に天之御舎が造られ、水戸神の孫の櫛八玉神が料理役となって、天のごちそうを献上した。櫛八玉神は鵜になって海の底にもぐって土をくわえ出し、たくさんの平たい器を作り、海藻の茎で火をおこす道具を作って火をきり出した。そして、この火は高天原では神産巣日御祖命の新しい宮にすすが長く垂れるまで燃え上がり、地の下では底の岩まで焼き固め、漁師が釣り上げた大きな鱸を料理して献上する、という祝いの言葉が述べられた。その後、建御雷神は高天原に帰り、葦原中国を平定したことを報告した。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">拔十掬釼，逆刺立于浪穗，趺坐其釼前</blockquote><p>十掬剣を抜いて波頭にさかさまに突き立て、その剣の先にあぐらをかいて座った。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">恐之，此國者立奉天神之御子</blockquote><p>恐れ多いことです。この国は天つ神の御子にさしあげましょう（事代主神の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">即取成立冰，亦取成釼刄</blockquote><p>（建御名方神が手をつかむと）建御雷神の手はたちまち氷柱になり、また剣の刃になった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">僕者於百不足八十坰手隱而侍</blockquote><p>私は遠く入り組んだ隅に隠れてお仕えしましょう（大国主神の言葉）。</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
-        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=omoikane">八意思兼命</a></b><small>やごころおもいかねのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=chichibu">秩父神社</a>、<a href="../../shrine-note/map/?s=nichizen">日前神宮・國懸神宮</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=takamimusubi">高御産巣日神</a></b><small>たかみむすひのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hirota">廣田神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=takemikazuchi">武甕槌大神</a></b><small>たけみかづちのおおかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kashima">鹿島神宮</a>、<a href="../../shrine-note/map/?s=kasuga">春日大社</a>、<a href="../../shrine-note/map/?s=shiogama">鹽竈神社</a>、<a href="../../shrine-note/map/?s=hiraoka">枚岡神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=amenotorifune">天鳥船神</a></b><small>あめのとりふねのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ikisu">息栖神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=ookuninushi">大国主大神</a></b><small>おおくにぬしのおおかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=izumo">出雲大社</a>、<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=hokkaido">北海道神宮</a>、<a href="../../shrine-note/map/?s=dewa">出羽三山神社</a>、<a href="../../shrine-note/map/?s=keta">氣多大社</a>、<a href="../../shrine-note/map/?s=futarasan">日光二荒山神社</a>、<a href="../../shrine-note/map/?s=hiyoshi">日吉大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=toga">砥鹿神社</a>、<a href="../../shrine-note/map/?s=takebe">建部大社</a>、<a href="../../shrine-note/map/?s=kanda">神田神社（神田明神）</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=ooyamato">大和神社</a>、<a href="../../shrine-note/map/?s=taiheizanmiyoshi">太平山三吉神社</a>、<a href="../../shrine-note/map/?s=tsuno">都農神社</a>、<a href="../../shrine-note/map/?s=takase">高瀬神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=okunitamajinja">大國魂神社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=oarai">大洗磯前神社</a>、<a href="../../shrine-note/map/?s=okuni">小國神社</a>、<a href="../../shrine-note/map/?s=izumodaijingu">出雲大神宮</a>、<a href="../../shrine-note/map/?s=sakatsura">酒列磯前神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=mihojinja">御穂神社</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=kotoshironushi">事代主神</a></b><small>ことしろぬしのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=miho">美保神社</a>、<a href="../../shrine-note/map/?s=mishima">三嶋大社</a>、<a href="../../shrine-note/map/?s=suwashimosha">諏訪大社 下社（春宮・秋宮）</a>、<a href="../../shrine-note/map/?s=utsunomiyafutaarayama">宇都宮二荒山神社</a>、<a href="../../shrine-note/map/?s=shitoriyurihama">倭文神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=kotoshironushi">事代主神</a></b><small>ことしろぬしのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=miho">美保神社</a>、<a href="../../shrine-note/map/?s=mishima">三嶋大社</a>、<a href="../../shrine-note/map/?s=suwashimosha">諏訪大社 下社（春宮・秋宮）</a>、<a href="../../shrine-note/map/?s=utsunomiyafutaarayama">宇都宮二荒山神社</a>、<a href="../../shrine-note/map/?s=shitoriyurihama">倭文神社</a>、<a href="../../shrine-note/map/?s=takakamo">高鴨神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=takeminakata">建御名方神</a></b><small>たけみなかたのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=suwa">諏訪大社 上社本宮</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=suwashimosha">諏訪大社 下社（春宮・秋宮）</a>、<a href="../../shrine-note/map/?s=shitoriyurihama">倭文神社</a>、<a href="../../shrine-note/map/?s=sumiyoshishimonoseki">住吉神社（下関）</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a></span></li>
         <li><b>伊都之尾羽張神（天尾羽張神）</b><span class="sh">天安河の上流の天石屋にいる建御雷神の父。使いを頼まれ、自分の代わりに子の建御雷神を差し出した。</span></li>
         <li><b>天迦久神</b><small>あめのかくのかみ</small><span class="sh">道をふさいでいる伊都之尾羽張神のもとへ、意向を聞きに遣わされた。</span></li>
@@ -155,7 +191,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第二 第九段 本文</span><p>第九段 本文では、まず経津主神が選ばれ、武甕槌神が名乗り出て加わり、二柱で遣わされる。古事記では建御雷神に天鳥船神が付き添い、経津主神は出てこない。</p><blockquote lang="zh-Hant">故以即配經津主神、令平葦原中國</blockquote></div>
       <div class="ns"><span class="where">巻第二 第九段 本文</span><p>第九段 本文では、建御名方神との力比べはなく、大己貴神は事代主神の言葉を受けて、国を平定したときに使った広矛を二神に授けて隠れる。</p><blockquote lang="zh-Hant">乃以平國時所杖之廣矛。授二神曰</blockquote></div>
       <div class="ns"><span class="where">巻第二 第九段 一書第二</span><p>第九段 一書第二では、高皇産霊尊が、目に見える世の事は皇孫が治め、大己貴神は神事を治めるよう命じ、天日隅宮を造ると約束する。</p><blockquote lang="zh-Hant">汝所治顯露之事。宜是吾孫治之。汝則可以治神事</blockquote></div>
@@ -163,12 +199,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="amewakahiko.html"><small>← 前の話（上巻・第12話）</small>天若日子</a><a class="next" href="tenson.html"><small>次の話（上巻・第14話）→</small>天孫降臨</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">日本書紀 巻第二</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/itsunoohabari/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/itsunoohabari/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenokakunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenokakunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kushiyatamanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kushiyatamanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takemikazuchinoonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/takemikazuchinoonokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">拔十掬釼，逆刺立于浪穗，趺坐其釼前</blockquote><p>十掬剣を抜いて波頭にさかさまに突き立て、その剣の先にあぐらをかいて座った。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">恐之，此國者立奉天神之御子</blockquote><p>恐れ多いことです。この国は天つ神の御子にさしあげましょう（事代主神の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">即取成立冰，亦取成釼刄</blockquote><p>（建御名方神が手をつかむと）建御雷神の手はたちまち氷柱になり、また剣の刃になった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">僕者於百不足八十坰手隱而侍</blockquote><p>私は遠く入り組んだ隅に隠れてお仕えしましょう（大国主神の言葉）。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">日本書紀 巻第二</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/itsunoohabari/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/itsunoohabari/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenokakunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenokakunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kushiyatamanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kushiyatamanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takemikazuchinoonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/takemikazuchinoonokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

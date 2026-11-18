@@ -80,6 +80,36 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +127,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 上巻・第8話（全17話）</p>
-    <h1>須佐之男命の追放と八俣遠呂智</h1>
-    <p class="pg-lead">高天原を追われた須佐之男命は、出雲の肥の河の上流で、娘を八俣遠呂智に食べられそうになって泣く老夫婦に出会い、酒で大蛇を酔わせて退治した。大蛇の尾から出た草那藝之大刀を天照大御神に献上し、須賀に宮を建てて櫛名田比売と暮らし、その子孫から大国主神が生まれた。</p>
-    <div class="xlink"><a href="../shoki/dan08.html">日本書紀で読む：八岐大蛇と大己貴神（第八段） ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 上巻・第8話（全17話）</p>
+        <h1>須佐之男命の追放と八俣遠呂智</h1>
+      </div>
+      <div class="bk-hero"><figure class="f-tall"><img src="../assets/kiki/book/orochi-hero.jpg" width="810" height="1440" alt="八俣遠呂智に向き合う須佐之男命" fetchpriority="high" decoding="async"><figcaption>八俣遠呂智に向き合う須佐之男命（想像図・AI生成）</figcaption></figure></div>
+      <div class="bk-intro">
+        <p class="bk-lead">高天原を追われた須佐之男命は、出雲の肥の河の上流で、娘を八俣遠呂智に食べられそうになって泣く老夫婦に出会い、酒で大蛇を酔わせて退治した。大蛇の尾から出た草那藝之大刀を天照大御神に献上し、須賀に宮を建てて櫛名田比売と暮らし、その子孫から大国主神が生まれた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/dan08.html">日本書紀で読む：八岐大蛇と大己貴神（第八段） ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>高天原からの追放</h3>
+      <p class="t">八百万の神々は相談して、須佐之男命に多くの償いの品（千位置戸）を負わせ、髪（鬢）と手足の爪を切って、高天原から追い払った。また大気都比売神に食べ物が求められると、大気都比売神は鼻や口や尻からさまざまなおいしい物を取り出し、料理して差し出した。そのようすをのぞき見た須佐之男命は、汚して差し出していると思い、大気都比売神を殺してしまった。</p>
+      <h3>大気都比売神の体から生じた物</h3>
+      <p class="t">殺された大気都比売神の体からは、頭に蚕、二つの目に稲の種、二つの耳に粟、鼻に小豆、陰部に麦、尻に大豆が生じた。神産巣日御祖命は、これらを取らせて種とした。</p>
+      <h3>肥の河の上流で泣く老夫婦</h3>
+      <p class="t">追放された須佐之男命は、出雲国の肥の河の上流にある鳥髪という所に降りた。川を箸が流れてきたので、上流に人がいると思って上っていくと、年老いた夫婦が娘を間に置いて泣いていた。夫は国つ神で大山津見神の子の足名椎、妻は手名椎、娘は櫛名田比売と名乗った。夫婦にはもともと八人の娘がいたが、高志の八俣遠呂智が毎年来て食べてしまい、今年もその時期が来たので泣いているのだという。</p>
+      <h3>八俣遠呂智の姿</h3>
+      <p class="t">八俣遠呂智の姿は、目は赤かがち（小注によれば今の酸醤）のように赤く、一つの体に八つの頭と八つの尾があった。体には蘿や檜・榅が生え、長さは八つの谷と八つの峰にわたるほどで、腹はいつも血でただれていた。</p>
+      <h3>強い酒と八つの門</h3>
+      <p class="t">須佐之男命は、自分は天照大御神の弟（原文「伊呂勢」）で、いま天から降りてきたところだと名乗り、娘をもらい受けることになった。須佐之男命は櫛名田比売を湯津爪櫛に変えて自分の髪に挿し、夫婦に何度も醸した強い酒を造らせ、垣根をめぐらせて八つの門を作り、門ごとに台（佐受岐）と酒船を置いて待たせた。やって来た八俣遠呂智は、八つの頭をそれぞれの酒船に入れて酒を飲み、酔ってその場に寝てしまった。</p>
+      <h3>大蛇を切る、草那藝之大刀</h3>
+      <p class="t">須佐之男命は腰の十拳剣を抜いて大蛇を切り刻み、肥の河は血となって流れた。中ほどの尾を切ったとき剣の刃が欠けたので、不思議に思って剣先で尾を裂いてみると、都牟羽の大刀が入っていた。須佐之男命はこれを並外れた物と思い、天照大御神に献上した。これが草那藝之大刀である。</p>
+      <h3>須賀の宮と、大国主神までの系譜</h3>
+      <p class="t">その後、須佐之男命は宮を建てる土地を出雲国に探し、須賀に着くと「ここに来て、わたしの心はすがすがしい」と言って宮を建てた。そのとき雲が立ちのぼったので、歌を作った（歌は原文に一字一音の万葉仮名で記されている）。足名椎はこの宮の長に任じられ、稲田宮主須賀之八耳神という名を与えられた。須佐之男命と櫛名田比売の子の八嶋士奴美神から代を重ね、天之冬衣神と刺国若比売の子として大国主神が生まれた。大国主神には大穴牟遅神・葦原色許男神・八千矛神・宇都志国玉神という別名もあり、あわせて五つの名がある。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>須佐之男命は、八つの頭と八つの尾を持つ八俣遠呂智に強い酒を飲ませ、酔って寝たところを十拳剣で切り殺して、櫛名田比売を救った。</li>
         <li><span class="kind ">本文</span>大蛇の中ほどの尾を切ると剣の刃が欠け、尾の中から大刀が見つかった。須佐之男命はこれを天照大御神に献上し、これが草那藝之大刀である。</li>
@@ -115,34 +172,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>八百万の神々は相談して、須佐之男命に多くの償いの品（千位置戸）を負わせ、髪（鬢）と手足の爪を切って、高天原から追い払った。また大気都比売神に食べ物が求められると、大気都比売神は鼻や口や尻からさまざまなおいしい物を取り出し、料理して差し出した。そのようすをのぞき見た須佐之男命は、汚して差し出していると思い、大気都比売神を殺してしまった。</p>
-      <p>殺された大気都比売神の体からは、頭に蚕、二つの目に稲の種、二つの耳に粟、鼻に小豆、陰部に麦、尻に大豆が生じた。神産巣日御祖命は、これらを取らせて種とした。</p>
-      <p>追放された須佐之男命は、出雲国の肥の河の上流にある鳥髪という所に降りた。川を箸が流れてきたので、上流に人がいると思って上っていくと、年老いた夫婦が娘を間に置いて泣いていた。夫は国つ神で大山津見神の子の足名椎、妻は手名椎、娘は櫛名田比売と名乗った。夫婦にはもともと八人の娘がいたが、高志の八俣遠呂智が毎年来て食べてしまい、今年もその時期が来たので泣いているのだという。</p>
-      <p>八俣遠呂智の姿は、目は赤かがち（小注によれば今の酸醤）のように赤く、一つの体に八つの頭と八つの尾があった。体には蘿や檜・榅が生え、長さは八つの谷と八つの峰にわたるほどで、腹はいつも血でただれていた。</p>
-      <p>須佐之男命は、自分は天照大御神の弟（原文「伊呂勢」）で、いま天から降りてきたところだと名乗り、娘をもらい受けることになった。須佐之男命は櫛名田比売を湯津爪櫛に変えて自分の髪に挿し、夫婦に何度も醸した強い酒を造らせ、垣根をめぐらせて八つの門を作り、門ごとに台（佐受岐）と酒船を置いて待たせた。やって来た八俣遠呂智は、八つの頭をそれぞれの酒船に入れて酒を飲み、酔ってその場に寝てしまった。</p>
-      <p>須佐之男命は腰の十拳剣を抜いて大蛇を切り刻み、肥の河は血となって流れた。中ほどの尾を切ったとき剣の刃が欠けたので、不思議に思って剣先で尾を裂いてみると、都牟羽の大刀が入っていた。須佐之男命はこれを並外れた物と思い、天照大御神に献上した。これが草那藝之大刀である。</p>
-      <p>その後、須佐之男命は宮を建てる土地を出雲国に探し、須賀に着くと「ここに来て、わたしの心はすがすがしい」と言って宮を建てた。そのとき雲が立ちのぼったので、歌を作った（歌は原文に一字一音の万葉仮名で記されている）。足名椎はこの宮の長に任じられ、稲田宮主須賀之八耳神という名を与えられた。須佐之男命と櫛名田比売の子の八嶋士奴美神から代を重ね、天之冬衣神と刺国若比売の子として大国主神が生まれた。大国主神には大穴牟遅神・葦原色許男神・八千矛神・宇都志国玉神という別名もあり、あわせて五つの名がある。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">於頭生蠶，於二目生稻種</blockquote><p>（殺された大気都比売神の）頭には蚕が、二つの目には稲の種が生じた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">其八俣遠吕智，信如言來，乃每船垂入己頭，飮其酒</blockquote><p>八俣遠呂智は言われたとおり本当にやって来て、酒船ごとに自分の頭を入れて酒を飲んだ。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">是者草那藝之大刀也</blockquote><p>これが草那藝之大刀である。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">吾來此地，我御心須賀須賀斯</blockquote><p>わたしはこの地に来て、心がすがすがしい。（須賀という地名の由来として語られる）</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
-        <li><b><a href="../../shrine-note/map/?d=susanoo">須佐之男命</a></b><small>すさのおのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=tsurugijinja">劔神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=susanoo">須佐之男命</a></b><small>すさのおのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=tsurugijinja">劔神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a>、<a href="../../shrine-note/map/?s=susa">須佐神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=ookegetsuhime">大食都比売大神</a></b><small>おおげつひめのおおかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=niutsuhime">丹生都比売神社</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=ooyamatsumi">大山津見神</a></b><small>おおやまつみのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=dewa">出羽三山神社</a>、<a href="../../shrine-note/map/?s=oomishima">大山祇神社</a>、<a href="../../shrine-note/map/?s=iwakiyama">岩木山神社</a>、<a href="../../shrine-note/map/?s=mishima">三嶋大社</a>、<a href="../../shrine-note/map/?s=kitaguchi">北口本宮冨士浅間神社</a>、<a href="../../shrine-note/map/?s=oyamaafuri">大山阿夫利神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=inadahime">稲田姫命</a></b><small>いなだひめのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=inadahime">稲田姫命</a></b><small>いなだひめのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a>、<a href="../../shrine-note/map/?s=susa">須佐神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=ootoshi">大年神</a></b><small>おおとしのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=minashijinja">水無神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=ukanomitama">宇迦之御魂神</a></b><small>うかのみたまのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=dewa">出羽三山神社</a>、<a href="../../shrine-note/map/?s=fushimi">伏見稲荷大社</a>、<a href="../../shrine-note/map/?s=kasamainari">笠間稲荷神社</a>、<a href="../../shrine-note/map/?s=yutoku">祐徳稲荷神社</a>、<a href="../../shrine-note/map/?s=ono_tama">小野神社</a>、<a href="../../shrine-note/map/?s=futamiokitama">二見興玉神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=amenofuyuginu">天之冬衣神</a></b><small>あめのふゆきぬのかみ</small><span class="sh">神社巡りノートには、まだ祀る神社がありません</span></li>
@@ -162,7 +199,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第一 第八段 本文</span><p>日本書紀の本文では、素戔鳴尊と奇稲田姫の子として大己貴神が直接生まれたとされ、古事記のように八嶋士奴美神から何代も重ねて大国主神に至る系譜にはなっていない。</p><blockquote lang="zh-Hant">乃相與遘合而生兒大己貴神</blockquote></div>
       <div class="ns"><span class="where">巻第一 第八段 本文（小注の一書）</span><p>日本書紀の本文に付された小注の一書では、草薙剣のもとの名を天叢雲剣とし、大蛇の上に常に雲気があったためかと説明し、日本武皇子のときに草薙剣と改名したと伝える。古事記のこの段にはこの説明はない。</p><blockquote lang="zh-Hant">本名天叢雲劒</blockquote></div>
       <div class="ns"><span class="where">巻第一 第八段 一書第二</span><p>一書第二では、素戔鳴尊が降りた所を安芸国の可愛の川上とし、大蛇に呑まれようとしているのはこれから生まれる子であるなど、舞台と筋立てが古事記と異なる。</p><blockquote lang="zh-Hant">下到於安藝國可愛之川上也</blockquote></div>
@@ -170,12 +207,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="iwayado.html"><small>← 前の話（上巻・第7話）</small>天の岩屋戸</a><a class="next" href="inaba.html"><small>次の話（上巻・第9話）→</small>稲羽の素兎</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ashinazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ashinazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tenazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tenazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/inadanomiyanushisuganoyatsumiminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/inadanomiyanushisuganoyatsumiminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yashimajinuminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yashimajinuminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kamuoichihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kamuoichihime/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">於頭生蠶，於二目生稻種</blockquote><p>（殺された大気都比売神の）頭には蚕が、二つの目には稲の種が生じた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">其八俣遠吕智，信如言來，乃每船垂入己頭，飮其酒</blockquote><p>八俣遠呂智は言われたとおり本当にやって来て、酒船ごとに自分の頭を入れて酒を飲んだ。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">是者草那藝之大刀也</blockquote><p>これが草那藝之大刀である。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">吾來此地，我御心須賀須賀斯</blockquote><p>わたしはこの地に来て、心がすがすがしい。（須賀という地名の由来として語られる）</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ashinazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ashinazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tenazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tenazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/inadanomiyanushisuganoyatsumiminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/inadanomiyanushisuganoyatsumiminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yashimajinuminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yashimajinuminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kamuoichihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kamuoichihime/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

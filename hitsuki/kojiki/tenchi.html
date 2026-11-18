@@ -80,6 +80,36 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +127,38 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 上巻・第1話（全17話）</p>
-    <h1>天地のはじまり</h1>
-    <p class="pg-lead">天と地が初めて開けたとき、高天原に天之御中主神が現れ、続いて神々が次々に成った。最初の五柱は「別天神」、その後の国之常立神から伊耶那岐神・伊耶那美神までは「神世七代」とまとめられている。</p>
-    <div class="xlink"><a href="../shoki/dan01.html">日本書紀で読む：天地開闢と神世七代（第一段〜第三段） ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 上巻・第1話（全17話）</p>
+        <h1>天地のはじまり</h1>
+      </div>
+      <div class="bk-hero"><figure class="f-tall"><img src="../assets/kiki/book/tenchi-hero.jpg" width="810" height="1440" alt="高天原に神が成る" fetchpriority="high" decoding="async"><figcaption>高天原に神が成る（想像図・AI生成）</figcaption></figure></div>
+      <div class="bk-intro">
+        <p class="bk-lead">天と地が初めて開けたとき、高天原に天之御中主神が現れ、続いて神々が次々に成った。最初の五柱は「別天神」、その後の国之常立神から伊耶那岐神・伊耶那美神までは「神世七代」とまとめられている。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/dan01.html">日本書紀で読む：天地開闢と神世七代（第一段〜第三段） ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>高天原に成った三柱の神</h3>
+      <p class="t">天と地が初めて開けたとき、高天原に最初に成った神の名は天之御中主神である。次に高御産巣日神、次に神産巣日神が成った。この三柱はみな、相手を持たない「独神」として成り、姿を隠した。なお原文の小注は、「高天原」の「天」の字を「アマ」と読むよう指示している。</p>
+      <div class="bk-figs"><figure class="f-wide"><img src="../assets/kiki/book/tenchi-1.jpg" width="1152" height="768" alt="独神として成り、姿を隠した三柱の神" loading="lazy" decoding="async"><figcaption>独神として成り、姿を隠した三柱の神（想像図・AI生成）</figcaption></figure></div>
+      <h3>くらげのように漂う国と、別天神</h3>
+      <p class="t">次に、国がまだ若く、水に浮いた脂のようで、くらげのように漂っていたとき（原文はこの部分を音で「久羅下那州多陀用弊流」と書く）、葦の芽のように萌え伸びる物から成った神が宇摩志阿斯訶備比古遅神である。次に天之常立神が成った。この二柱も独神として成り、姿を隠した。ここまでの五柱の神を「別天神」という。</p>
+      <h3>国之常立神と、男女一組の神々</h3>
+      <p class="t">続いて国之常立神、次に豊雲野神が成り、この二柱もまた独神として姿を隠した。その後は男女一組の神が続いて成る。宇比地迩神と妹の須比智迩神、角杙神と妹の活杙神、意富斗能地神と妹の大斗乃弁神、於母陀流神と妹の阿夜訶志古泥神、そして伊耶那岐神と妹の伊耶那美神である。</p>
+      <div class="bk-figs"><figure class="f-port"><img src="../assets/kiki/book/tenchi-3.jpg" width="900" height="1125" alt="伊耶那岐神と伊耶那美神" loading="lazy" decoding="async"><figcaption>伊耶那岐神と伊耶那美神（想像図・AI生成）</figcaption></figure></div>
+      <h3>神世七代</h3>
+      <p class="t">国之常立神から伊耶那美神までをあわせて「神世七代」という。小注によると、独神の二柱はそれぞれ一柱で一代と数え、続く男女の十柱は二柱で一代と数える。こうして最後の七代目に伊耶那岐神・伊耶那美神が現れ、次の国生みの話へとつながっていく。</p>
+      <div class="bk-figs"><figure class="f-port"><img src="../assets/kiki/book/tenchi-2.jpg" width="1152" height="1106" alt="神世七代。男女の神は二柱で一代と数える" loading="lazy" decoding="async"><figcaption>神世七代。男女の神は二柱で一代と数える（想像図・AI生成）</figcaption></figure></div>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>古事記で最初に現れる神は、高天原に成った天之御中主神である。続いて高御産巣日神・神産巣日神が成り、三柱とも独神として姿を隠した。</li>
         <li><span class="kind ">本文</span>天之御中主神から宇摩志阿斯訶備比古遅神・天之常立神までの五柱は「別天神」とされ、後に続く神世七代とは分けて書かれている。</li>
@@ -115,23 +169,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>天と地が初めて開けたとき、高天原に最初に成った神の名は天之御中主神である。次に高御産巣日神、次に神産巣日神が成った。この三柱はみな、相手を持たない「独神」として成り、姿を隠した。なお原文の小注は、「高天原」の「天」の字を「アマ」と読むよう指示している。</p>
-      <p>次に、国がまだ若く、水に浮いた脂のようで、くらげのように漂っていたとき（原文はこの部分を音で「久羅下那州多陀用弊流」と書く）、葦の芽のように萌え伸びる物から成った神が宇摩志阿斯訶備比古遅神である。次に天之常立神が成った。この二柱も独神として成り、姿を隠した。ここまでの五柱の神を「別天神」という。</p>
-      <p>続いて国之常立神、次に豊雲野神が成り、この二柱もまた独神として姿を隠した。その後は男女一組の神が続いて成る。宇比地迩神と妹の須比智迩神、角杙神と妹の活杙神、意富斗能地神と妹の大斗乃弁神、於母陀流神と妹の阿夜訶志古泥神、そして伊耶那岐神と妹の伊耶那美神である。</p>
-      <p>国之常立神から伊耶那美神までをあわせて「神世七代」という。小注によると、独神の二柱はそれぞれ一柱で一代と数え、続く男女の十柱は二柱で一代と数える。こうして最後の七代目に伊耶那岐神・伊耶那美神が現れ、次の国生みの話へとつながっていく。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">天地初發之時，於高天原成神名，天之御中主神。</blockquote><p>天と地が初めて開けたとき、高天原に成った神の名は天之御中主神である。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">如葦牙因萌騰之物而成神名</blockquote><p>葦の芽のように萌え伸びる物から成った神の名は（宇摩志阿斯訶備比古遅神）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">上件五柱神者，別天神。</blockquote><p>ここまでの五柱の神は「別天神」である。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">上件自國之常立神以下、伊耶那美神以前，并稱神世七代</blockquote><p>国之常立神から伊耶那美神までを、あわせて「神世七代」という。</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
@@ -140,7 +177,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><b><a href="../../shrine-note/map/?d=amenotokotachi">天常立尊</a></b><small>あめのとこたちのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=komagata">駒形神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=kunitokotachi">国常立尊</a></b><small>くにのとこたちのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=tamaki">玉置神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=izanagi">伊邪那岐命</a></b><small>いざなぎのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=oyama">雄山神社</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=izanami">伊邪那美命</a></b><small>いざなみのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=naminoue">波上宮</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=izanami">伊邪那美命</a></b><small>いざなみのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=naminoue">波上宮</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b>高天原</b><span class="sh">天地が開けたとき、最初の神々が成った場所。小注は「天」を「アマ」と読むよう指示するが、語全体の読みは原文からは確かめられない。</span></li>
         <li><b>神産巢日神</b><small>かむむすひのかみ</small><span class="sh">天之御中主神・高御産巣日神に続いて三番目に成った独神。</span></li>
         <li><b>宇摩志阿斯訶備比古遅神</b><small>うましあしかびひこじのかみ</small><span class="sh">国が漂っていたとき、葦の芽のように萌え伸びる物から成った別天神。</span></li>
@@ -158,7 +195,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第一 第一段 本文</span><p>書紀の本文は、天地が分かれる前の様子を鶏の卵のような混沌として描き、天地の間に葦の芽のような物が生じて神となったとする。最初の神は国常立尊で、次に国狭槌尊・豊斟渟尊が現れ、天之御中主神にあたる神は本文に出てこない。</p><blockquote lang="zh-Hant">天地之中生一物，狀如葦牙，便化爲神，號國常立尊</blockquote></div>
       <div class="ns"><span class="where">巻第一 第一段 一書第四</span><p>古事記の最初の三柱にあたる天御中主尊・高皇産霊尊・神皇産霊尊は、書紀では一書第四に「又曰」として、高天原に生まれた神として挙げられるだけである。</p><blockquote lang="zh-Hant">高天原所生神名，曰天御中主尊</blockquote></div>
       <div class="ns"><span class="where">巻第一 第三段 本文（第三段 一書第一も参照）</span><p>書紀の本文でも国常立尊から伊弉諾尊・伊弉冉尊までを「神世七代」と呼ぶが、その中身は、独りで成った男神三柱（第一段）と男女四組の八神（第二段）である。古事記の角杙神・活杙神にあたる角樴尊・活樴尊は、本文ではなく第三段の一書第一に見える。</p><blockquote lang="zh-Hant">自國常立尊，迄伊弉諾尊、伊弉𠕋尊，是謂神世七代者矣</blockquote></div>
@@ -166,12 +203,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><span></span><a class="next" href="kuniumi.html"><small>次の話（上巻・第2話）→</small>国生み</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenominakanushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenominakanushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kuninotokotachinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kuninotokotachinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/umashiashikabihikojinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/umashiashikabihikojinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/toyokumononokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/toyokumononokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/uhijininokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/uhijininokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/suhichininokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/suhichininokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tsunoguinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tsunoguinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ikuguinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ikuguinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/otonojinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/otonojinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/otonobenokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/otonobenokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omodarunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/omodarunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ayakashikonenokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ayakashikonenokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">天地初發之時，於高天原成神名，天之御中主神。</blockquote><p>天と地が初めて開けたとき、高天原に成った神の名は天之御中主神である。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">如葦牙因萌騰之物而成神名</blockquote><p>葦の芽のように萌え伸びる物から成った神の名は（宇摩志阿斯訶備比古遅神）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">上件五柱神者，別天神。</blockquote><p>ここまでの五柱の神は「別天神」である。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">上件自國之常立神以下、伊耶那美神以前，并稱神世七代</blockquote><p>国之常立神から伊耶那美神までを、あわせて「神世七代」という。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenominakanushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenominakanushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kuninotokotachinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kuninotokotachinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/umashiashikabihikojinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/umashiashikabihikojinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/toyokumononokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/toyokumononokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/uhijininokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/uhijininokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/suhichininokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/suhichininokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tsunoguinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tsunoguinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ikuguinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ikuguinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/otonojinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/otonojinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/otonobenokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/otonobenokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omodarunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/omodarunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ayakashikonenokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ayakashikonenokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

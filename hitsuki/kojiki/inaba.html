@@ -80,6 +80,36 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +127,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 上巻・第9話（全17話）</p>
-    <h1>稲羽の素兎</h1>
-    <p class="pg-lead">八上比売に求婚しに稲羽へ向かう八十神に従者として連れられた大穴牟遅神（大国主神）は、皮を剥がれて苦しむ菟を正しい方法で治してやった。菟は、八上比売を得るのは大穴牟遅神だと告げ、八上比売はそのとおり八十神を退けて大穴牟遅神に嫁ぐと答えた。</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 上巻・第9話（全17話）</p>
+        <h1>稲羽の素兎</h1>
+      </div>
+      <div class="bk-hero"><figure class="f-tall"><img src="../assets/kiki/book/inaba-hero.jpg" width="810" height="1440" alt="気多の前（岬）の菟" fetchpriority="high" decoding="async"><figcaption>気多の前（岬）の菟（想像図・AI生成）</figcaption></figure></div>
+      <div class="bk-intro">
+        <p class="bk-lead">八上比売に求婚しに稲羽へ向かう八十神に従者として連れられた大穴牟遅神（大国主神）は、皮を剥がれて苦しむ菟を正しい方法で治してやった。菟は、八上比売を得るのは大穴牟遅神だと告げ、八上比売はそのとおり八十神を退けて大穴牟遅神に嫁ぐと答えた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>稲羽へ向かう八十神と、袋を背負う大穴牟遅神</h3>
+      <p class="t">大国主神には八十神と呼ばれる大勢の兄弟がいたが、みな国を大国主神に譲ることになる。そのわけは次のとおりである。八十神はそれぞれ稲羽の八上比売と結婚したいと思い、そろって稲羽へ出かけたが、そのとき大穴牟遅神（大国主神）に袋を背負わせ、従者として連れて行った。</p>
+      <h3>気多の前の裸の菟</h3>
+      <p class="t">一行が気多の前（岬）に着くと、裸の菟が倒れ伏していた。八十神は菟に「海の塩水を浴び、風に当たって高い山の尾根に伏せていればよい」と教えた。菟がそのとおりにすると、塩が乾くにつれて体の皮が風に吹かれて裂け、痛みに苦しんで泣き伏していた。</p>
+      <div class="bk-figs"><figure class="f-tall"><img src="../assets/kiki/book/inaba-1.jpg" width="810" height="1440" alt="倒れ伏す菟に教える八十神" loading="lazy" decoding="async"><figcaption>倒れ伏す菟に教える八十神（想像図・AI生成）</figcaption></figure></div>
+      <h3>菟が語ったわけ</h3>
+      <p class="t">最後にやって来た大穴牟遅神がわけを尋ねると、菟は次のように語った。淤岐嶋にいた菟は、こちらへ渡りたかったが手立てがなかったので、海の和迩をだまして「どちらの一族が多いか比べよう。仲間をみな連れてきて、島から気多の前まで並んで伏せよ。わたしがその上を踏んで数えながら渡ろう」と持ちかけた。和迩が並んだので、その上を踏んで数えながら渡ってきたが、陸に下りようとするときに「おまえたちはだまされたのだ」と言ってしまい、いちばん端の和迩に捕まって衣服（毛皮）をすっかり剥がれた。そのうえ八十神の教えに従ったため、全身が傷ついたのだという。</p>
+      <div class="bk-figs"><figure class="f-tall"><img src="../assets/kiki/book/inaba-2.jpg" width="810" height="1440" alt="和迩の背を踏んで渡る菟" loading="lazy" decoding="async"><figcaption>和迩の背を踏んで渡る菟（想像図・AI生成）</figcaption></figure></div>
+      <h3>大穴牟遅神の教え</h3>
+      <p class="t">そこで大穴牟遅神は「すぐにこの水門へ行き、その水で体を洗い、水門の蒲黄を取って敷き散らし、その上を転がれば、元の肌のようにきっと治る」と教えた。菟がそのとおりにすると、体は元どおりになった。これが稲羽の素菟で、今は菟神と呼ばれている。</p>
+      <div class="bk-figs two"><figure class="f-port"><img src="../assets/kiki/book/inaba-3.jpg" width="900" height="1125" alt="水門で菟に治し方を教える大穴牟遅神" loading="lazy" decoding="async"><figcaption>水門で菟に治し方を教える大穴牟遅神（想像図・AI生成）</figcaption></figure><figure class="f-port"><img src="../assets/kiki/book/inaba-4.jpg" width="900" height="1125" alt="蒲黄の上で、体が元どおりになった菟" loading="lazy" decoding="async"><figcaption>蒲黄の上で、体が元どおりになった菟（想像図・AI生成）</figcaption></figure></div>
+      <h3>菟が告げたこと</h3>
+      <p class="t">菟は大穴牟遅神に「八十神は決して八上比売を得られません。袋を背負っていても、あなたが八上比売を得るでしょう」と告げた。はたして八上比売は八十神に「わたしはあなたたちの言うことは聞きません。大穴牟遅神に嫁ぎます」と答えた。</p>
+      <div class="bk-figs"><figure class="f-port"><img src="../assets/kiki/book/inaba-5.jpg" width="900" height="1125" alt="八十神を退け、大穴牟遅神に嫁ぐと答えた八上比売" loading="lazy" decoding="async"><figcaption>八十神を退け、大穴牟遅神に嫁ぐと答えた八上比売（想像図・AI生成）</figcaption></figure></div>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>大穴牟遅神（大国主神）は、皮を剥がれて苦しむ菟に、水門の水で体を洗い蒲黄を敷いた上を転がるよう教え、菟の体は元どおりに治った。</li>
         <li><span class="kind ">本文</span>菟は和迩をだまして一族の数比べを持ちかけ、その背を踏んで淤岐嶋から気多の前まで渡ったが、渡り終える直前にだましたことを口にしたため、和迩に捕まって毛皮を剥がれた。</li>
@@ -113,24 +170,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀の神代巻（巻第一・巻第二）には、稲羽の素菟・八十神・八上比売の話に対応する記事を確認できなかった。日本書紀では同じ神を主に「大己貴」の名で記している。</li>
         <li><span class="kind k-int">解説</span>國學院大學の神名データベースによると、「素菟」の「素」は白色の意とする説と裸の意とする説があり、また陸の動物が水の動物をだまして水を渡る話は外国にも広く見られることから、もとは大国主神と関係のない独立した動物の話だったとする見方もある。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/" target="_blank" rel="noopener">［出典］</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>大国主神には八十神と呼ばれる大勢の兄弟がいたが、みな国を大国主神に譲ることになる。そのわけは次のとおりである。八十神はそれぞれ稲羽の八上比売と結婚したいと思い、そろって稲羽へ出かけたが、そのとき大穴牟遅神（大国主神）に袋を背負わせ、従者として連れて行った。</p>
-      <p>一行が気多の前（岬）に着くと、裸の菟が倒れ伏していた。八十神は菟に「海の塩水を浴び、風に当たって高い山の尾根に伏せていればよい」と教えた。菟がそのとおりにすると、塩が乾くにつれて体の皮が風に吹かれて裂け、痛みに苦しんで泣き伏していた。</p>
-      <p>最後にやって来た大穴牟遅神がわけを尋ねると、菟は次のように語った。淤岐嶋にいた菟は、こちらへ渡りたかったが手立てがなかったので、海の和迩をだまして「どちらの一族が多いか比べよう。仲間をみな連れてきて、島から気多の前まで並んで伏せよ。わたしがその上を踏んで数えながら渡ろう」と持ちかけた。和迩が並んだので、その上を踏んで数えながら渡ってきたが、陸に下りようとするときに「おまえたちはだまされたのだ」と言ってしまい、いちばん端の和迩に捕まって衣服（毛皮）をすっかり剥がれた。そのうえ八十神の教えに従ったため、全身が傷ついたのだという。</p>
-      <p>そこで大穴牟遅神は「すぐにこの水門へ行き、その水で体を洗い、水門の蒲黄を取って敷き散らし、その上を転がれば、元の肌のようにきっと治る」と教えた。菟がそのとおりにすると、体は元どおりになった。これが稲羽の素菟で、今は菟神と呼ばれている。</p>
-      <p>菟は大穴牟遅神に「八十神は決して八上比売を得られません。袋を背負っていても、あなたが八上比売を得るでしょう」と告げた。はたして八上比売は八十神に「わたしはあなたたちの言うことは聞きません。大穴牟遅神に嫁ぎます」と答えた。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">以水洗汝身，即取其水門之蒲黃</blockquote><p>（大穴牟遅神の教え）水であなたの体を洗い、すぐにその水門の蒲黄を取って（敷きなさい）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">此稻羽之素菟者也，於今者謂菟神也</blockquote><p>これが稲羽の素菟であり、今では菟神と呼ばれている。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">雖負帒，汝命獲之</blockquote><p>（菟の言葉）袋を背負っていても、あなた様が（八上比売を）得るでしょう。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">吾者不聞汝等之言，將嫁大穴牟遲神</blockquote><p>（八上比売の答え）わたしはあなたたちの言うことは聞きません。大穴牟遅神に嫁ぎます。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -147,18 +186,28 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第一 第八段 一書第六</span><p>日本書紀の巻第一・巻第二では、稲羽の素菟・八十神・八上比売の話に対応する記事を確認できなかった。同じ神は第八段一書第六で大国主神の別名として「国作大己貴命」などと挙げられ、少彦名命と力を合わせて国を造る話が語られている。</p><blockquote lang="zh-Hant">亦號國作大己貴命</blockquote></div>
     </section>
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="orochi.html"><small>← 前の話（上巻・第8話）</small>須佐之男命の追放と八俣遠呂智</a><a class="next" href="nenokuni.html"><small>次の話（上巻・第10話）→</small>八十神の迫害と根の堅州国</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">以水洗汝身，即取其水門之蒲黃</blockquote><p>（大穴牟遅神の教え）水であなたの体を洗い、すぐにその水門の蒲黄を取って（敷きなさい）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">此稻羽之素菟者也，於今者謂菟神也</blockquote><p>これが稲羽の素菟であり、今では菟神と呼ばれている。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">雖負帒，汝命獲之</blockquote><p>（菟の言葉）袋を背負っていても、あなた様が（八上比売を）得るでしょう。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">吾者不聞汝等之言，將嫁大穴牟遲神</blockquote><p>（八上比売の答え）わたしはあなたたちの言うことは聞きません。大穴牟遅神に嫁ぎます。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

@@ -80,6 +80,36 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +127,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 上巻・第2話（全17話）</p>
-    <h1>国生み</h1>
-    <p class="pg-lead">天つ神の命を受けた伊耶那岐命と伊耶那美命は、天沼矛で淤能碁呂嶋を作り、そこで結婚して国土となる島々を生んだ。最初の結婚は女神が先に声をかけたためにうまくいかず、天つ神の占いに従ってやり直してから、大八嶋国をはじめとする島々が生まれた。</p>
-    <div class="xlink"><a href="../shoki/dan04.html">日本書紀で読む：国生み（第四段） ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 上巻・第2話（全17話）</p>
+        <h1>国生み</h1>
+      </div>
+      <div class="bk-hero"><figure class="f-tall"><img src="../assets/kiki/book/kuniumi-hero.jpg" width="810" height="1440" alt="天浮橋に立ち、天沼矛を下ろす伊耶那岐命と伊耶那美命" fetchpriority="high" decoding="async"><figcaption>天浮橋に立ち、天沼矛を下ろす伊耶那岐命と伊耶那美命（想像図・AI生成）</figcaption></figure></div>
+      <div class="bk-intro">
+        <p class="bk-lead">天つ神の命を受けた伊耶那岐命と伊耶那美命は、天沼矛で淤能碁呂嶋を作り、そこで結婚して国土となる島々を生んだ。最初の結婚は女神が先に声をかけたためにうまくいかず、天つ神の占いに従ってやり直してから、大八嶋国をはじめとする島々が生まれた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/dan04.html">日本書紀で読む：国生み（第四段） ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>天沼矛と淤能碁呂嶋</h3>
+      <p class="t">天つ神たちは伊耶那岐命と伊耶那美命の二柱に、この漂っている国を整えて固めるよう命じ、天沼矛を授けた。二柱は天浮橋に立って矛を下ろし、海水をかき鳴らして引き上げた。すると矛の先から滴り落ちた塩が積もって島となった。これが淤能碁呂嶋である。</p>
+      <h3>天之御柱を回る</h3>
+      <p class="t">二柱はその島に降り、天之御柱と八尋殿を見立てた。伊耶那岐命が体のつくりを尋ねると、伊耶那美命は「成り合わないところが一か所ある」と答え、伊耶那岐命は自分には「成り余ったところが一か所ある」と言った。伊耶那岐命はそれを合わせて国土を生もうと提案し、伊耶那美命も同意した。二柱は天之御柱を、伊耶那美命は右から、伊耶那岐命は左から回って出会うことにした。</p>
+      <h3>伊耶那美命が先に声をかける</h3>
+      <p class="t">出会ったとき、伊耶那美命が先に「あなにやし、えをとこを」と言い、後から伊耶那岐命が「あなにやし、えをとめを」と言った（原文は音で書かれている）。伊耶那岐命は「女が先に言ったのはよくない」と告げたが、そのまま交わって生まれた子は水蛭子であった。この子は葦船に入れて流され、次に生まれた淡嶋も子の数には入れなかった。</p>
+      <h3>天つ神の占い</h3>
+      <p class="t">二柱は相談して天つ神のもとに参上し、指示を求めた。天つ神は太占で占い、女が先に言ったのでよくなかったのだから、また降りて言い直すようにと告げた。二柱は再び降りて前と同じように天之御柱を回り、今度は伊耶那岐命が先に、伊耶那美命が後に呼びかけた。</p>
+      <h3>八つの島が生まれる</h3>
+      <p class="t">こうして二柱が交わって生んだのは、淡道之穂之狭別嶋、伊予之二名嶋、隠伎之三子嶋、筑紫嶋、伊伎嶋、津嶋、佐度嶋、大倭豊秋津嶋の八つの島である。伊予之二名嶋と筑紫嶋はどちらも体が一つで顔が四つあり、顔ごとに愛比売・飯依比古・大宜都比売・建依別、白日別・豊日別・建日向日豊久士比泥別・建日別という名がある。この八つの島を先に生んだので、「大八嶋国」という。</p>
+      <h3>帰りに生んだ六つの島</h3>
+      <p class="t">その後、帰るときに、さらに吉備児嶋・小豆嶋・大嶋・女嶋・知訶嶋・両児嶋を生んだ。これらの島にもそれぞれ、建日方別・大野手比売・大多麻流別・天一根・天之忍男・天両屋という別の名がある。小注は、吉備児嶋から天両屋までをあわせて六島と数えている。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>天つ神が伊耶那岐命・伊耶那美命に国を整えて固めるよう命じて天沼矛を授け、二柱が天浮橋から矛で海をかき回すと、矛の先から落ちた塩が積もって淤能碁呂嶋ができた。</li>
         <li><span class="kind ">本文</span>最初は伊耶那美命が先に声をかけたため、生まれた水蛭子は葦船で流され、淡嶋も子に数えられなかった。天つ神の太占で「女が先に言ったため」と分かり、伊耶那岐命が先に言うようにやり直した。</li>
@@ -115,30 +170,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>天つ神たちは伊耶那岐命と伊耶那美命の二柱に、この漂っている国を整えて固めるよう命じ、天沼矛を授けた。二柱は天浮橋に立って矛を下ろし、海水をかき鳴らして引き上げた。すると矛の先から滴り落ちた塩が積もって島となった。これが淤能碁呂嶋である。</p>
-      <p>二柱はその島に降り、天之御柱と八尋殿を見立てた。伊耶那岐命が体のつくりを尋ねると、伊耶那美命は「成り合わないところが一か所ある」と答え、伊耶那岐命は自分には「成り余ったところが一か所ある」と言った。伊耶那岐命はそれを合わせて国土を生もうと提案し、伊耶那美命も同意した。二柱は天之御柱を、伊耶那美命は右から、伊耶那岐命は左から回って出会うことにした。</p>
-      <p>出会ったとき、伊耶那美命が先に「あなにやし、えをとこを」と言い、後から伊耶那岐命が「あなにやし、えをとめを」と言った（原文は音で書かれている）。伊耶那岐命は「女が先に言ったのはよくない」と告げたが、そのまま交わって生まれた子は水蛭子であった。この子は葦船に入れて流され、次に生まれた淡嶋も子の数には入れなかった。</p>
-      <p>二柱は相談して天つ神のもとに参上し、指示を求めた。天つ神は太占で占い、女が先に言ったのでよくなかったのだから、また降りて言い直すようにと告げた。二柱は再び降りて前と同じように天之御柱を回り、今度は伊耶那岐命が先に、伊耶那美命が後に呼びかけた。</p>
-      <p>こうして二柱が交わって生んだのは、淡道之穂之狭別嶋、伊予之二名嶋、隠伎之三子嶋、筑紫嶋、伊伎嶋、津嶋、佐度嶋、大倭豊秋津嶋の八つの島である。伊予之二名嶋と筑紫嶋はどちらも体が一つで顔が四つあり、顔ごとに愛比売・飯依比古・大宜都比売・建依別、白日別・豊日別・建日向日豊久士比泥別・建日別という名がある。この八つの島を先に生んだので、「大八嶋国」という。</p>
-      <p>その後、帰るときに、さらに吉備児嶋・小豆嶋・大嶋・女嶋・知訶嶋・両児嶋を生んだ。これらの島にもそれぞれ、建日方別・大野手比売・大多麻流別・天一根・天之忍男・天両屋という別の名がある。小注は、吉備児嶋から天両屋までをあわせて六島と数えている。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">修理固成是多陀用幣流之國</blockquote><p>この漂っている国を、整えて固めよ（天つ神の命令）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">自其矛末垂落塩之累積成嶋，是淤能碁吕嶋</blockquote><p>矛の先から滴り落ちた塩が積もって島になった。これが淤能碁呂嶋である。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">女人先言不良</blockquote><p>女が先に言ったのはよくない（伊耶那岐命の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故因此八嶋先所生，謂大八嶋國。</blockquote><p>この八つの島を先に生んだので、大八嶋国という。</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
         <li><b><a href="../../shrine-note/map/?d=izanagi">伊邪那岐命</a></b><small>いざなぎのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=oyama">雄山神社</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=izanami">伊邪那美命</a></b><small>いざなみのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=naminoue">波上宮</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=izanami">伊邪那美命</a></b><small>いざなみのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=naminoue">波上宮</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b>天沼矛</b><span class="sh">天つ神が二柱に授けた矛。これで海をかき回して淤能碁呂嶋ができた。</span></li>
         <li><b>天浮橋</b><span class="sh">二柱が立って矛を下ろした場所。</span></li>
         <li><b>淤能碁吕嶋</b><small>おのごろしま</small><span class="sh">矛の先から滴った塩が積もってできた島。二柱が降りて結婚した場所。</span></li>
@@ -158,7 +194,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第一 第四段 本文</span><p>書紀の本文では天つ神の命令がなく、伊弉諾尊・伊弉冉尊が天浮橋の上で自分たちで相談し、天之瓊矛で探って磤馭慮島を得る。柱を回って女神が先に唱えると、男神がその場でとがめてやり直し、天つ神への相談や太占は出てこない。</p><blockquote lang="zh-Hant">底下豈無國歟</blockquote></div>
       <div class="ns"><span class="where">巻第一 第四段 本文</span><p>書紀の本文では淡路洲を「胞」とし、最初に大日本豊秋津洲を生む。蛭児と淡洲は本文の国生みには出てこず、対馬・壱岐などの島は潮の泡が凝ってできたとされる。</p><blockquote lang="zh-Hant">先以淡路洲爲胞</blockquote></div>
       <div class="ns"><span class="where">巻第一 第四段 一書第一</span><p>一書第一は、天神の命令、蛭児を葦船で流すこと、淡洲を子に数えないこと、太占によるやり直しなど、古事記に近い。ただし最初に柱を回るとき女神が左・男神が右で、やり直しでは向きも入れ替える。古事記では最初から女神が右・男神が左で、やり直しでも同じように回る。</p><blockquote lang="zh-Hant">妹自左巡，吾當右巡</blockquote></div>
@@ -166,12 +202,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="tenchi.html"><small>← 前の話（上巻・第1話）</small>天地のはじまり</a><a class="next" href="kamiumi.html"><small>次の話（上巻・第3話）→</small>神生みと火の神</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/awashima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/awashima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/awajinohonosawakenoshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/awajinohonosawakenoshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/iyonofutananoshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/iyonofutananoshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tsukushinoshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tsukushinoshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sadonoshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sadonoshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oyamatotoyoakizushima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oyamatotoyoakizushima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ogetsuhimenokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ogetsuhimenokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">修理固成是多陀用幣流之國</blockquote><p>この漂っている国を、整えて固めよ（天つ神の命令）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">自其矛末垂落塩之累積成嶋，是淤能碁吕嶋</blockquote><p>矛の先から滴り落ちた塩が積もって島になった。これが淤能碁呂嶋である。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">女人先言不良</blockquote><p>女が先に言ったのはよくない（伊耶那岐命の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故因此八嶋先所生，謂大八嶋國。</blockquote><p>この八つの島を先に生んだので、大八嶋国という。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/awashima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/awashima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/awajinohonosawakenoshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/awajinohonosawakenoshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/iyonofutananoshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/iyonofutananoshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tsukushinoshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tsukushinoshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sadonoshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sadonoshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oyamatotoyoakizushima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oyamatotoyoakizushima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ogetsuhimenokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ogetsuhimenokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

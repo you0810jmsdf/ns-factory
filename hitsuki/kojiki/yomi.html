@@ -80,6 +80,36 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +127,37 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 上巻・第4話（全17話）</p>
-    <h1>黄泉の国</h1>
-    <p class="pg-lead">伊耶那岐命は黄泉国へ去った妻の伊耶那美命を連れ戻しに行くが、「見ないで」という願いを破って変わり果てた姿を見てしまい、追われて逃げ帰る。黄泉比良坂を石でふさいで別れの言葉を交わしたあと、伊耶那岐命は穢れを清める禊に向かい、脱ぎ捨てた持ち物から十二の神が生まれる。</p>
-    <div class="xlink"><a href="../shoki/dan05.html">日本書紀で読む：三貴子の誕生と神生み・黄泉（第五段） ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 上巻・第4話（全17話）</p>
+        <h1>黄泉の国</h1>
+      </div>
+      <div class="bk-hero"><figure class="f-tall"><img src="../assets/kiki/book/yomi-hero.jpg" width="810" height="1440" alt="黄泉比良坂を石でふさぐ伊耶那岐命" fetchpriority="high" decoding="async"><figcaption>黄泉比良坂を石でふさぐ伊耶那岐命（想像図・AI生成）</figcaption></figure></div>
+      <div class="bk-intro">
+        <p class="bk-lead">伊耶那岐命は黄泉国へ去った妻の伊耶那美命を連れ戻しに行くが、「見ないで」という願いを破って変わり果てた姿を見てしまい、追われて逃げ帰る。黄泉比良坂を石でふさいで別れの言葉を交わしたあと、伊耶那岐命は穢れを清める禊に向かい、脱ぎ捨てた持ち物から十二の神が生まれる。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/dan05.html">日本書紀で読む：三貴子の誕生と神生み・黄泉（第五段） ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>黄泉国へ妻を追う</h3>
+      <p class="t">伊耶那岐命は妻の伊耶那美命に会いたいと思い、黄泉国まで追っていった。御殿の戸口で迎えた伊耶那美命に、伊耶那岐命は「二人で作ってきた国はまだ作り終えていないから、帰ってきてほしい」と呼びかけた。伊耶那美命は「もっと早く来てくれればよかったのに。わたしはもう黄泉戸喫をしてしまった」と答えた。それでも「あなたが来てくれたのはおそれ多いので帰りたい。しばらく黄泉神と話し合ってくるから、その間わたしを見ないでほしい」と頼み、御殿の奥へ戻った。あまりに長く待たされたので、伊耶那岐命は左のみずらに挿していた櫛の太い歯を一本折り取って火をともし、中に入って見た。すると伊耶那美命の体には蛆がたかり、頭・胸・腹・陰部・左右の手・左右の足に、合わせて八柱の雷神が生じていた。</p>
+      <h3>逃げる伊耶那岐命</h3>
+      <p class="t">伊耶那岐命は恐れて逃げ出した。伊耶那美命は「わたしに恥をかかせた」と言い、予母都志許売に追わせた。伊耶那岐命が黒い髪飾りを投げ捨てると蒲子が生え、追っ手がそれを拾って食べている間に逃げ、右のみずらの櫛を折って投げると筍が生え、それを抜いて食べている間にまた逃げた。次に伊耶那美命は八柱の雷神に千五百の黄泉の軍勢を付けて追わせ、伊耶那岐命は十拳剣を後ろ手に振りながら逃げ続けた。</p>
+      <h3>黄泉比良坂の桃の実と、別れの言葉</h3>
+      <p class="t">黄泉比良坂のふもとまで来たとき、伊耶那岐命はそこにあった桃の実を三つ取って待ち受け、打ちかかると、追っ手はみな逃げ帰った。伊耶那岐命は桃の実に「わたしを助けたように、葦原中国に生きる人々が苦しい目にあって悩むときにも助けよ」と告げ、意富加牟豆美命という名を与えた。最後に伊耶那美命自身が追ってきた。伊耶那岐命は千引石で黄泉比良坂をふさぎ、二神は石をはさんで向かい合い、別れの言葉を交わした。伊耶那美命が「あなたがこうするなら、あなたの国の人々を一日に千人絞め殺そう」と言うと、伊耶那岐命は「それならわたしは一日に千五百の産屋を建てよう」と答えた。このために一日に必ず千人が死に、千五百人が生まれるのだ、と古事記は記す。</p>
+      <h3>神々と坂の呼び名</h3>
+      <p class="t">このことから伊耶那美命は黄泉津大神と呼ばれ、伊耶那岐命に追いついたことから道敷大神ともいう。坂をふさいだ石は道反大神、また塞坐黄泉戸大神と呼ばれる。黄泉比良坂は、今の出雲国の伊賦夜坂のことだという。</p>
+      <h3>禊へ向かう</h3>
+      <p class="t">伊耶那岐大神は「わたしはひどく汚れた国に行っていた。だから身を清める禊をしよう」と言い、竺紫の日向の橘の小門の阿波岐原に行って禊祓をした。そこで投げ捨てた杖・帯・裳・衣・褌・冠と左右の手纏から、衝立船戸神から辺津甲斐弁羅神まで十二柱の神が生まれた。古事記はこれらを、身に着けていた物を脱いだことで生まれた神だと説明している。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>伊耶那岐命は「黄泉神と話し合う間は見ないで」という伊耶那美命の頼みを破って火をともして見たため、恥をかかされた伊耶那美命に追われることになった。</li>
         <li><span class="kind ">本文</span>黄泉比良坂を千引石でふさいだあと、伊耶那美命は「一日に千人殺す」と言い、伊耶那岐命は「一日に千五百の産屋を建てる」と返した。古事記はこれを、一日に必ず千人が死に千五百人が生まれることの由来として語る。</li>
@@ -115,29 +168,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>伊耶那岐命は妻の伊耶那美命に会いたいと思い、黄泉国まで追っていった。御殿の戸口で迎えた伊耶那美命に、伊耶那岐命は「二人で作ってきた国はまだ作り終えていないから、帰ってきてほしい」と呼びかけた。伊耶那美命は「もっと早く来てくれればよかったのに。わたしはもう黄泉戸喫をしてしまった」と答えた。それでも「あなたが来てくれたのはおそれ多いので帰りたい。しばらく黄泉神と話し合ってくるから、その間わたしを見ないでほしい」と頼み、御殿の奥へ戻った。あまりに長く待たされたので、伊耶那岐命は左のみずらに挿していた櫛の太い歯を一本折り取って火をともし、中に入って見た。すると伊耶那美命の体には蛆がたかり、頭・胸・腹・陰部・左右の手・左右の足に、合わせて八柱の雷神が生じていた。</p>
-      <p>伊耶那岐命は恐れて逃げ出した。伊耶那美命は「わたしに恥をかかせた」と言い、予母都志許売に追わせた。伊耶那岐命が黒い髪飾りを投げ捨てると蒲子が生え、追っ手がそれを拾って食べている間に逃げ、右のみずらの櫛を折って投げると筍が生え、それを抜いて食べている間にまた逃げた。次に伊耶那美命は八柱の雷神に千五百の黄泉の軍勢を付けて追わせ、伊耶那岐命は十拳剣を後ろ手に振りながら逃げ続けた。</p>
-      <p>黄泉比良坂のふもとまで来たとき、伊耶那岐命はそこにあった桃の実を三つ取って待ち受け、打ちかかると、追っ手はみな逃げ帰った。伊耶那岐命は桃の実に「わたしを助けたように、葦原中国に生きる人々が苦しい目にあって悩むときにも助けよ」と告げ、意富加牟豆美命という名を与えた。最後に伊耶那美命自身が追ってきた。伊耶那岐命は千引石で黄泉比良坂をふさぎ、二神は石をはさんで向かい合い、別れの言葉を交わした。伊耶那美命が「あなたがこうするなら、あなたの国の人々を一日に千人絞め殺そう」と言うと、伊耶那岐命は「それならわたしは一日に千五百の産屋を建てよう」と答えた。このために一日に必ず千人が死に、千五百人が生まれるのだ、と古事記は記す。</p>
-      <p>このことから伊耶那美命は黄泉津大神と呼ばれ、伊耶那岐命に追いついたことから道敷大神ともいう。坂をふさいだ石は道反大神、また塞坐黄泉戸大神と呼ばれる。黄泉比良坂は、今の出雲国の伊賦夜坂のことだという。</p>
-      <p>伊耶那岐大神は「わたしはひどく汚れた国に行っていた。だから身を清める禊をしよう」と言い、竺紫の日向の橘の小門の阿波岐原に行って禊祓をした。そこで投げ捨てた杖・帯・裳・衣・褌・冠と左右の手纏から、衝立船戸神から辺津甲斐弁羅神まで十二柱の神が生まれた。古事記はこれらを、身に着けていた物を脱いだことで生まれた神だと説明している。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">愛我那迩妹命，吾与汝所作之國，未作竟，故可還。</blockquote><p>いとしい妻よ、あなたとわたしで作ってきた国はまだ作り終えていない。だから帰ってきてほしい。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">且与黃泉神相論，莫視我。</blockquote><p>しばらく黄泉神と話し合ってくるので、その間わたしを見ないでください。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">吾一日立千五百産屋。</blockquote><p>（それなら）わたしは一日に千五百の産屋を建てよう。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">是以一日必千人死，一日必千五百人生也。</blockquote><p>こういうわけで、一日に必ず千人が死に、一日に必ず千五百人が生まれるのである。</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
         <li><b><a href="../../shrine-note/map/?d=izanagi">伊邪那岐命</a></b><small>いざなぎのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=oyama">雄山神社</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=izanami">伊邪那美命</a></b><small>いざなみのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=naminoue">波上宮</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=izanami">伊邪那美命</a></b><small>いざなみのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=naminoue">波上宮</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=ooikazuchi">大雷神</a></b><small>おおいかずちのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=oyamaafuri">大山阿夫利神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=kunado">久那斗神</a></b><small>くなどのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ikisu">息栖神社</a></span></li>
         <li><b>黃泉神</b><small>よもつかみ</small><span class="sh">伊耶那美命が、帰ってよいかを相談しに行くと言った黄泉国の神。</span></li>
@@ -161,7 +196,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第一 第五段 一書第六</span><p>古事記で伊耶那美命が「黄泉戸喫をしてしまった」と言う場面で、一書第六の伊弉冉尊は「わたしはもう泉の竈で煮たものを食べてしまった」と言う。追っ手も泉津醜女八人とされる。</p><blockquote lang="zh-Hant">吾已飡泉之竈矣</blockquote></div>
       <div class="ns"><span class="where">巻第一 第五段 一書第六</span><p>古事記は黄泉比良坂を出雲国の伊賦夜坂だとするが、一書第六は、泉津平坂は別にどこかにある場所ではなく、死に臨んで息が絶えるときのことを言うのだろうか、と記す。</p><blockquote lang="zh-Hant">但臨死氣絕之際，是之謂歟</blockquote></div>
       <div class="ns"><span class="where">巻第一 第五段 一書第九</span><p>一書第九では、伊弉諾尊が大きな桃の木の下に隠れ、その実を雷たちに投げつけて退かせ、これが桃で鬼を避ける由来だと説明する。八雷のいる場所も、背・尻や山雷・野雷が見えるなど古事記と異なる。</p><blockquote lang="zh-Hant">此用桃避鬼之緣也</blockquote></div>
@@ -169,12 +204,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="kamiumi.html"><small>← 前の話（上巻・第3話）</small>神生みと火の神</a><a class="next" href="misogi.html"><small>次の話（上巻・第5話）→</small>禊祓と三貴子</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsukami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsukami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsuokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsuokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakusanoikazuchinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yakusanoikazuchinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oikazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oikazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsushikome/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsushikome/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/fusagarimasuyomotsutonookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/fusagarimasuyomotsutonookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tsukitatsufunatonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tsukitatsufunatonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/michinonagachihanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/michinonagachihanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tokihakarashinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tokihakarashinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/wazurainoushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/wazurainoushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chimatanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chimatanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/akiguinoushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/akiguinoushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okizakarunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okizakarunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okitsunagisabikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okitsunagisabikonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okitsukaiberanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okitsukaiberanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hezakarunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hezakarunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hetsunagisabikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hetsunagisabikonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hetsukaiberanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hetsukaiberanokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">愛我那迩妹命，吾与汝所作之國，未作竟，故可還。</blockquote><p>いとしい妻よ、あなたとわたしで作ってきた国はまだ作り終えていない。だから帰ってきてほしい。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">且与黃泉神相論，莫視我。</blockquote><p>しばらく黄泉神と話し合ってくるので、その間わたしを見ないでください。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">吾一日立千五百産屋。</blockquote><p>（それなら）わたしは一日に千五百の産屋を建てよう。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">是以一日必千人死，一日必千五百人生也。</blockquote><p>こういうわけで、一日に必ず千人が死に、一日に必ず千五百人が生まれるのである。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsukami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsukami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsuokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsuokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakusanoikazuchinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yakusanoikazuchinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oikazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oikazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsushikome/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsushikome/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/fusagarimasuyomotsutonookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/fusagarimasuyomotsutonookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tsukitatsufunatonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tsukitatsufunatonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/michinonagachihanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/michinonagachihanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tokihakarashinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tokihakarashinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/wazurainoushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/wazurainoushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chimatanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chimatanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/akiguinoushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/akiguinoushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okizakarunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okizakarunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okitsunagisabikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okitsunagisabikonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okitsukaiberanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okitsukaiberanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hezakarunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hezakarunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hetsunagisabikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hetsunagisabikonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hetsukaiberanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hetsukaiberanokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>
