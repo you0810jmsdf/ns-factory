@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第三十 持統天皇（全50ページ中 50）</p>
-    <h1>持統天皇の藤原宮と譲位</h1>
-    <p class="pg-lead">持統天皇五年から十一年の譲位までの記事をまとめる。伊勢行幸をめぐる諫め、藤原宮への遷居、たびたびの吉野行幸、仏教や祭りの記事が続き、十一年八月に皇太子へ位を譲って日本書紀が終わる。</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第三十 持統天皇（全50ページ中 50）</p>
+        <h1>持統天皇の藤原宮と譲位</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">持統天皇五年から十一年の譲位までの記事をまとめる。伊勢行幸をめぐる諫め、藤原宮への遷居、たびたびの吉野行幸、仏教や祭りの記事が続き、十一年八月に皇太子へ位を譲って日本書紀が終わる。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>高市皇子の封戸を増やす</h3>
+      <p class="t">五年正月、高市皇子の封戸を増やして三千戸とし、ほかの皇子や大臣にも封戸を加えた。二月、天皇は公卿たちに、先の天皇の世と同じく仏法を勤めるよう詔した。三月には売られた人の身分について、四月には奴婢の訴えについて定めた。六月、四月から長雨が続いたため、公卿・百寮に酒と肉を断って悔過させ、寺々で経を読ませた。八月には十八氏に祖先の墓記を差し出させた。</p>
+      <h3>新益京を鎮め祭る</h3>
+      <p class="t">五年九月に川嶋皇子が薨じた。十月、先の天皇の陵には五戸以上の陵戸を置くよう定め、新益京を鎮め祭った。十一月に大嘗が行われ、神祇伯中臣朝臣大嶋が天神寿詞を読んだ。十二月には右大臣以下の位や戸の大きさに応じて宅地を割り当てた。</p>
+      <h3>三輪朝臣高市麻呂が伊勢行幸を諫める</h3>
+      <p class="t">六年二月、天皇が伊勢行幸を告げると、三輪朝臣高市麻呂が農時をさまたげると諫め、三月にも冠位を脱いで重ねて諫めた。天皇は聞き入れずに伊勢へ行き、通った神郡や伊賀・伊勢・志摩の国造に冠位を与え、調役を免じた。五月、藤原の宮地を鎮め祭り、四所に新宮のことを告げた。閏五月には伊勢大神が伊勢国の調役の扱いについて天皇に奏し、大隅と阿多に沙門を遣わして仏教を伝えさせた。</p>
+      <h3>百姓に黄色の衣を着させる</h3>
+      <p class="t">七年正月、天下の百姓には黄色の衣、奴には黒い衣を着させた。三月には桑・紵・梨・栗・蕪菁を植えさせて五穀の助けとした。九月には清御原天皇のために内裏で無遮大会を設けた。十月、親王以下に位に応じて甲・大刀・弓矢などを備えさせ、仁王経を諸国で講じた。十一月、近江国益須郡の醴泉を沙門に試飲させた。</p>
+      <h3>藤原宮に移り住む</h3>
+      <p class="t">八年三月、鋳銭司を任じ、益須郡の醴泉で多くの病人が治ったとして郡の調役を免じた。五月、金光明経百部を諸国に送り、毎年正月に読ませることにした。十二月、天皇は藤原宮に移り住み、百官が拝朝した。</p>
+      <h3>新羅の王子金良琳が来る</h3>
+      <p class="t">九年三月、新羅の王子金良琳が来て国政を奏し、多禰に使いを遣わして蛮の住む所を探させた。五月には隼人の相撲を西の槻の下で見た。十年四月、唐の地で久しく苦しんだ物部薬と壬生諸石に位と田などを与えた。七月、後皇子尊が薨じた。八月、多臣品治に、最初から従った功と関を固く守った功をたたえて位を授けた。十月には右大臣丹比真人に、職を退くことをいたわって輿と杖を与えた。</p>
+      <h3>皇太子に位を譲る</h3>
+      <p class="t">十一年二月、東宮大傅・春宮大夫などを任じ、三月に春宮で無遮大会を設けた。六月、天皇の病のため京畿の寺々で経を読ませ、公卿・百寮が仏像を造り始めた。七月、薬師寺で開眼の会を設けた。八月朔日、天皇は宮中で策を定め、皇太子に位を譲った。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>六年二月、天皇が三月に伊勢へ行幸すると告げると、中納言三輪朝臣高市麻呂は農事のさまたげになると諫めた。三月にも冠位を脱いで朝廷にささげ、重ねて諫めたが、天皇は従わず伊勢へ行った。</li>
         <li><span class="kind ">本文</span>五年十月に新益京を鎮め祭り、六年五月には藤原の宮地を鎮め祭って、伊勢・大倭・住吉・紀伊の四所に新しい宮のことを告げた。八年十二月、天皇は藤原宮に移り住んだ。</li>
@@ -113,26 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">本文</span>五年から十一年まで、天皇が吉野宮へ行幸する記事が毎年、年に何度も記される。</li>
         <li><span class="kind ">本文</span>仏教の記事：六年に大隅と阿多に沙門を遣わして仏教を伝えさせ、八年には金光明経百部を諸国に置いて毎年正月に読ませた。十一年には天皇の病のために公卿・百寮が仏像を造り始め、七月に薬師寺で開眼の会を設けた。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>五年正月、高市皇子の封戸を増やして三千戸とし、ほかの皇子や大臣にも封戸を加えた。二月、天皇は公卿たちに、先の天皇の世と同じく仏法を勤めるよう詔した。三月には売られた人の身分について、四月には奴婢の訴えについて定めた。六月、四月から長雨が続いたため、公卿・百寮に酒と肉を断って悔過させ、寺々で経を読ませた。八月には十八氏に祖先の墓記を差し出させた。</p>
-      <p>五年九月に川嶋皇子が薨じた。十月、先の天皇の陵には五戸以上の陵戸を置くよう定め、新益京を鎮め祭った。十一月に大嘗が行われ、神祇伯中臣朝臣大嶋が天神寿詞を読んだ。十二月には右大臣以下の位や戸の大きさに応じて宅地を割り当てた。</p>
-      <p>六年二月、天皇が伊勢行幸を告げると、三輪朝臣高市麻呂が農時をさまたげると諫め、三月にも冠位を脱いで重ねて諫めた。天皇は聞き入れずに伊勢へ行き、通った神郡や伊賀・伊勢・志摩の国造に冠位を与え、調役を免じた。五月、藤原の宮地を鎮め祭り、四所に新宮のことを告げた。閏五月には伊勢大神が伊勢国の調役の扱いについて天皇に奏し、大隅と阿多に沙門を遣わして仏教を伝えさせた。</p>
-      <p>七年正月、天下の百姓には黄色の衣、奴には黒い衣を着させた。三月には桑・紵・梨・栗・蕪菁を植えさせて五穀の助けとした。九月には清御原天皇のために内裏で無遮大会を設けた。十月、親王以下に位に応じて甲・大刀・弓矢などを備えさせ、仁王経を諸国で講じた。十一月、近江国益須郡の醴泉を沙門に試飲させた。</p>
-      <p>八年三月、鋳銭司を任じ、益須郡の醴泉で多くの病人が治ったとして郡の調役を免じた。五月、金光明経百部を諸国に送り、毎年正月に読ませることにした。十二月、天皇は藤原宮に移り住み、百官が拝朝した。</p>
-      <p>九年三月、新羅の王子金良琳が来て国政を奏し、多禰に使いを遣わして蛮の住む所を探させた。五月には隼人の相撲を西の槻の下で見た。十年四月、唐の地で久しく苦しんだ物部薬と壬生諸石に位と田などを与えた。七月、後皇子尊が薨じた。八月、多臣品治に、最初から従った功と関を固く守った功をたたえて位を授けた。十月には右大臣丹比真人に、職を退くことをいたわって輿と杖を与えた。</p>
-      <p>十一年二月、東宮大傅・春宮大夫などを任じ、三月に春宮で無遮大会を設けた。六月、天皇の病のため京畿の寺々で経を読ませ、公卿・百寮が仏像を造り始めた。七月、薬師寺で開眼の会を設けた。八月朔日、天皇は宮中で策を定め、皇太子に位を譲った。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">農作之節，車駕未可以動</blockquote><p>三輪高市麻呂の諫めの言葉。農作業の時期に天皇の行幸があってはならない、という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">遷居藤原宮</blockquote><p>天皇が藤原宮に移り住んだ。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">天皇定策禁中，禪天皇位於皇太子</blockquote><p>天皇が宮中で決定し、皇太子に位を譲った。日本書紀の最後の一文。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">上進其祖等墓記</blockquote><p>十八の氏に、祖先たちの墓記を差し出させた。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -154,12 +195,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="jito-1.html"><small>← 前のページ（巻第三十 持統天皇）</small>持統天皇の称制と即位</a><span></span></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三十" target="_blank" rel="noopener">日本書紀 巻第三十</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三十" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第三十</a>　https://zh.wikisource.org/wiki/日本書紀/卷第三十</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">農作之節，車駕未可以動</blockquote><p>三輪高市麻呂の諫めの言葉。農作業の時期に天皇の行幸があってはならない、という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">遷居藤原宮</blockquote><p>天皇が藤原宮に移り住んだ。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">天皇定策禁中，禪天皇位於皇太子</blockquote><p>天皇が宮中で決定し、皇太子に位を譲った。日本書紀の最後の一文。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">上進其祖等墓記</blockquote><p>十八の氏に、祖先たちの墓記を差し出させた。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三十" target="_blank" rel="noopener">日本書紀 巻第三十</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三十" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第三十</a>　https://zh.wikisource.org/wiki/日本書紀/卷第三十</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

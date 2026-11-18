@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十一 仁徳天皇（全50ページ中 25）</p>
-    <h1>仁徳天皇と民のかまど・磐之媛皇后</h1>
-    <p class="pg-lead">譽田天皇が崩じたのち、大鷦鷯尊と太子菟道稚郎子は皇位を譲り合い、太子が自ら死んだことで大鷦鷯尊が難波の高津宮で即位した。課役を三年免じた「民のかまど」の話、堀江や茨田堤の工事、磐之媛皇后と八田皇女をめぐる争い、新羅・蝦夷との戦いなどが、八十七年の崩御まで年を追って記される。</p>
-    <div class="xlink"><a href="../kojiki/nintoku-kamado.html">古事記で読む：仁徳天皇の即位と民のかまど ›</a><a href="../kojiki/nintoku-kurohime.html">古事記で読む：石之日売命の嫉妬と黒日売 ›</a><a href="../kojiki/nintoku-yamashiro.html">古事記で読む：大后の山代行きと六つの歌 ›</a><a href="../kojiki/medori.html">古事記で読む：八田若郎女と女鳥王・速総別王 ›</a><a href="../kojiki/nintoku-kari.html">古事記で読む：雁の卵の歌と枯野の船 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十一 仁徳天皇（全50ページ中 25）</p>
+        <h1>仁徳天皇と民のかまど・磐之媛皇后</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">譽田天皇が崩じたのち、大鷦鷯尊と太子菟道稚郎子は皇位を譲り合い、太子が自ら死んだことで大鷦鷯尊が難波の高津宮で即位した。課役を三年免じた「民のかまど」の話、堀江や茨田堤の工事、磐之媛皇后と八田皇女をめぐる争い、新羅・蝦夷との戦いなどが、八十七年の崩御まで年を追って記される。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約5分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/nintoku-kamado.html">古事記で読む：仁徳天皇の即位と民のかまど ›</a><a href="../kojiki/nintoku-kurohime.html">古事記で読む：石之日売命の嫉妬と黒日売 ›</a><a href="../kojiki/nintoku-yamashiro.html">古事記で読む：大后の山代行きと六つの歌 ›</a><a href="../kojiki/medori.html">古事記で読む：八田若郎女と女鳥王・速総別王 ›</a><a href="../kojiki/nintoku-kari.html">古事記で読む：雁の卵の歌と枯野の船 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>菟道稚郎子と大鷦鷯尊が位を譲り合う</h3>
+      <p class="t">大鷦鷯天皇は譽田天皇の第四子で、母は仲姫命である。譽田天皇四十一年二月に先帝が崩じると、太子菟道稚郎子と大鷦鷯尊は互いに位を譲り合い、その間に倭の屯田を治めようとした額田大中彦皇子は、韓国から呼び戻された吾子篭が伝えた纒向玉城宮の天皇の世の定めによって退けられた。大山守皇子は太子を殺して位に就こうと企てたが、大鷦鷯尊の知らせで備えた太子は渡し守にまじって菟道の川の中ほどで船を傾け、皇子を水に落として死なせた。太子はなお即位せず皇位は三年空き、海人が献じた鮮魚が菟道と難波の間を何度も行き来させられて、海人が魚を捨てて泣いたことが、自分の物のことで泣く海人という諺の由来とされる。太子は兄の志を奪うことはできないと言って自ら死んだ。駆けつけた大鷦鷯尊が髪を解いて亡骸にまたがり三度呼ぶと、太子は一時よみがえって同母妹の八田皇女を兄に託し、再び亡くなって菟道の山の上に葬られた。</p>
+      <h3>大鷦鷯尊の即位と高津宮</h3>
+      <p class="t">元年正月、大鷦鷯尊は即位して母を皇太后とし、難波に都して高津宮と呼んだ。宮の垣や柱には色を塗らず、屋根の茅もそろえないという質素なものであった。天皇が生まれた日に産殿へ木菟が入り、同じ日に武内宿禰の妻の産屋には鷦鷯が入ったので、譽田天皇は二つの鳥の名を取り替えて子に名づけ、大臣の子は木菟宿禰（平群臣の始祖）となった。二年三月に磐之媛命を皇后とし、去來穗別・住吉仲皇子・瑞齒別・雄朝津間稚子宿禰が生まれ、妃の日向髮長媛は大草香皇子と幡梭皇女を生んだ。</p>
+      <h3>煙が立たず課役を免じる</h3>
+      <p class="t">四年二月、天皇は高台から遠くを望んで炊事の煙が立たないのを見て、民が貧しいことを知った。三月に三年間の課役をすべて免じ、自分の衣や履き物は破れるまで替えず、宮の垣が崩れても雨漏りがしても直さなかった。七年四月、煙が国に満ちたのを見た天皇は皇后に「朕はもう富んだ」と語り、宮が壊れているのにと問う皇后に、君は百姓を本とするのだと答えた。九年に諸国が税を納めて宮を直したいと願っても許さず、十年十月に課役を再び科すと、民は昼夜を問わず力を尽くして宮室を造り、これにより今に聖帝と称されると記される。</p>
+      <h3>堀江と茨田堤を築く</h3>
+      <p class="t">十一年、天皇は水があふれて田が少ないことを憂え、十月に宮の北の野を掘って水を西の海に通して堀江と名づけ、茨田堤を築いた。この工事では強頚が水に沈んで死に、衫子は匏を使った機転で死なずにすみ、二つの場所は強頚斷間・衫子斷間と呼ばれた。十二年には高麗が献じた鉄の盾と的を、的臣の祖盾人宿禰だけが射通し、的戸田宿禰の名を賜った。その後も山背の栗隈県の大溝、茨田屯倉、和珥池、横野堤、猪甘津の橋、京中の大道、感玖の大溝などが次々に造られ、四万余頃の田が開かれたという。</p>
+      <h3>八田皇女を妃にし皇后が筒城宮へ移る</h3>
+      <p class="t">十六年、天皇は皇后の嫉妬のために近づけなかった宮人桑田玖賀媛を播磨国造の祖速待に与えたが、玖賀媛は従わず、桑田へ送られる途中で病死した。二十二年に天皇は八田皇女を妃にしたいと歌で皇后に願ったが、皇后は歌で答えて許さなかった。三十年九月、皇后は紀国から戻る途中で天皇が八田皇女を宮に入れたと聞き、難波に入らず山背川をさかのぼって筒城岡の南に宮を造った。十月に遣わされた口持臣は雨や雪に濡れながら庭に伏し続け、その妹国依媛が歌で兄を案じたが、皇后は戻らないと答え、十一月に天皇が自ら筒城宮を訪ねても会わなかった。三十五年六月に皇后は筒城宮で薨じ、三十七年に那羅山に葬られ、三十八年正月に八田皇女が皇后に立てられた。</p>
+      <h3>菟餓野の鹿と隼別皇子</h3>
+      <p class="t">三十八年七月、天皇と皇后が毎夜聞いていた菟餓野の鹿の声が絶え、佐伯部が献じた鹿がその鳴いていた鹿だと考えた天皇は、佐伯部を安藝の渟田に移した。四十年、天皇は雌鳥皇女を妃にしようと隼別皇子を仲立ちにしたが、隼別皇子はひそかに皇女を妻とし、その舎人の歌を聞いた天皇は怒って二人を追わせ、二人は伊勢の蒋代野で殺された。皇女の玉を取った佐伯直阿俄能胡は、のちの新嘗の宴でそれが見つかり、私地を献じて死罪を免れたので、その地を玉代と呼んだという。四十一年には紀角宿禰を百済に遣わし、四十三年には百済で倶知と呼ばれる鳥（今の鷹）を酒君に馴らさせて百舌鳥野で狩りをし、鷹甘部を定めた。五十年には茨田堤で雁が卵を産み、天皇と武内宿禰が歌で問答した。</p>
+      <h3>田道が蝦夷と戦い百舌鳥野陵に葬られる</h3>
+      <p class="t">五十三年、貢ぎ物を絶った新羅に上毛野君の祖竹葉瀬とその弟田道を遣わし、田道は捕虜から聞き出した敵の弱点を突いて新羅軍を破った。五十五年、田道は叛いた蝦夷と戦って伊寺水門で死んだが、のちに蝦夷が田道の墓を掘ると大蛇が出て蝦夷の多くを毒で殺したという。六十二年には遠江の大樹で船を造らせ、同じ年に額田大中彦皇子が闘鷄の氷室を見つけて氷を献じ、以後冬に氷を蔵して春分に配るようになり、六十五年には体が一つで顔が二つある飛騨の宿儺を、和珥臣の祖難波根子武振熊に誅させた。六十七年に河内の石津原に陵地を定め、築陵の日に倒れた鹿の耳から百舌鳥が飛び出したことからその地を百舌鳥耳原と名づけた。同じ年、吉備の川嶋河の淵で毒を吐いて人を苦しめていたものを笠臣の祖縣守が斬り、その後も天皇が税を軽くして民をいたわったので、二十余年事が無かったという。八十七年正月に天皇は崩じ、十月に百舌鳥野陵に葬られた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>四年二月、天皇は高台から国を見て炊事の煙が立たないことから民の貧しさを知り、三月に三年間の課役をすべて免じた。宮の垣が崩れ雨漏りがしても直さず、七年四月に煙が国に満ちたのを見て「百姓が富めば朕も富む」と皇后に語った。</li>
         <li><span class="kind ">本文</span>九年に諸国が税を納めて宮を直したいと願っても天皇は許さず、十年十月に課役を再開すると、民は老人を助け幼子を連れて自ら材木を運び、宮室はすぐに出来上がった。原文はこのために「今に聖帝と称する」と記す。</li>
@@ -115,31 +176,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>大鷦鷯天皇は譽田天皇の第四子で、母は仲姫命である。譽田天皇四十一年二月に先帝が崩じると、太子菟道稚郎子と大鷦鷯尊は互いに位を譲り合い、その間に倭の屯田を治めようとした額田大中彦皇子は、韓国から呼び戻された吾子篭が伝えた纒向玉城宮の天皇の世の定めによって退けられた。大山守皇子は太子を殺して位に就こうと企てたが、大鷦鷯尊の知らせで備えた太子は渡し守にまじって菟道の川の中ほどで船を傾け、皇子を水に落として死なせた。太子はなお即位せず皇位は三年空き、海人が献じた鮮魚が菟道と難波の間を何度も行き来させられて、海人が魚を捨てて泣いたことが、自分の物のことで泣く海人という諺の由来とされる。太子は兄の志を奪うことはできないと言って自ら死んだ。駆けつけた大鷦鷯尊が髪を解いて亡骸にまたがり三度呼ぶと、太子は一時よみがえって同母妹の八田皇女を兄に託し、再び亡くなって菟道の山の上に葬られた。</p>
-      <p>元年正月、大鷦鷯尊は即位して母を皇太后とし、難波に都して高津宮と呼んだ。宮の垣や柱には色を塗らず、屋根の茅もそろえないという質素なものであった。天皇が生まれた日に産殿へ木菟が入り、同じ日に武内宿禰の妻の産屋には鷦鷯が入ったので、譽田天皇は二つの鳥の名を取り替えて子に名づけ、大臣の子は木菟宿禰（平群臣の始祖）となった。二年三月に磐之媛命を皇后とし、去來穗別・住吉仲皇子・瑞齒別・雄朝津間稚子宿禰が生まれ、妃の日向髮長媛は大草香皇子と幡梭皇女を生んだ。</p>
-      <p>四年二月、天皇は高台から遠くを望んで炊事の煙が立たないのを見て、民が貧しいことを知った。三月に三年間の課役をすべて免じ、自分の衣や履き物は破れるまで替えず、宮の垣が崩れても雨漏りがしても直さなかった。七年四月、煙が国に満ちたのを見た天皇は皇后に「朕はもう富んだ」と語り、宮が壊れているのにと問う皇后に、君は百姓を本とするのだと答えた。九年に諸国が税を納めて宮を直したいと願っても許さず、十年十月に課役を再び科すと、民は昼夜を問わず力を尽くして宮室を造り、これにより今に聖帝と称されると記される。</p>
-      <p>十一年、天皇は水があふれて田が少ないことを憂え、十月に宮の北の野を掘って水を西の海に通して堀江と名づけ、茨田堤を築いた。この工事では強頚が水に沈んで死に、衫子は匏を使った機転で死なずにすみ、二つの場所は強頚斷間・衫子斷間と呼ばれた。十二年には高麗が献じた鉄の盾と的を、的臣の祖盾人宿禰だけが射通し、的戸田宿禰の名を賜った。その後も山背の栗隈県の大溝、茨田屯倉、和珥池、横野堤、猪甘津の橋、京中の大道、感玖の大溝などが次々に造られ、四万余頃の田が開かれたという。</p>
-      <p>十六年、天皇は皇后の嫉妬のために近づけなかった宮人桑田玖賀媛を播磨国造の祖速待に与えたが、玖賀媛は従わず、桑田へ送られる途中で病死した。二十二年に天皇は八田皇女を妃にしたいと歌で皇后に願ったが、皇后は歌で答えて許さなかった。三十年九月、皇后は紀国から戻る途中で天皇が八田皇女を宮に入れたと聞き、難波に入らず山背川をさかのぼって筒城岡の南に宮を造った。十月に遣わされた口持臣は雨や雪に濡れながら庭に伏し続け、その妹国依媛が歌で兄を案じたが、皇后は戻らないと答え、十一月に天皇が自ら筒城宮を訪ねても会わなかった。三十五年六月に皇后は筒城宮で薨じ、三十七年に那羅山に葬られ、三十八年正月に八田皇女が皇后に立てられた。</p>
-      <p>三十八年七月、天皇と皇后が毎夜聞いていた菟餓野の鹿の声が絶え、佐伯部が献じた鹿がその鳴いていた鹿だと考えた天皇は、佐伯部を安藝の渟田に移した。四十年、天皇は雌鳥皇女を妃にしようと隼別皇子を仲立ちにしたが、隼別皇子はひそかに皇女を妻とし、その舎人の歌を聞いた天皇は怒って二人を追わせ、二人は伊勢の蒋代野で殺された。皇女の玉を取った佐伯直阿俄能胡は、のちの新嘗の宴でそれが見つかり、私地を献じて死罪を免れたので、その地を玉代と呼んだという。四十一年には紀角宿禰を百済に遣わし、四十三年には百済で倶知と呼ばれる鳥（今の鷹）を酒君に馴らさせて百舌鳥野で狩りをし、鷹甘部を定めた。五十年には茨田堤で雁が卵を産み、天皇と武内宿禰が歌で問答した。</p>
-      <p>五十三年、貢ぎ物を絶った新羅に上毛野君の祖竹葉瀬とその弟田道を遣わし、田道は捕虜から聞き出した敵の弱点を突いて新羅軍を破った。五十五年、田道は叛いた蝦夷と戦って伊寺水門で死んだが、のちに蝦夷が田道の墓を掘ると大蛇が出て蝦夷の多くを毒で殺したという。六十二年には遠江の大樹で船を造らせ、同じ年に額田大中彦皇子が闘鷄の氷室を見つけて氷を献じ、以後冬に氷を蔵して春分に配るようになり、六十五年には体が一つで顔が二つある飛騨の宿儺を、和珥臣の祖難波根子武振熊に誅させた。六十七年に河内の石津原に陵地を定め、築陵の日に倒れた鹿の耳から百舌鳥が飛び出したことからその地を百舌鳥耳原と名づけた。同じ年、吉備の川嶋河の淵で毒を吐いて人を苦しめていたものを笠臣の祖縣守が斬り、その後も天皇が税を軽くして民をいたわったので、二十余年事が無かったという。八十七年正月に天皇は崩じ、十月に百舌鳥野陵に葬られた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云</b><p>本文では筒城宮の皇后を迎えに遣わされたのは的臣の祖口持臣だが、この一云はその使いを和珥臣の祖口子臣とする。</p></div>
-      <div class="var"><b>俗曰</b><p>本文は佐伯部が菟餓野の鹿を献じた話だが、俗説として別の話も載せる。菟餓の野に泊まった人のそばで、牡鹿が白い霜に覆われる夢を見ると、もう一頭の鹿がそれは人に射られて白い塩を塗られるしるしだと解き、夜明け前に猟人が牡鹿を射殺したという。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">百姓貧之。則朕貧也。百姓富之。則朕富也。</blockquote><p>民が貧しければ自分も貧しく、民が富めば自分も富んでいる、という天皇の言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故於今稱聖帝也。</blockquote><p>そのために、今でも（この天皇を）聖帝とたたえている。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">有海人耶。因己物以泣。</blockquote><p>海人でもあるまいに、自分の物のことで泣く、という諺。魚の献上が行き来した話がその由来とされる。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">烟氣不起於域中。以爲百姓既貧。</blockquote><p>国の中に炊事の煙が立っていないので、民はもう貧しいのだと思った。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全2件）。</p>
+      <details><summary>一云</summary><p>本文では筒城宮の皇后を迎えに遣わされたのは的臣の祖口持臣だが、この一云はその使いを和珥臣の祖口子臣とする。</p></details>
+      <details><summary>俗曰</summary><p>本文は佐伯部が菟餓野の鹿を献じた話だが、俗説として別の話も載せる。菟餓の野に泊まった人のそばで、牡鹿が白い霜に覆われる夢を見ると、もう一頭の鹿がそれは人に射られて白い塩を塗られるしるしだと解き、夜明け前に猟人が牡鹿を射殺したという。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -165,7 +206,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 仁徳天皇の段の冒頭（后妃・御子と事業の記事に続く民のかまどの話）</span><p>古事記では天皇は「高山」に登って国を見て煙が立たないことを知り、課役の免除から「聖帝世」と称されるまでを一つの段に短く記す。書紀のような年ごとの経過や皇后との問答は見えない。</p><blockquote lang="zh-Hant">於國中烟不發。國皆貧窮。</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 仁徳天皇の段、大后の山代行き（G12〜G25）</span><p>古事記では、大后は木国から戻る途中で天皇の結婚を知って山代の奴理能美の家に入り、口子臣らが「三色に変わる奇しき虫」を見に行ったと取りなし、天皇がその家を訪ねて歌う。書紀では皇后は筒城宮から戻らず、三十五年にそこで薨じたとされ、虫の話は確認できなかった。</p><blockquote lang="zh-Hant">有變三色之奇虫。</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 仁徳天皇の段、女鳥王と速總別王の話（G30〜G40）</span><p>古事記では、速總別王と女鳥王は倉椅山を越えて宇陀の蘇邇で殺され、女鳥王の玉釧を取ったのは将軍山部大楯連で、大后によって死刑とされる。書紀では二人は伊勢の蒋代野で殺され、玉を取った佐伯直阿俄能胡は土地を献じて死を免れたとする。</p><blockquote lang="zh-Hant">取其女鳥王。所纒御手之玉釧而。與己妻。</blockquote></div>
@@ -173,12 +214,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="ojin-uji.html"><small>← 前のページ（巻第十 応神天皇）</small>渡来の人々と菟道稚郎子の立太子</a><a class="next" href="richu-hanzei.html"><small>次のページ（巻第十二 履中天皇・反正天皇）→</small>履中天皇・反正天皇と住吉仲皇子の反乱</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十一" target="_blank" rel="noopener">日本書紀 巻第十一</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十一" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十一</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十一</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">百姓貧之。則朕貧也。百姓富之。則朕富也。</blockquote><p>民が貧しければ自分も貧しく、民が富めば自分も富んでいる、という天皇の言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故於今稱聖帝也。</blockquote><p>そのために、今でも（この天皇を）聖帝とたたえている。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">有海人耶。因己物以泣。</blockquote><p>海人でもあるまいに、自分の物のことで泣く、という諺。魚の献上が行き来した話がその由来とされる。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">烟氣不起於域中。以爲百姓既貧。</blockquote><p>国の中に炊事の煙が立っていないので、民はもう貧しいのだと思った。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十一" target="_blank" rel="noopener">日本書紀 巻第十一</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十一" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十一</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十一</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

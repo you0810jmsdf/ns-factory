@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,37 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第一 神代上（全50ページ中 2）</p>
-    <h1>国生み（第四段）</h1>
-    <p class="pg-lead">伊弉諾尊・伊弉冉尊が天浮橋から矛で海を探って磤馭慮島を得て、そこに降りて夫婦となる。二神は淡路洲を胞として大日本豊秋津洲などの島々を生み、大八洲国の名が起こる。</p>
-    <div class="xlink"><a href="../kojiki/kuniumi.html">古事記で読む：国生み ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第一 神代上（全50ページ中 2）</p>
+        <h1>国生み（第四段）</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">伊弉諾尊・伊弉冉尊が天浮橋から矛で海を探って磤馭慮島を得て、そこに降りて夫婦となる。二神は淡路洲を胞として大日本豊秋津洲などの島々を生み、大八洲国の名が起こる。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/kuniumi.html">古事記で読む：国生み ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>天之瓊矛と磤馭慮島</h3>
+      <p class="t">伊弉諾尊と伊弉冉尊は天浮橋の上に立ち、「この下に国が無いはずがあろうか」と相談した。そこで天之瓊矛（瓊は玉のこと）を下へさし下ろして探ると、青海原に行き当たった。矛の先からしたたり落ちた潮が固まって一つの島となり、磤馭慮島と名づけられた。</p>
+      <h3>陰神が先に言い、巡り直す</h3>
+      <p class="t">二神はその島に降りて住み、夫婦となって国々を生もうと考えた。磤馭慮島を国の中の柱とし、陽神は左から、陰神は右から柱を巡って、同じところで出会った。そのとき陰神が先に「ああうれしい、すてきな若い男に出会った」と言った。陽神は喜ばず、「自分は男なので先に言うのが道理だ。女が先に言ったのはよくないので、巡り直そう」と言った。</p>
+      <h3>夫婦として結ばれる</h3>
+      <p class="t">二神はもう一度巡って出会い、今度は陽神が先に「ああうれしい、すてきな若い女に出会った」と言った。陽神と陰神は互いの体のつくりを確かめ合い、ここで初めて夫婦として結ばれた。</p>
+      <h3>隠岐洲と佐度洲を双子で生む</h3>
+      <p class="t">産む時になると、まず淡路洲を胞（え）としたが、心にかなわなかったので淡路洲と名づけたと原文は記す。続いて大日本豊秋津洲、伊予二名洲、筑紫洲を生み、隠岐洲と佐度洲を双子として生んだ。原文は、世の人に双子が生まれることがあるのはこれにならうのだと添える。さらに越洲、大洲、吉備子洲を生んだ。</p>
+      <h3>大八洲国の呼び名</h3>
+      <p class="t">こうして初めて大八洲国という呼び名が起こった。対馬島・壱岐島や各地の小さな島々は、みな潮の泡（または水の泡）が固まってできたものだという。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>本文では、伊弉諾尊・伊弉冉尊が天浮橋に立って「下に国が無いだろうか」と相談し、天之瓊矛で探ると、矛先からしたたった潮が固まって磤馭慮島になった。本文には天神の命令は書かれていない。</li>
         <li><span class="kind ">本文</span>島を国の中の柱として二神が反対向きに巡ったとき、陰神が先に声をかけたので、陽神は男が先に言うべきだとして巡り直させ、二度目は陽神が先に声をかけて夫婦となった。</li>
@@ -115,44 +172,26 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>伊弉諾尊と伊弉冉尊は天浮橋の上に立ち、「この下に国が無いはずがあろうか」と相談した。そこで天之瓊矛（瓊は玉のこと）を下へさし下ろして探ると、青海原に行き当たった。矛の先からしたたり落ちた潮が固まって一つの島となり、磤馭慮島と名づけられた。</p>
-      <p>二神はその島に降りて住み、夫婦となって国々を生もうと考えた。磤馭慮島を国の中の柱とし、陽神は左から、陰神は右から柱を巡って、同じところで出会った。そのとき陰神が先に「ああうれしい、すてきな若い男に出会った」と言った。陽神は喜ばず、「自分は男なので先に言うのが道理だ。女が先に言ったのはよくないので、巡り直そう」と言った。</p>
-      <p>二神はもう一度巡って出会い、今度は陽神が先に「ああうれしい、すてきな若い女に出会った」と言った。陽神と陰神は互いの体のつくりを確かめ合い、ここで初めて夫婦として結ばれた。</p>
-      <p>産む時になると、まず淡路洲を胞（え）としたが、心にかなわなかったので淡路洲と名づけたと原文は記す。続いて大日本豊秋津洲、伊予二名洲、筑紫洲を生み、隠岐洲と佐度洲を双子として生んだ。原文は、世の人に双子が生まれることがあるのはこれにならうのだと添える。さらに越洲、大洲、吉備子洲を生んだ。</p>
-      <p>こうして初めて大八洲国という呼び名が起こった。対馬島・壱岐島や各地の小さな島々は、みな潮の泡（または水の泡）が固まってできたものだという。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一書第一</b><p>天神が「豊葦原千五百秋瑞穂之地」へ行けと命じて天瓊戈を授け、二神は島に八尋之殿と天柱を立てる。最初は陰神が左、陽神が右から巡って陰神が先に唱え、蛭児（葦船で流す）と淡洲が生まれたが子に数えず、天神の太占による教えで陽神が左から巡って先に唱え直した。生まれた島は大日本豊秋津洲・淡路洲・伊予二名洲・筑紫洲・隠岐三子洲・佐度洲・越洲・吉備子洲で、これを大八洲国という。</p></div>
-      <div class="var"><b>一書第二</b><p>二神は天霧の中に立って「国を得たい」と言い、天瓊矛をさし下ろして探り、磤馭慮島を得た。矛を引き抜いて「よいことに国があった」と喜んだとし、しずくが固まる話は無い。</p></div>
-      <div class="var"><b>一書第三</b><p>二神は高天原にいて「国があるだろう」と言い、天瓊矛で磤馭慮島を描くようにして作り出した。</p></div>
-      <div class="var"><b>一書第四</b><p>二神は「浮いた脂のような物がある。その中に国があるのではないか」と話し合い、天瓊矛で探って一つの島を作り、磤馭慮嶋と名づけた。</p></div>
-      <div class="var"><b>一書第五</b><p>陰神が先に唱えたので不吉として巡り直したことは本文と同じだが、そのあと二神は交わり方を知らなかった。そこへ鶺鴒が飛んで来て首と尾を振り、二神はそれを見習って交わる道を得たとする。</p></div>
-      <div class="var"><b>一書第六</b><p>淡路洲と淡洲を胞として大日本豊秋津洲を生み、次に伊予洲、筑紫洲、隠岐洲と佐度洲（双子）、越洲、大洲、子洲を生んだとする。</p></div>
-      <div class="var"><b>一書第七</b><p>胞の話は無く、まず淡路洲を生み、次に大日本豊秋津洲、伊予二名洲、隠岐洲、佐度洲、筑紫洲、壱岐洲、対馬洲を生んだとする。本文で潮の泡からできたとされる壱岐・対馬が、生んだ島に入っている。</p></div>
-      <div class="var"><b>一書第八</b><p>磤馭慮嶋を胞として淡路洲を生み、次に大日本豊秋津洲、伊予二名洲、筑紫洲、吉備子洲、隠岐洲と佐度洲（双子）、越洲を生んだとする。</p></div>
-      <div class="var"><b>一書第九</b><p>淡路洲を胞として大日本豊秋津洲を生み、次に淡洲、伊予二名洲、隠岐三子洲、佐度洲、筑紫洲、吉備子洲、大洲を生んだとする。</p></div>
-      <div class="var"><b>一書第十</b><p>陰神が先に「ああ、いとしい若い男よ」と唱え、陽神の手を握って夫婦となり、淡路洲、次に蛭児を生んだとする。巡り直しの話は書かれていない。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">底下豈無國歟</blockquote><p>この下に国が無いことがあろうか（二神の相談の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">吾是男子，理當先唱，如何婦人反先言乎</blockquote><p>自分は男なので先に唱えるのが道理なのに、どうして女が先に言ったのか（陽神の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">由是始起大八洲國之號焉</blockquote><p>これによって初めて大八洲国という呼び名が起こった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">時有鶺鴒飛來，搖其首尾</blockquote><p>そのとき鶺鴒が飛んで来て、首と尾を振った（一書第五）。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全10件）。</p>
+      <details><summary>一書第一</summary><p>天神が「豊葦原千五百秋瑞穂之地」へ行けと命じて天瓊戈を授け、二神は島に八尋之殿と天柱を立てる。最初は陰神が左、陽神が右から巡って陰神が先に唱え、蛭児（葦船で流す）と淡洲が生まれたが子に数えず、天神の太占による教えで陽神が左から巡って先に唱え直した。生まれた島は大日本豊秋津洲・淡路洲・伊予二名洲・筑紫洲・隠岐三子洲・佐度洲・越洲・吉備子洲で、これを大八洲国という。</p></details>
+      <details><summary>一書第二</summary><p>二神は天霧の中に立って「国を得たい」と言い、天瓊矛をさし下ろして探り、磤馭慮島を得た。矛を引き抜いて「よいことに国があった」と喜んだとし、しずくが固まる話は無い。</p></details>
+      <details><summary>一書第三</summary><p>二神は高天原にいて「国があるだろう」と言い、天瓊矛で磤馭慮島を描くようにして作り出した。</p></details>
+      <details><summary>一書第四</summary><p>二神は「浮いた脂のような物がある。その中に国があるのではないか」と話し合い、天瓊矛で探って一つの島を作り、磤馭慮嶋と名づけた。</p></details>
+      <details><summary>一書第五</summary><p>陰神が先に唱えたので不吉として巡り直したことは本文と同じだが、そのあと二神は交わり方を知らなかった。そこへ鶺鴒が飛んで来て首と尾を振り、二神はそれを見習って交わる道を得たとする。</p></details>
+      <details><summary>一書第六</summary><p>淡路洲と淡洲を胞として大日本豊秋津洲を生み、次に伊予洲、筑紫洲、隠岐洲と佐度洲（双子）、越洲、大洲、子洲を生んだとする。</p></details>
+      <details><summary>一書第七</summary><p>胞の話は無く、まず淡路洲を生み、次に大日本豊秋津洲、伊予二名洲、隠岐洲、佐度洲、筑紫洲、壱岐洲、対馬洲を生んだとする。本文で潮の泡からできたとされる壱岐・対馬が、生んだ島に入っている。</p></details>
+      <details><summary>一書第八</summary><p>磤馭慮嶋を胞として淡路洲を生み、次に大日本豊秋津洲、伊予二名洲、筑紫洲、吉備子洲、隠岐洲と佐度洲（双子）、越洲を生んだとする。</p></details>
+      <details><summary>一書第九</summary><p>淡路洲を胞として大日本豊秋津洲を生み、次に淡洲、伊予二名洲、隠岐三子洲、佐度洲、筑紫洲、吉備子洲、大洲を生んだとする。</p></details>
+      <details><summary>一書第十</summary><p>陰神が先に「ああ、いとしい若い男よ」と唱え、陽神の手を握って夫婦となり、淡路洲、次に蛭児を生んだとする。巡り直しの話は書かれていない。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
         <li><b><a href="../../shrine-note/map/?d=izanagi">伊邪那岐命</a></b><small>いざなぎのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=oyama">雄山神社</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=izanami">伊邪那美命</a></b><small>いざなみのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=naminoue">波上宮</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=izanami">伊邪那美命</a></b><small>いざなみのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=naminoue">波上宮</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b>磤馭慮島</b><small>おのごろしま</small><span class="sh">矛先からしたたった潮が固まってできた島で、二神が降りて住み、国の中の柱とした。</span></li>
         <li><b>天之瓊矛</b><span class="sh">二神が天浮橋から海を探るのに使った矛（小注に「瓊」は玉のことで努と読むとある）。一書第一では天神が授けた天瓊戈とする。</span></li>
         <li><b>蛭兒</b><small>ひるこ</small><span class="sh">一書第一で最初に生まれて葦船で流された子。一書第十では淡路洲の次に生まれる。本文の第四段には出ない。</span></li>
@@ -165,7 +204,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 上巻（淤能碁呂島・修理固成の段）</span><p>古事記では天つ神たちが二柱に国を整えて固めるよう命じて天沼矛を授ける。日本書紀の本文には天神の命令が無く、二神が自分たちで相談して矛を下ろす（天神の命令は一書第一にある）。</p><blockquote lang="zh-Hant">賜天沼矛而言依賜也</blockquote></div>
       <div class="ns"><span class="where">古事記 上巻（水蛭子と淡嶋・天つ神への相談）</span><p>古事記では女神が先に唱えて水蛭子が生まれ、葦船に入れて流し、淡嶋も子の数に入れず、天つ神の太占でやり直す。日本書紀の本文では蛭児は第四段に出ず、陽神みずからが巡り直しを言い出すので、古事記に近いのは一書第一である。</p><blockquote lang="zh-Hant">此子者入葦船而流去</blockquote></div>
       <div class="ns"><span class="where">古事記 上巻（大八嶋国の生成）</span><p>古事記は淡道之穂之狭別嶋から生み始め、伊伎嶋・津嶋（対馬）も含めた八つの島を大八嶋国とし、その後さらに吉備児嶋など六つの島を生む。日本書紀の本文は淡路洲を胞として大日本豊秋津洲から生み、対馬・壱岐は潮の泡が固まったものとする。</p><blockquote lang="zh-Hant">故因此八嶋先所生，謂大八嶋國。</blockquote></div>
@@ -173,12 +212,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="dan01.html"><small>← 前のページ（巻第一 神代上）</small>天地開闢と神世七代（第一段〜第三段）</a><a class="next" href="dan05.html"><small>次のページ（巻第一 神代上）→</small>三貴子の誕生と神生み・黄泉（第五段）</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/awajinohonosawakenoshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/awajinohonosawakenoshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/awashima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/awashima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oyamatotoyoakizushima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oyamatotoyoakizushima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">底下豈無國歟</blockquote><p>この下に国が無いことがあろうか（二神の相談の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">吾是男子，理當先唱，如何婦人反先言乎</blockquote><p>自分は男なので先に唱えるのが道理なのに、どうして女が先に言ったのか（陽神の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">由是始起大八洲國之號焉</blockquote><p>これによって初めて大八洲国という呼び名が起こった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">時有鶺鴒飛來，搖其首尾</blockquote><p>そのとき鶺鴒が飛んで来て、首と尾を振った（一書第五）。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/awajinohonosawakenoshima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/awajinohonosawakenoshima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/awashima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/awashima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oyamatotoyoakizushima/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oyamatotoyoakizushima/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

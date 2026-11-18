@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十四 雄略天皇（全50ページ中 29）</p>
-    <h1>雄略天皇の新羅出兵・呉の工人と遺詔</h1>
-    <p class="pg-lead">雄略天皇の八年から二十三年までは、新羅をめぐる高麗との戦いや紀小弓宿禰らの新羅出兵、呉から来た工人たちの安置、根使主の玉縵の罪、秦氏・漢氏・土師氏の部の設置などが年を追って記される。晩年には百濟の滅亡と再興に関わり、二十三年八月に星川王を警戒せよという遺詔を残して崩じた。</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十四 雄略天皇（全50ページ中 29）</p>
+        <h1>雄略天皇の新羅出兵・呉の工人と遺詔</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">雄略天皇の八年から二十三年までは、新羅をめぐる高麗との戦いや紀小弓宿禰らの新羅出兵、呉から来た工人たちの安置、根使主の玉縵の罪、秦氏・漢氏・土師氏の部の設置などが年を追って記される。晩年には百濟の滅亡と再興に関わり、二十三年八月に星川王を警戒せよという遺詔を残して崩じた。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>高麗軍を挟み撃ちにして破る</h3>
+      <p class="t">八年二月、身狹村主青と桧隈民使博徳を呉に遣わした。新羅は天皇の即位以来八年も貢ぎ物を納めず、高麗と結んでいたが、高麗の兵の言葉から高麗の真意を知ると、国内の高麗人を殺した。怒った高麗が新羅に攻めこむと、新羅王は任那王を通じて日本府の将軍たちに救いを求めた。膳臣斑鳩らは十日あまり高麗軍とにらみ合ったのち、夜に地下道を掘って伏兵を置き、追ってきた高麗軍を挟み撃ちにして大いに破った。</p>
+      <h3>紀小弓宿禰らを新羅に遣わす</h3>
+      <p class="t">九年二月、胸方神を祭るために遣わされた凡河内直香賜が采女を犯したため、天皇は人を遣わして三嶋郡の藍原で斬らせた。三月、天皇は自ら新羅を討とうとしたが神に戒められて取りやめ、紀小弓宿禰・蘇我韓子宿禰・大伴談連・小鹿火宿禰を大将として遣わした。紀小弓宿禰は新羅の喙の地を平定したが、大伴談連らは戦死し、小弓宿禰も病死した。五月、小弓の子の大磐宿禰が来て指揮をとると将たちの間に争いが起こり、韓子宿禰は大磐宿禰に射落とされて死に、軍は百濟の王宮に至らずに引き返した。小弓宿禰は田身輪邑に葬られ、小鹿火宿禰は角國にとどまって角臣の祖となった。七月には、田邊史伯孫が譽田陵のそばで赤い駿馬と自分の馬を取り替えたところ、翌朝その馬が土馬に変わっていたという話が記される。</p>
+      <h3>水間君の犬と鳥養部</h3>
+      <p class="t">十年九月、呉から献上された鵝が筑紫で水間君の犬にかみ殺され、水間君は鴻と養鳥人を献じて罪をつぐなった。十一年十月、鳥官の鳥が菟田の人の犬にかみ殺されると、天皇はその人の顔に入れ墨をして鳥養部とした。これを「道理のない、悪い行いの主だ」と語り合った信濃國・武藏國の直丁は、鳥を集めて積むよう命じられて用意できず、彼らも鳥養部とされた。十二年十月には楼閣を造った木工の鷄御田が采女を犯したと疑われたが、秦酒公の琴と歌で天皇が悟って許した。十三年には、采女を犯した齒田根命に罪を払わせ、播磨の文石小麻呂を討たせ、木工の猪名部眞根を処刑しかけたが、仲間の歌を聞いて悔やみ、甲斐の黒駒に乗せた使いを走らせて刑を止めた。</p>
+      <h3>呉人を桧隈野に置き根使主を殺す</h3>
+      <p class="t">十四年正月、身狹村主青らが呉の使者とともに、呉が献じた漢織・呉織と衣縫の兄媛・弟媛を連れて住吉津に着いた。三月、呉人を桧隈野に置いてその地を呉原と名づけ、兄媛を大三輪神に奉り、弟媛を漢衣縫部とした。四月、呉人をもてなす宴で根使主の玉縵が皇后の兄大草香皇子のものだったと分かり、根使主は日根で官軍に殺された。のちに子の小根使主も、天皇の城より父の城の方が堅固だと言ったため殺され、根使主の子孫は坂本臣となった。</p>
+      <h3>秦の民を秦酒公に与える</h3>
+      <p class="t">十五年、臣連たちに分散して使われていた秦の民を集めて秦酒公に与えると、酒公は多くの絹を朝廷に積み上げて献上し、禹豆麻佐の姓を賜った。十六年には桑に適した国や県に桑を植えさせ、漢部を集めてその伴造に直の姓を与えた。十七年には土師連の祖吾笥が器を作る民を進めて贄土師部とした。十八年、伊勢の朝日郎が強弓で官軍を防いだが、物部目連と筑紫聞物部大斧手がこれを討ち取り、進もうとしなかった物部菟代宿禰の猪名部は目連に与えられた。十九年三月には穴穗部を置いた。</p>
+      <h3>久麻那利を与え百濟を再興させる</h3>
+      <p class="t">二十年冬、高麗が百濟を攻め滅ぼし、わずかに残った人々が倉下に集まった。高麗の将たちは残りも滅ぼそうと進言したが、高麗王は百濟が日本の官家であるとしてこれを止めた。二十一年三月、天皇は久麻那利を■洲王に与えて百濟を再興させた。二十二年正月、白髪皇子を皇太子とし、七月には水江浦嶋子が蓬莱山に至った話が記される。</p>
+      <h3>末多王を王とし遺詔を残して崩じる</h3>
+      <p class="t">二十三年四月、百濟の文斤王が亡くなると、天皇は昆攴王の五人の子のうち第二子の末多王を宮中に招いて励まし、筑紫の兵五百人に送らせて王とした。これが東城王である。七月に天皇は病に伏して政務を皇太子に任せ、八月に大殿で崩じた。遺詔では、星川王が悪い心をもつので警戒し、皇太子とともに天下を治めるよう大伴室屋大連らに命じた。このとき、新羅征討の将軍吉備臣尾代に率いられていた五百人の蝦夷が天皇の死を聞いて周りの郡を襲ったので、尾代は娑婆水門で戦い、丹波國の浦掛水門まで追ってことごとく殺した。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>八年、高麗に攻められた新羅が任那王を通じて救いを求め、膳臣斑鳩・吉備臣小梨・難波吉士赤目子が地下道と伏兵の策で高麗軍を破った。九年には天皇自ら新羅を討とうとしたが神に「行くな」と戒められ、紀小弓宿禰らを大将として遣わした。小弓は病死し、残った将たちは仲たがいして百濟の王宮に至らずに引き返した。</li>
         <li><span class="kind ">本文</span>十四年、身狹村主青らが呉の使者とともに、漢織・呉織・衣縫の兄媛・弟媛らの工人を連れて住吉津に着いた。呉の客のための道は呉坂、呉人を置いた桧隈野は呉原と名づけられ、漢織・呉織・衣縫は飛鳥衣縫部と伊勢衣縫の祖とされる。</li>
@@ -115,34 +176,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>八年二月、身狹村主青と桧隈民使博徳を呉に遣わした。新羅は天皇の即位以来八年も貢ぎ物を納めず、高麗と結んでいたが、高麗の兵の言葉から高麗の真意を知ると、国内の高麗人を殺した。怒った高麗が新羅に攻めこむと、新羅王は任那王を通じて日本府の将軍たちに救いを求めた。膳臣斑鳩らは十日あまり高麗軍とにらみ合ったのち、夜に地下道を掘って伏兵を置き、追ってきた高麗軍を挟み撃ちにして大いに破った。</p>
-      <p>九年二月、胸方神を祭るために遣わされた凡河内直香賜が采女を犯したため、天皇は人を遣わして三嶋郡の藍原で斬らせた。三月、天皇は自ら新羅を討とうとしたが神に戒められて取りやめ、紀小弓宿禰・蘇我韓子宿禰・大伴談連・小鹿火宿禰を大将として遣わした。紀小弓宿禰は新羅の喙の地を平定したが、大伴談連らは戦死し、小弓宿禰も病死した。五月、小弓の子の大磐宿禰が来て指揮をとると将たちの間に争いが起こり、韓子宿禰は大磐宿禰に射落とされて死に、軍は百濟の王宮に至らずに引き返した。小弓宿禰は田身輪邑に葬られ、小鹿火宿禰は角國にとどまって角臣の祖となった。七月には、田邊史伯孫が譽田陵のそばで赤い駿馬と自分の馬を取り替えたところ、翌朝その馬が土馬に変わっていたという話が記される。</p>
-      <p>十年九月、呉から献上された鵝が筑紫で水間君の犬にかみ殺され、水間君は鴻と養鳥人を献じて罪をつぐなった。十一年十月、鳥官の鳥が菟田の人の犬にかみ殺されると、天皇はその人の顔に入れ墨をして鳥養部とした。これを「道理のない、悪い行いの主だ」と語り合った信濃國・武藏國の直丁は、鳥を集めて積むよう命じられて用意できず、彼らも鳥養部とされた。十二年十月には楼閣を造った木工の鷄御田が采女を犯したと疑われたが、秦酒公の琴と歌で天皇が悟って許した。十三年には、采女を犯した齒田根命に罪を払わせ、播磨の文石小麻呂を討たせ、木工の猪名部眞根を処刑しかけたが、仲間の歌を聞いて悔やみ、甲斐の黒駒に乗せた使いを走らせて刑を止めた。</p>
-      <p>十四年正月、身狹村主青らが呉の使者とともに、呉が献じた漢織・呉織と衣縫の兄媛・弟媛を連れて住吉津に着いた。三月、呉人を桧隈野に置いてその地を呉原と名づけ、兄媛を大三輪神に奉り、弟媛を漢衣縫部とした。四月、呉人をもてなす宴で根使主の玉縵が皇后の兄大草香皇子のものだったと分かり、根使主は日根で官軍に殺された。のちに子の小根使主も、天皇の城より父の城の方が堅固だと言ったため殺され、根使主の子孫は坂本臣となった。</p>
-      <p>十五年、臣連たちに分散して使われていた秦の民を集めて秦酒公に与えると、酒公は多くの絹を朝廷に積み上げて献上し、禹豆麻佐の姓を賜った。十六年には桑に適した国や県に桑を植えさせ、漢部を集めてその伴造に直の姓を与えた。十七年には土師連の祖吾笥が器を作る民を進めて贄土師部とした。十八年、伊勢の朝日郎が強弓で官軍を防いだが、物部目連と筑紫聞物部大斧手がこれを討ち取り、進もうとしなかった物部菟代宿禰の猪名部は目連に与えられた。十九年三月には穴穗部を置いた。</p>
-      <p>二十年冬、高麗が百濟を攻め滅ぼし、わずかに残った人々が倉下に集まった。高麗の将たちは残りも滅ぼそうと進言したが、高麗王は百濟が日本の官家であるとしてこれを止めた。二十一年三月、天皇は久麻那利を■洲王に与えて百濟を再興させた。二十二年正月、白髪皇子を皇太子とし、七月には水江浦嶋子が蓬莱山に至った話が記される。</p>
-      <p>二十三年四月、百濟の文斤王が亡くなると、天皇は昆攴王の五人の子のうち第二子の末多王を宮中に招いて励まし、筑紫の兵五百人に送らせて王とした。これが東城王である。七月に天皇は病に伏して政務を皇太子に任せ、八月に大殿で崩じた。遺詔では、星川王が悪い心をもつので警戒し、皇太子とともに天下を治めるよう大伴室屋大連らに命じた。このとき、新羅征討の将軍吉備臣尾代に率いられていた五百人の蝦夷が天皇の死を聞いて周りの郡を襲ったので、尾代は娑婆水門で戦い、丹波國の浦掛水門まで追ってことごとく殺した。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>百濟記云</b><p>蓋鹵王の乙卯年の冬に狛（高麗）の大軍が来て、大城を七日七夜攻め、王城が落ちて尉禮國を失い、王と大后・王子らがみな敵の手にかかって死んだとする。本文は、高麗王が残った人々を滅ぼすことを止めた話を中心に書く。</p></div>
-      <div class="var"><b>日本舊記云</b><p>久麻那利を与えられたのを末多王とする。書紀の注は、これは誤りだろうとし、本文の■洲王は蓋鹵王の母弟であると記す。</p></div>
-      <div class="var"><b>一本云</b><p>遺詔の別の形として、星川王は腹が悪く心が荒いことが天下に知られており、天皇の死後に皇太子を害するだろうから、民部の多い者たちは力を合わせて皇太子を助けよ、と述べる。</p></div>
-      <div class="var"><b>別本云</b><p>呉の鵝をかみ殺したのは、水間君の犬ではなく、筑紫嶺縣主泥麻呂の犬であったとする。</p></div>
-      <div class="var"><b>一本云</b><p>吉備臣尾代は浦掛まで追ったのち、人を遣わして蝦夷をことごとく殺させたとする。本文では尾代自身が浦掛水門まで追って殺す。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">百濟國者。爲日本國之官家。所由來遠久矣</blockquote><p>高麗王の言葉として書かれる。「百濟は日本の官家であり、その由来は古い」という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">漢織。呉織。衣縫。是飛鳥衣縫部。伊勢衣縫之先也</blockquote><p>呉から来た織物と裁縫の工人たちが、飛鳥衣縫部と伊勢衣縫の祖先であるという記事。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">相逐入海。到蓬莱山歴覩仙衆。語在別卷</blockquote><p>浦嶋子が女とともに海に入り、蓬莱山で仙人たちに会った。くわしくは別の巻にあるという意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">今星川王。心懷悖惡。行闕友于</blockquote><p>遺詔の一節。「いま星川王は道にそむく悪い心をもち、兄弟の仲を大切にする行いが欠けている」という意味。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全5件）。</p>
+      <details><summary>百濟記云</summary><p>蓋鹵王の乙卯年の冬に狛（高麗）の大軍が来て、大城を七日七夜攻め、王城が落ちて尉禮國を失い、王と大后・王子らがみな敵の手にかかって死んだとする。本文は、高麗王が残った人々を滅ぼすことを止めた話を中心に書く。</p></details>
+      <details><summary>日本舊記云</summary><p>久麻那利を与えられたのを末多王とする。書紀の注は、これは誤りだろうとし、本文の■洲王は蓋鹵王の母弟であると記す。</p></details>
+      <details><summary>一本云</summary><p>遺詔の別の形として、星川王は腹が悪く心が荒いことが天下に知られており、天皇の死後に皇太子を害するだろうから、民部の多い者たちは力を合わせて皇太子を助けよ、と述べる。</p></details>
+      <details><summary>別本云</summary><p>呉の鵝をかみ殺したのは、水間君の犬ではなく、筑紫嶺縣主泥麻呂の犬であったとする。</p></details>
+      <details><summary>一本云</summary><p>吉備臣尾代は浦掛まで追ったのち、人を遣わして蝦夷をことごとく殺させたとする。本文では尾代自身が浦掛水門まで追って殺す。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -164,7 +205,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 雄略天皇の段（后妃・御名代と呉人）</span><p>古事記は雄略天皇の段の初めに、呉人が渡ってきたので呉原に置き、その地を呉原と名づけたと一言だけ記す。日本書紀は、使者の名前、工人の漢織・呉織・衣縫の兄媛・弟媛、呉坂の名の由来、兄媛を大三輪神に奉ったことなどを詳しく書く。</p><blockquote lang="zh-Hant">其呉人。安置於呉原</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 安康天皇の段（大日下王の玉縵）</span><p>古事記では、根臣が大日下王の献じた押木の玉縵を盗んで王を中傷したことは安康天皇の段に書かれるが、雄略天皇の段にその罪が後で明らかになる話は確認できなかった。日本書紀では十四年に皇后が玉縵に気づいて根使主の罪が明らかになる。</p><blockquote lang="zh-Hant">令持押木之玉縵而貢獻</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 雄略天皇の段の末尾（崩年と御陵）</span><p>古事記は天皇の年齢を百二十四歳とし、御陵を河内の多治比の高鸇とするが、遺詔の記事はない。日本書紀は二十三年八月の崩御と長い遺詔を記し、この巻では年齢を書かない。</p><blockquote lang="zh-Hant">天皇。御年。壹佰貳拾肆歲</blockquote></div>
@@ -172,12 +213,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="yuryaku-1.html"><small>← 前のページ（巻第十四 雄略天皇）</small>雄略天皇の即位と葛城山の一事主神</a><a class="next" href="seinei-kenzo.html"><small>次のページ（巻第十五 清寧天皇・顕宗天皇・仁賢天皇）→</small>清寧・顕宗・仁賢天皇と億計・弘計の兄弟</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">日本書紀 巻第十四</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十四</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十四</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">百濟國者。爲日本國之官家。所由來遠久矣</blockquote><p>高麗王の言葉として書かれる。「百濟は日本の官家であり、その由来は古い」という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">漢織。呉織。衣縫。是飛鳥衣縫部。伊勢衣縫之先也</blockquote><p>呉から来た織物と裁縫の工人たちが、飛鳥衣縫部と伊勢衣縫の祖先であるという記事。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">相逐入海。到蓬莱山歴覩仙衆。語在別卷</blockquote><p>浦嶋子が女とともに海に入り、蓬莱山で仙人たちに会った。くわしくは別の巻にあるという意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">今星川王。心懷悖惡。行闕友于</blockquote><p>遺詔の一節。「いま星川王は道にそむく悪い心をもち、兄弟の仲を大切にする行いが欠けている」という意味。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">日本書紀 巻第十四</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十四</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十四</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

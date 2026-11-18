@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第二十一 用明天皇・崇峻天皇（全50ページ中 37）</p>
-    <h1>用明天皇・崇峻天皇と物部守屋の滅亡</h1>
-    <p class="pg-lead">用明天皇は仏法を信じ神道を尊んだと記され、二年に病を得て三宝に帰依したいと群臣に諮ったが、その月のうちに崩じた。続く崇峻天皇の即位前には蘇我馬子が諸皇子・群臣とともに物部守屋を滅ぼし、法興寺の造営が始まったが、天皇は五年に馬子の差し向けた東漢直駒に殺された。</p>
-    <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第二十一 用明天皇・崇峻天皇（全50ページ中 37）</p>
+        <h1>用明天皇・崇峻天皇と物部守屋の滅亡</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">用明天皇は仏法を信じ神道を尊んだと記され、二年に病を得て三宝に帰依したいと群臣に諮ったが、その月のうちに崩じた。続く崇峻天皇の即位前には蘇我馬子が諸皇子・群臣とともに物部守屋を滅ぼし、法興寺の造営が始まったが、天皇は五年に馬子の差し向けた東漢直駒に殺された。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>橘豐日天皇の即位と皇后</h3>
+      <p class="t">用明天皇（橘豐日天皇）は天國排開廣庭天皇の第四子で、母は堅塩媛である。敏達天皇が十四年八月に崩じると、九月に即位して磐余の池辺雙槻宮に住み、馬子を大臣、守屋を大連とした。酢香手姫皇女を伊勢神宮に遣わし、日神の祀りに仕えさせた。元年正月、穴穂部間人皇女を皇后とし、厩戸皇子・来目皇子・殖栗皇子・茨田皇子が生まれた。厩戸皇子は初め上宮に住み、のち斑鳩に移ったと記される。</p>
+      <h3>守屋が三輪君逆を斬る</h3>
+      <p class="t">元年五月、穴穂部皇子は炊屋姫皇后を犯そうとして殯宮に押し入ろうとしたが、三輪君逆が兵衛に門を固めさせて入れなかった。皇子は逆を無礼だとして斬ることを求め、守屋とともに兵を率いて磐余の池辺を囲んだ。逆は三諸岳に隠れたのち、炊屋姫皇后の別業である海石榴市宮に隠れたが、同族の白堤と横山が居所を告げた。守屋は兵を率いて逆らを斬り、馬子は天下の乱れは遠くないと嘆いた。注には、このことで炊屋姫皇后と馬子がともに穴穂部皇子を恨んだと記される。</p>
+      <h3>三宝に帰依を諮り天皇が崩じる</h3>
+      <p class="t">二年四月、新嘗の日に天皇は病を得て、三宝に帰依したいと群臣に諮った。守屋と中臣勝海は反対し、馬子は詔に従うべきだとしたが、穴穂部皇子が豊国法師を内裏に引き入れると、守屋は激しく怒って阿都の別業に退き、人を集めた。中臣勝海は太子彦人皇子と竹田皇子の像を作って呪ったが、のち彦人皇子に帰順し、その帰りに迹見赤梼に斬られた。天皇の瘡が重くなると、鞍部多須奈が天皇のために出家して丈六の仏像と寺を造ると申し出た。天皇はまもなく崩じ、七月に磐余池上陵に葬られた。</p>
+      <h3>守屋を攻め四天王寺を造る</h3>
+      <p class="t">崇峻天皇（泊瀬部天皇）は天國排開廣庭天皇の第十二子で、母は小姉君である。用明天皇の崩後の六月、馬子らは炊屋姫尊を奉じて、守屋が天皇に立てようとしていた穴穂部皇子を討たせ、翌日には皇子と親しかった宅部皇子も殺した。七月、馬子は泊瀬部皇子・竹田皇子・厩戸皇子らの皇子と群臣を率いて渋河の家の守屋を攻めたが、守屋が稲城を築き木の上から雨のように矢を射たので、皇子らの軍は三度退いた。厩戸皇子は白膠木で四天王の像を作って髪に置き、勝たせてくれれば護世四王のために寺塔を建てると誓い、馬子も諸天王・大神王のために寺塔を建てて三宝を広めると誓った。迹見首赤梼が守屋を枝の下に射落として守屋とその子らを誅し、守屋の軍は崩れた。乱の後、摂津国に四天王寺が造られ、馬子も飛鳥に法興寺を起こした。</p>
+      <h3>捕鳥部萬と白い犬</h3>
+      <p class="t">守屋の資人捕鳥部萬は難波の家を守っていたが、守屋の滅亡を聞いて茅渟県の有真香邑の山に逃れた。衛士に囲まれると、竹を縄で揺らして居場所を欺き、三十余人を殺したのち、自ら小刀で首を刺して死んだ。朝廷は八つに斬って八国にさらすよう命じたが、萬の飼っていた白い犬が首をくわえて古い塚に納め、そばに伏して飢え死にした。朝廷はこれを哀れみ、萬の一族に墓を造らせて萬と犬を有真香邑に葬らせた。</p>
+      <h3>泊瀬部皇子が即位し任那の再建を諮る</h3>
+      <p class="t">八月、炊屋姫尊と群臣のすすめで泊瀬部皇子が即位し、倉梯に宮を置いた。元年、百済から仏舎利と僧・寺工・鑪盤博士・瓦博士・画工が送られ、善信尼らは百済の使いに託されて学問に出され、飛鳥衣縫造の祖樹葉の家を壊して法興寺が造られ始めた。三年三月、善信尼らは百済から帰って桜井寺に住み、この年、大伴狭手彦連の娘善徳らや鞍部多須奈が出家した。四年八月、天皇が任那の再建を群臣に諮ると、群臣は賛同し、十一月に紀男麻呂宿禰らを大将軍として二万余の軍を筑紫に出した。</p>
+      <h3>馬子が東漢直駒に天皇を殺させる</h3>
+      <p class="t">五年十月、献上された猪を指して天皇が、いつかこの猪の首を斬るように嫌いな人を斬りたいと言い、いつもより多く兵仗を用意した。これを聞いた馬子は自分が嫌われていると恐れ、仲間を集めて天皇を殺すことを謀った。十一月、馬子は東国の調を進めると群臣を欺いて東漢直駒に天皇を殺させ、その日のうちに天皇を倉梯岡陵に葬った。その後、駒は馬子の娘で嬪の河上娘をひそかに妻としたことが露見し、馬子に殺された。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>二年四月、病を得た用明天皇は「三宝に帰依したい」と群臣に諮った。守屋と中臣勝海は国神に背いて他神を敬うのかと反対し、馬子は詔に従って助けるべきだと答えた。</li>
         <li><span class="kind ">本文</span>崇峻天皇の即位前の七月、馬子は諸皇子・群臣とともに渋河の守屋を攻めた。厩戸皇子は白膠木で四天王の像を作って勝てば寺塔を建てると誓い、迹見首赤梼が守屋を射落とした。</li>
@@ -115,34 +176,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>用明天皇（橘豐日天皇）は天國排開廣庭天皇の第四子で、母は堅塩媛である。敏達天皇が十四年八月に崩じると、九月に即位して磐余の池辺雙槻宮に住み、馬子を大臣、守屋を大連とした。酢香手姫皇女を伊勢神宮に遣わし、日神の祀りに仕えさせた。元年正月、穴穂部間人皇女を皇后とし、厩戸皇子・来目皇子・殖栗皇子・茨田皇子が生まれた。厩戸皇子は初め上宮に住み、のち斑鳩に移ったと記される。</p>
-      <p>元年五月、穴穂部皇子は炊屋姫皇后を犯そうとして殯宮に押し入ろうとしたが、三輪君逆が兵衛に門を固めさせて入れなかった。皇子は逆を無礼だとして斬ることを求め、守屋とともに兵を率いて磐余の池辺を囲んだ。逆は三諸岳に隠れたのち、炊屋姫皇后の別業である海石榴市宮に隠れたが、同族の白堤と横山が居所を告げた。守屋は兵を率いて逆らを斬り、馬子は天下の乱れは遠くないと嘆いた。注には、このことで炊屋姫皇后と馬子がともに穴穂部皇子を恨んだと記される。</p>
-      <p>二年四月、新嘗の日に天皇は病を得て、三宝に帰依したいと群臣に諮った。守屋と中臣勝海は反対し、馬子は詔に従うべきだとしたが、穴穂部皇子が豊国法師を内裏に引き入れると、守屋は激しく怒って阿都の別業に退き、人を集めた。中臣勝海は太子彦人皇子と竹田皇子の像を作って呪ったが、のち彦人皇子に帰順し、その帰りに迹見赤梼に斬られた。天皇の瘡が重くなると、鞍部多須奈が天皇のために出家して丈六の仏像と寺を造ると申し出た。天皇はまもなく崩じ、七月に磐余池上陵に葬られた。</p>
-      <p>崇峻天皇（泊瀬部天皇）は天國排開廣庭天皇の第十二子で、母は小姉君である。用明天皇の崩後の六月、馬子らは炊屋姫尊を奉じて、守屋が天皇に立てようとしていた穴穂部皇子を討たせ、翌日には皇子と親しかった宅部皇子も殺した。七月、馬子は泊瀬部皇子・竹田皇子・厩戸皇子らの皇子と群臣を率いて渋河の家の守屋を攻めたが、守屋が稲城を築き木の上から雨のように矢を射たので、皇子らの軍は三度退いた。厩戸皇子は白膠木で四天王の像を作って髪に置き、勝たせてくれれば護世四王のために寺塔を建てると誓い、馬子も諸天王・大神王のために寺塔を建てて三宝を広めると誓った。迹見首赤梼が守屋を枝の下に射落として守屋とその子らを誅し、守屋の軍は崩れた。乱の後、摂津国に四天王寺が造られ、馬子も飛鳥に法興寺を起こした。</p>
-      <p>守屋の資人捕鳥部萬は難波の家を守っていたが、守屋の滅亡を聞いて茅渟県の有真香邑の山に逃れた。衛士に囲まれると、竹を縄で揺らして居場所を欺き、三十余人を殺したのち、自ら小刀で首を刺して死んだ。朝廷は八つに斬って八国にさらすよう命じたが、萬の飼っていた白い犬が首をくわえて古い塚に納め、そばに伏して飢え死にした。朝廷はこれを哀れみ、萬の一族に墓を造らせて萬と犬を有真香邑に葬らせた。</p>
-      <p>八月、炊屋姫尊と群臣のすすめで泊瀬部皇子が即位し、倉梯に宮を置いた。元年、百済から仏舎利と僧・寺工・鑪盤博士・瓦博士・画工が送られ、善信尼らは百済の使いに託されて学問に出され、飛鳥衣縫造の祖樹葉の家を壊して法興寺が造られ始めた。三年三月、善信尼らは百済から帰って桜井寺に住み、この年、大伴狭手彦連の娘善徳らや鞍部多須奈が出家した。四年八月、天皇が任那の再建を群臣に諮ると、群臣は賛同し、十一月に紀男麻呂宿禰らを大将軍として二万余の軍を筑紫に出した。</p>
-      <p>五年十月、献上された猪を指して天皇が、いつかこの猪の首を斬るように嫌いな人を斬りたいと言い、いつもより多く兵仗を用意した。これを聞いた馬子は自分が嫌われていると恐れ、仲間を集めて天皇を殺すことを謀った。十一月、馬子は東国の調を進めると群臣を欺いて東漢直駒に天皇を殺させ、その日のうちに天皇を倉梯岡陵に葬った。その後、駒は馬子の娘で嬪の河上娘をひそかに妻としたことが露見し、馬子に殺された。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>或本云</b><p>本文の注は、酢香手姫皇女が用明天皇の時から炊屋姫天皇の世まで日神の祀りに仕えたとするが、或本は三十七年間仕えて自ら退き、亡くなったとする。</p></div>
-      <div class="var"><b>或本云</b><p>守屋を遣わして三輪君逆を討たせたのは、穴穂部皇子が泊瀬部皇子と相談したうえのことだったとする。</p></div>
-      <div class="var"><b>或本云</b><p>本文では守屋が逆らを斬ったと報告するが、或本は穴穂部皇子自身が射殺したとする。</p></div>
-      <div class="var"><b>或本云</b><p>天皇を殺した東漢直駒は、東漢直磐井の子だとする。</p></div>
-      <div class="var"><b>或本云</b><p>本文では馬子が天皇の言葉を聞いたとだけあるが、或本は、寵愛の衰えを恨んだ大伴嬪小手子が使いを送って、猪の言葉と内裏での兵仗の用意を馬子に伝えたとする。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">天皇信佛法尊神道</blockquote><p>天皇は仏法を信じ、神道を尊んだ。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">朕思欲歸三寶。卿等議之</blockquote><p>わたしは三宝に帰依したいと思う。そなたたちで話し合え。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">何背國神敬他神也</blockquote><p>どうして国の神に背いて、ほかの神を敬うのか（守屋と中臣勝海の反対の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">何時如斷此猪之頚。斷朕所嫌之人</blockquote><p>いつになれば、この猪の首を斬るように、わたしの嫌う人を斬れるだろうか。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全5件）。</p>
+      <details><summary>或本云</summary><p>本文の注は、酢香手姫皇女が用明天皇の時から炊屋姫天皇の世まで日神の祀りに仕えたとするが、或本は三十七年間仕えて自ら退き、亡くなったとする。</p></details>
+      <details><summary>或本云</summary><p>守屋を遣わして三輪君逆を討たせたのは、穴穂部皇子が泊瀬部皇子と相談したうえのことだったとする。</p></details>
+      <details><summary>或本云</summary><p>本文では守屋が逆らを斬ったと報告するが、或本は穴穂部皇子自身が射殺したとする。</p></details>
+      <details><summary>或本云</summary><p>天皇を殺した東漢直駒は、東漢直磐井の子だとする。</p></details>
+      <details><summary>或本云</summary><p>本文では馬子が天皇の言葉を聞いたとだけあるが、或本は、寵愛の衰えを恨んだ大伴嬪小手子が使いを送って、猪の言葉と内裏での兵仗の用意を馬子に伝えたとする。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -166,7 +207,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 用明天皇（橘豐日命）の段</span><p>古事記は用明天皇の宮を池辺宮とし、治天下三歳と記す。書紀は磐余の池辺雙槻宮に住み、二年四月に崩じたとし、御子として厩戸皇子らを挙げる点は古事記の「上宮之厩戶豐聰耳命」と対応する。</p><blockquote lang="zh-Hant">坐池邊宮。治天下參歲</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 用明天皇の段の末尾</span><p>古事記は用明天皇の陵を石寸掖上とし、のちに科長中陵へ遷したと記す。書紀は磐余池上陵に葬ったとだけ記す。</p><blockquote lang="zh-Hant">御陵在石寸掖上。後遷科長中陵也</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 崇峻天皇（長谷部若雀天皇）の段</span><p>古事記は崇峻天皇について倉椅柴垣宮・治天下四歳・倉椅岡上の陵を記すだけである。守屋の討伐、法興寺の造営、天皇の殺害は、古事記には対応する記事を確認できなかった。</p><blockquote lang="zh-Hant">坐倉椅柴垣宮。治天下肆歲</blockquote></div>
@@ -174,12 +215,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="bidatsu.html"><small>← 前のページ（巻第二十 敏達天皇）</small>敏達天皇と高麗の国書・仏法の始まり</a><a class="next" href="suiko-1.html"><small>次のページ（巻第二十二 推古天皇）→</small>推古天皇の即位と冠位十二階・憲法十七条</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿一" target="_blank" rel="noopener">日本書紀 巻第二十一</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%80" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%80</a>　https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%80</li><li><a href="https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7</a>　https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">天皇信佛法尊神道</blockquote><p>天皇は仏法を信じ、神道を尊んだ。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">朕思欲歸三寶。卿等議之</blockquote><p>わたしは三宝に帰依したいと思う。そなたたちで話し合え。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">何背國神敬他神也</blockquote><p>どうして国の神に背いて、ほかの神を敬うのか（守屋と中臣勝海の反対の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">何時如斷此猪之頚。斷朕所嫌之人</blockquote><p>いつになれば、この猪の首を斬るように、わたしの嫌う人を斬れるだろうか。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿一" target="_blank" rel="noopener">日本書紀 巻第二十一</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%80" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%80</a>　https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%80</li><li><a href="https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7</a>　https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

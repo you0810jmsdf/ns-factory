@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十三 允恭天皇・安康天皇（全50ページ中 27）</p>
-    <h1>允恭天皇の盟神探湯と衣通郎姫・安康天皇の最期</h1>
-    <p class="pg-lead">雄朝津間稚子宿禰天皇（允恭）は重い病を理由に即位を辞退し続けたが、妃の忍坂大中姫の願いで即位し、盟神探湯によって氏姓の乱れを正した。皇后の妹衣通郎姫への寵愛や木梨輕太子の事件を経て、次の穴穗天皇（安康）は讒言を信じて大草香皇子を殺し、その子眉輪王に殺された。</p>
-    <div class="xlink"><a href="../kojiki/karu.html">古事記で読む：允恭天皇と軽太子・軽大郎女 ›</a><a href="../kojiki/anko.html">古事記で読む：安康天皇と目弱王の変 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十三 允恭天皇・安康天皇（全50ページ中 27）</p>
+        <h1>允恭天皇の盟神探湯と衣通郎姫・安康天皇の最期</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">雄朝津間稚子宿禰天皇（允恭）は重い病を理由に即位を辞退し続けたが、妃の忍坂大中姫の願いで即位し、盟神探湯によって氏姓の乱れを正した。皇后の妹衣通郎姫への寵愛や木梨輕太子の事件を経て、次の穴穗天皇（安康）は讒言を信じて大草香皇子を殺し、その子眉輪王に殺された。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/karu.html">古事記で読む：允恭天皇と軽太子・軽大郎女 ›</a><a href="../kojiki/anko.html">古事記で読む：安康天皇と目弱王の変 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>雄朝津間稚子宿禰が璽符を受けて即位</h3>
+      <p class="t">雄朝津間稚子宿禰天皇は瑞齒別天皇の同母弟で、幼いころから情け深く慎み深かったが、成人して重い病にかかり、立ち居が不自由であった。瑞齒別天皇五年正月に先帝が崩じると、群卿は大鷦鷯天皇の子のうち年長で仁孝なこの皇子を選んで天皇の璽を捧げた。皇子は、病を治そうとひそかに身を傷つけて先皇に不孝と責められたことや、兄の二天皇に軽んじられてきたことを挙げて辞退し、群臣が重ねて願っても聞き入れなかった。元年十二月、妃の忍坂大中姫命が手洗いの水を捧げて皇子の前に進み、寒風の中で四、五剋も退かずに待ったため、鋺の水があふれて腕に凍りつき、凍え死にそうになった。驚いた皇子は群臣の願いは道理が明らかだとして、ついに璽符を受けて即位した。</p>
+      <h3>忍坂大中姫を皇后とし刑部を定める</h3>
+      <p class="t">二年二月、忍坂大中姫を皇后とし、刑部を定めた。皇后は木梨輕皇子・穴穗天皇・輕大娘皇女・大泊瀬稚武天皇など九人の子を生んだ。皇后がまだ母と家にいたころ、通りかかった闘鷄国造が馬上から無礼なことを言って蘭を求めたことがあり、皇后は立后ののちその者を探し出して罪を責め、死罪を許して姓を稻置に落とした。三年正月には新羅に使いを送って良い医者を求め、八月に来た医者が天皇の病を治したので、天皇は厚く賞して帰国させた。</p>
+      <h3>盟神探湯で氏姓を正す</h3>
+      <p class="t">四年九月、天皇は、上下が争い、自分の姓を失ったり高い氏を偽ったりする者がいるのが治まらない原因だとして、氏姓を正すことを詔した。人々は帝皇の子孫だ、天から降った者の子孫だと言い合っていたので、味橿丘に探湯瓮を据えて盟神探湯をさせると、偽る者は恐れて進み出なくなり、以後氏姓が定まった。五年七月の地震の夜、瑞齒別天皇の殯を任された玉田宿禰が殯宮を離れて酒宴をしていたことが知られ、玉田宿禰は様子を見に来た尾張連吾襲を殺して武内宿禰の墓域に逃れた。召し出された玉田宿禰は衣の下に鎧を着ていたことを采女に見抜かれ、家に逃げたところを囲まれて誅された。十一月、瑞齒別天皇を耳原陵に葬った。</p>
+      <h3>衣通郎姫を藤原に住まわせる</h3>
+      <p class="t">七年十二月、新室の宴で天皇が琴を弾き皇后が舞ったが、皇后は舞の後に娘子を奉ると言う当時の礼を言わず、天皇に促されて、妹の弟姫を奉ると言った。弟姫は美しさが衣を通して輝くほどで、衣通郎姫と呼ばれていた。近江の坂田にいた弟姫は皇后の気持ちを思って七度召されても来なかったが、中臣烏賦津使主が七日間庭に伏して懐の干し飯だけで耐えたので、ついに上京した。皇后が不快に思ったため、天皇は藤原に殿屋を造って住まわせ、皇后が大泊瀬天皇を産む夜に天皇が藤原へ行くと、皇后は産殿に火をつけて死のうとし、天皇は自分の過ちだと謝った。八年、衣通郎姫は皇后の恨みを避けるため遠くに住みたいと願い、天皇は河内の茅渟に宮を造ったが、十年に皇后が民の苦しみを理由に諫めたので、茅渟への行幸はまれになり、十一年には衣通郎姫のために藤原部が定められた。</p>
+      <h3>男狹磯の真珠・木梨輕皇子を太子とする</h3>
+      <p class="t">十四年九月、淡路島で狩りをしても一日中獣が取れず、占うと、島の神が明石の海の底の真珠を自分に祀れば獣が取れると告げた。海人たちの中で阿波国長邑の男狹磯だけが深い底まで潜り、光るものを宿す大きな蝮を抱いて浮かび上がったが、そのまま息絶えた。腹の中から桃の実ほどの真珠が出て、それを祀ると多くの獣が取れ、男狹磯の墓は手厚く造られて今も残るという。二十三年三月、木梨輕皇子を太子とした。太子は同母妹の輕大娘皇女と通じ、二十四年六月に御膳の汁が凍ったことを占うと身内の乱れがあると出て発覚し、太子は儲君であるため罰せられず、大娘皇女が伊豫に流された。</p>
+      <h3>天皇が崩じ新羅の弔使が来る</h3>
+      <p class="t">四十二年正月、天皇は崩じた。新羅王はこれを聞いて調の船八十艘と楽人八十人を送り、一行は対馬・筑紫で大いに泣き、難波からは喪服を着て楽器を奏しながら殯宮に参った。冬十月に天皇は河内の長野原陵に葬られた。十一月、帰国する新羅の弔使が畝傍山と耳成山を名残惜しんで訛った言葉で呼んだのを、倭の飼部が采女と通じたと疑って大泊瀬皇子に訴え、使者たちは捕らえられて問われた。疑いは晴れたが、新羅人は大いに恨み、貢ぎ物の品と船の数を減らしたという。</p>
+      <h3>穴穗天皇の即位と眉輪王に殺される</h3>
+      <p class="t">穴穗天皇は雄朝津間稚子宿禰天皇の第二子で、母は忍坂大中姫命である。先帝の葬礼の後、木梨輕太子が乱暴で婦女に乱れたため人々に謗られ、群臣は穴穗皇子に従った。太子は兵を設けたが孤立して物部大前宿禰の家に逃れ、穴穗皇子が家を囲むと、大前宿禰の取りなしの後、太子はその家で自ら死んだ。十二月に穴穗皇子は即位して石上の穴穗宮に都し、元年二月、弟の大泊瀬皇子のために大草香皇子の妹幡梭皇女を求めたが、使いの根使主が大草香皇子の献じた押木珠縵を横取りして讒言したため、天皇は怒って大草香皇子を殺した。大草香皇子に仕えた難波吉師日香蛟の父子三人は主の亡骸の側で自ら死に、天皇は大草香皇子の妻中蒂姫を宮中に入れて二年に皇后とした。三年八月、天皇は中蒂姫の連れ子の眉輪王に殺され、三年後に菅原伏見陵に葬られた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>雄朝津間稚子宿禰皇子は重い病を理由に群臣の推挙を断り続けたが、元年十二月、妃の忍坂大中姫が寒風の中で手洗いの水を捧げて待ち続け、鋺の水があふれて腕に凍りつくほどになったので、ついに即位した。</li>
         <li><span class="kind ">本文</span>四年、氏姓が乱れて偽る者がいるとして、天皇は味橿丘で人々に盟神探湯（訓注に「區訶陀智」とある）をさせた。木綿の襷をかけて釜の湯を探らせると、真実を言う者は無事で、偽る者は皆傷ついたので、以後氏姓が定まったと記される。</li>
@@ -115,32 +176,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>雄朝津間稚子宿禰天皇は瑞齒別天皇の同母弟で、幼いころから情け深く慎み深かったが、成人して重い病にかかり、立ち居が不自由であった。瑞齒別天皇五年正月に先帝が崩じると、群卿は大鷦鷯天皇の子のうち年長で仁孝なこの皇子を選んで天皇の璽を捧げた。皇子は、病を治そうとひそかに身を傷つけて先皇に不孝と責められたことや、兄の二天皇に軽んじられてきたことを挙げて辞退し、群臣が重ねて願っても聞き入れなかった。元年十二月、妃の忍坂大中姫命が手洗いの水を捧げて皇子の前に進み、寒風の中で四、五剋も退かずに待ったため、鋺の水があふれて腕に凍りつき、凍え死にそうになった。驚いた皇子は群臣の願いは道理が明らかだとして、ついに璽符を受けて即位した。</p>
-      <p>二年二月、忍坂大中姫を皇后とし、刑部を定めた。皇后は木梨輕皇子・穴穗天皇・輕大娘皇女・大泊瀬稚武天皇など九人の子を生んだ。皇后がまだ母と家にいたころ、通りかかった闘鷄国造が馬上から無礼なことを言って蘭を求めたことがあり、皇后は立后ののちその者を探し出して罪を責め、死罪を許して姓を稻置に落とした。三年正月には新羅に使いを送って良い医者を求め、八月に来た医者が天皇の病を治したので、天皇は厚く賞して帰国させた。</p>
-      <p>四年九月、天皇は、上下が争い、自分の姓を失ったり高い氏を偽ったりする者がいるのが治まらない原因だとして、氏姓を正すことを詔した。人々は帝皇の子孫だ、天から降った者の子孫だと言い合っていたので、味橿丘に探湯瓮を据えて盟神探湯をさせると、偽る者は恐れて進み出なくなり、以後氏姓が定まった。五年七月の地震の夜、瑞齒別天皇の殯を任された玉田宿禰が殯宮を離れて酒宴をしていたことが知られ、玉田宿禰は様子を見に来た尾張連吾襲を殺して武内宿禰の墓域に逃れた。召し出された玉田宿禰は衣の下に鎧を着ていたことを采女に見抜かれ、家に逃げたところを囲まれて誅された。十一月、瑞齒別天皇を耳原陵に葬った。</p>
-      <p>七年十二月、新室の宴で天皇が琴を弾き皇后が舞ったが、皇后は舞の後に娘子を奉ると言う当時の礼を言わず、天皇に促されて、妹の弟姫を奉ると言った。弟姫は美しさが衣を通して輝くほどで、衣通郎姫と呼ばれていた。近江の坂田にいた弟姫は皇后の気持ちを思って七度召されても来なかったが、中臣烏賦津使主が七日間庭に伏して懐の干し飯だけで耐えたので、ついに上京した。皇后が不快に思ったため、天皇は藤原に殿屋を造って住まわせ、皇后が大泊瀬天皇を産む夜に天皇が藤原へ行くと、皇后は産殿に火をつけて死のうとし、天皇は自分の過ちだと謝った。八年、衣通郎姫は皇后の恨みを避けるため遠くに住みたいと願い、天皇は河内の茅渟に宮を造ったが、十年に皇后が民の苦しみを理由に諫めたので、茅渟への行幸はまれになり、十一年には衣通郎姫のために藤原部が定められた。</p>
-      <p>十四年九月、淡路島で狩りをしても一日中獣が取れず、占うと、島の神が明石の海の底の真珠を自分に祀れば獣が取れると告げた。海人たちの中で阿波国長邑の男狹磯だけが深い底まで潜り、光るものを宿す大きな蝮を抱いて浮かび上がったが、そのまま息絶えた。腹の中から桃の実ほどの真珠が出て、それを祀ると多くの獣が取れ、男狹磯の墓は手厚く造られて今も残るという。二十三年三月、木梨輕皇子を太子とした。太子は同母妹の輕大娘皇女と通じ、二十四年六月に御膳の汁が凍ったことを占うと身内の乱れがあると出て発覚し、太子は儲君であるため罰せられず、大娘皇女が伊豫に流された。</p>
-      <p>四十二年正月、天皇は崩じた。新羅王はこれを聞いて調の船八十艘と楽人八十人を送り、一行は対馬・筑紫で大いに泣き、難波からは喪服を着て楽器を奏しながら殯宮に参った。冬十月に天皇は河内の長野原陵に葬られた。十一月、帰国する新羅の弔使が畝傍山と耳成山を名残惜しんで訛った言葉で呼んだのを、倭の飼部が采女と通じたと疑って大泊瀬皇子に訴え、使者たちは捕らえられて問われた。疑いは晴れたが、新羅人は大いに恨み、貢ぎ物の品と船の数を減らしたという。</p>
-      <p>穴穗天皇は雄朝津間稚子宿禰天皇の第二子で、母は忍坂大中姫命である。先帝の葬礼の後、木梨輕太子が乱暴で婦女に乱れたため人々に謗られ、群臣は穴穗皇子に従った。太子は兵を設けたが孤立して物部大前宿禰の家に逃れ、穴穗皇子が家を囲むと、大前宿禰の取りなしの後、太子はその家で自ら死んだ。十二月に穴穗皇子は即位して石上の穴穗宮に都し、元年二月、弟の大泊瀬皇子のために大草香皇子の妹幡梭皇女を求めたが、使いの根使主が大草香皇子の献じた押木珠縵を横取りして讒言したため、天皇は怒って大草香皇子を殺した。大草香皇子に仕えた難波吉師日香蛟の父子三人は主の亡骸の側で自ら死に、天皇は大草香皇子の妻中蒂姫を宮中に入れて二年に皇后とした。三年八月、天皇は中蒂姫の連れ子の眉輪王に殺され、三年後に菅原伏見陵に葬られた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云</b><p>本文は穴穗天皇を雄朝津間稚子宿禰天皇の第二子とするが、この一云は第三子とする。</p></div>
-      <div class="var"><b>一云</b><p>本文では木梨輕太子は物部大前宿禰の家で自ら死んだとするが、この一云は伊豫国に流されたとする。</p></div>
-      <div class="var"><b>一云／又云</b><p>大草香皇子が献じた宝の押木珠縵について、別の名を立縵、また磐木縵とも伝える。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">得實則全。僞者必害。</blockquote><p>盟神探湯のとき、真実を言う者は無事であり、偽る者は必ず傷つく、と告げた言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">其艶色徹衣而晃之。是以。時人號曰衣通郎姫也。</blockquote><p>その美しさが衣を通して輝いたので、当時の人は衣通郎姫と呼んだ。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">大中姫所捧鋺水溢而腕凝。</blockquote><p>大中姫が捧げていた鋺の水があふれ、腕に凍りついた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">吾君無罪以死之。悲乎。</blockquote><p>我が君は罪もなく死なれた、悲しいことだ、という日香蛟父子の嘆き。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全3件）。</p>
+      <details><summary>一云</summary><p>本文は穴穗天皇を雄朝津間稚子宿禰天皇の第二子とするが、この一云は第三子とする。</p></details>
+      <details><summary>一云</summary><p>本文では木梨輕太子は物部大前宿禰の家で自ら死んだとするが、この一云は伊豫国に流されたとする。</p></details>
+      <details><summary>一云／又云</summary><p>大草香皇子が献じた宝の押木珠縵について、別の名を立縵、また磐木縵とも伝える。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -166,7 +207,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 允恭天皇の段の冒頭（G58）</span><p>古事記では、天皇の病を治したのは新良国の貢ぎ物の大使金波鎭漢紀武とされ、書紀のように使いを送って医者を求めた形ではない。氏姓を定める話も、言八十禍津日前に玖訶瓮を据えて定めたと一文で記すだけである。</p><blockquote lang="zh-Hant">名云金波鎭漢紀武。此人深知藥方。</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 允恭天皇の段、軽太子と軽大郎女（G59〜G83）</span><p>古事記では、軽太子は允恭天皇の崩後、即位前に同母妹と通じ、百官に背かれて大前小前宿禰に捕らえられ、伊余湯に流された。後を追った軽大郎女（亦の名は衣通郎女）と二人で自死したとされる。書紀では天皇の在位中に発覚し、流されたのは輕大娘皇女で、太子は大前宿禰の家で自死したとする。</p><blockquote lang="zh-Hant">故其輕太子者。流於伊余湯也。</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 安康天皇の段（G84）</span><p>古事記では、殺された皇子は大日下王、大長谷王子の妻に求められたのはその妹若日下王で、天皇は大日下王の嫡妻長田大郎女を皇后とし、七歳の目弱王が天皇の言葉を聞いて昼寝中の天皇を斬る。書紀では大草香皇子の妻は中蒂姫で、日香蛟父子の殉死を記し、殺害の詳細は雄略紀に譲っている。</p><blockquote lang="zh-Hant">其王之嫡妻。長田大郎女。爲皇后。</blockquote></div>
@@ -174,12 +215,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="richu-hanzei.html"><small>← 前のページ（巻第十二 履中天皇・反正天皇）</small>履中天皇・反正天皇と住吉仲皇子の反乱</a><a class="next" href="yuryaku-1.html"><small>次のページ（巻第十四 雄略天皇）→</small>雄略天皇の即位と葛城山の一事主神</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十三" target="_blank" rel="noopener">日本書紀 巻第十三</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十三" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十三</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十三</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">得實則全。僞者必害。</blockquote><p>盟神探湯のとき、真実を言う者は無事であり、偽る者は必ず傷つく、と告げた言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">其艶色徹衣而晃之。是以。時人號曰衣通郎姫也。</blockquote><p>その美しさが衣を通して輝いたので、当時の人は衣通郎姫と呼んだ。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">大中姫所捧鋺水溢而腕凝。</blockquote><p>大中姫が捧げていた鋺の水があふれ、腕に凍りついた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">吾君無罪以死之。悲乎。</blockquote><p>我が君は罪もなく死なれた、悲しいことだ、という日香蛟父子の嘆き。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十三" target="_blank" rel="noopener">日本書紀 巻第十三</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十三" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十三</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十三</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

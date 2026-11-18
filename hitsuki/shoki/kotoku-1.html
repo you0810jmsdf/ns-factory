@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第二十五 孝徳天皇（全50ページ中 42）</p>
-    <h1>孝徳天皇の即位と大化の改新の詔</h1>
-    <p class="pg-lead">皇極天皇の譲位を受けて軽皇子が即位し、中大兄を皇太子、中臣鎌子連を内臣として年号を大化と改めた。大化元年には東国への国司派遣や鍾と匱の設置、古人大兄の謀反と討伐、難波への遷都があり、二年正月には改新之詔が宣べられ、続いて国司の処分や薄葬などの詔が出された。</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第二十五 孝徳天皇（全50ページ中 42）</p>
+        <h1>孝徳天皇の即位と大化の改新の詔</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">皇極天皇の譲位を受けて軽皇子が即位し、中大兄を皇太子、中臣鎌子連を内臣として年号を大化と改めた。大化元年には東国への国司派遣や鍾と匱の設置、古人大兄の謀反と討伐、難波への遷都があり、二年正月には改新之詔が宣べられ、続いて国司の処分や薄葬などの詔が出された。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>軽皇子が辞退し即位する</h3>
+      <p class="t">天万豊日天皇（孝徳天皇）は皇極天皇の同母弟で、仏法を尊び神道を軽んじ、儒教を好んだ人柄と記される。皇極天皇四年六月、天皇は中大兄に位を伝えようとしたが、中臣鎌子連が、兄の古人大兄がいるのに即位すれば弟としての慎みに反するとして、叔父の軽皇子を立てるよう勧めた。軽皇子は再三辞退して古人大兄に譲ろうとしたが、古人大兄は出家して吉野で仏道を修めると言い、法興寺で髪を剃って袈裟を着たため、軽皇子が即位した。</p>
+      <h3>左大臣・右大臣を定め大化元年と改める</h3>
+      <p class="t">即位の日、皇極天皇に皇祖母尊の号を奉り、中大兄を皇太子、阿倍内麻呂臣を左大臣、蘇我倉山田石川麻呂臣を右大臣とし、中臣鎌子連に大錦冠を授けて内臣とし、僧旻と高向史玄理を国博士とした。数日後、天皇・皇祖母尊・皇太子は大槻の木の下に群臣を集めて、君が二つの政をせず臣が朝廷に二心を抱かないことを天神地祇に誓い、皇極天皇四年を大化元年と改めた。</p>
+      <h3>間人皇女を皇后とする</h3>
+      <p class="t">七月、舒明天皇の娘間人皇女を皇后とし、阿倍倉梯麻呂大臣の娘小足媛（有間皇子の母）と蘇我山田石川麻呂大臣の娘乳娘を妃とした。高麗・百済・新羅が調を進め、百済の使者は任那の調もあわせて進めた。石川麻呂大臣はまず神祇を祭り鎮めてから政事を議するよう奏し、尾張と美濃に神に供える幣を課す使いが送られた。</p>
+      <h3>東国などに国司を任じる</h3>
+      <p class="t">八月、東国などに国司を任じ、戸籍を作り田畝を調べること、任国で罪を裁かず賄賂を取らないこと、兵器を兵庫に集めることなどを命じた。同じ日、朝廷に鍾と匱を置いて訴えを受ける仕組みを定め、良民と奴婢の間に生まれた子の帰属も定めた。また大寺に僧尼を集め、仏法が伝わってからの経緯を述べたうえで十師を定め、寺々の実情を調べさせた。</p>
+      <h3>都を難波長柄豊碕に遷す</h3>
+      <p class="t">九月、古人皇子が蘇我田口臣川堀らと謀反を企てたが、仲間の吉備笠臣垂が中大兄に自首し、中大兄は兵を送って古人大市皇子らを討たせた。同じ月、諸国に使者を遣わして民の数を記録させ、有力者が土地を私有して民に売ることを禁じた。十二月、天皇は都を難波長柄豊碕に遷した。</p>
+      <h3>改新之詔の第一条から第四条</h3>
+      <p class="t">二年正月、賀正の礼が終わると改新之詔が宣べられた。第一条は子代の民や屯倉、部曲の民と田荘をやめて食封を与えること、第二条は京師を整え畿内・国司・郡司・関塞・防人・駅馬・伝馬などを置くこと、第三条は戸籍・計帳・班田収授の法を始め五十戸を里とすること、第四条は旧い賦役をやめて田の調などを定めることであった。</p>
+      <h3>墓の制を定め品部をやめる</h3>
+      <p class="t">二月には、匱に納められた民の諫めを受けて各所の雑役をやめた。三月には東国の国司たちの功過が朝集使の報告で一人ずつ明らかにされて処分が述べられ、皇太子は入部五百二十四口と屯倉一百八十一所を献じた。また墓の制を身分ごとに定め、殉死や祓除を強いる習俗などを禁じる詔が出された。八月には品部をやめて国家の民とすることを宣べ、九月には高向博士黒麻呂（玄理）を新羅に遣わして人質を出させ、任那の調をやめた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>大化二年正月、改新之詔が宣べられ、子代の民・屯倉・部曲の民・田荘をやめて食封を与えること、京師と畿内・国司・郡司・駅馬などを置くこと、戸籍・計帳・班田収授の法を始めること、旧い賦役をやめて田の調を行うことの四か条が示された。</li>
         <li><span class="kind ">本文</span>皇極天皇四年六月、天皇は中大兄に位を伝えようとしたが、中臣鎌子連の意見で中大兄は叔父の軽皇子を推した。軽皇子は古人大兄に譲ろうとしたが、古人大兄は出家して吉野に入ると言って法興寺で髪を剃ったため、軽皇子が即位した。</li>
@@ -115,34 +176,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>天万豊日天皇（孝徳天皇）は皇極天皇の同母弟で、仏法を尊び神道を軽んじ、儒教を好んだ人柄と記される。皇極天皇四年六月、天皇は中大兄に位を伝えようとしたが、中臣鎌子連が、兄の古人大兄がいるのに即位すれば弟としての慎みに反するとして、叔父の軽皇子を立てるよう勧めた。軽皇子は再三辞退して古人大兄に譲ろうとしたが、古人大兄は出家して吉野で仏道を修めると言い、法興寺で髪を剃って袈裟を着たため、軽皇子が即位した。</p>
-      <p>即位の日、皇極天皇に皇祖母尊の号を奉り、中大兄を皇太子、阿倍内麻呂臣を左大臣、蘇我倉山田石川麻呂臣を右大臣とし、中臣鎌子連に大錦冠を授けて内臣とし、僧旻と高向史玄理を国博士とした。数日後、天皇・皇祖母尊・皇太子は大槻の木の下に群臣を集めて、君が二つの政をせず臣が朝廷に二心を抱かないことを天神地祇に誓い、皇極天皇四年を大化元年と改めた。</p>
-      <p>七月、舒明天皇の娘間人皇女を皇后とし、阿倍倉梯麻呂大臣の娘小足媛（有間皇子の母）と蘇我山田石川麻呂大臣の娘乳娘を妃とした。高麗・百済・新羅が調を進め、百済の使者は任那の調もあわせて進めた。石川麻呂大臣はまず神祇を祭り鎮めてから政事を議するよう奏し、尾張と美濃に神に供える幣を課す使いが送られた。</p>
-      <p>八月、東国などに国司を任じ、戸籍を作り田畝を調べること、任国で罪を裁かず賄賂を取らないこと、兵器を兵庫に集めることなどを命じた。同じ日、朝廷に鍾と匱を置いて訴えを受ける仕組みを定め、良民と奴婢の間に生まれた子の帰属も定めた。また大寺に僧尼を集め、仏法が伝わってからの経緯を述べたうえで十師を定め、寺々の実情を調べさせた。</p>
-      <p>九月、古人皇子が蘇我田口臣川堀らと謀反を企てたが、仲間の吉備笠臣垂が中大兄に自首し、中大兄は兵を送って古人大市皇子らを討たせた。同じ月、諸国に使者を遣わして民の数を記録させ、有力者が土地を私有して民に売ることを禁じた。十二月、天皇は都を難波長柄豊碕に遷した。</p>
-      <p>二年正月、賀正の礼が終わると改新之詔が宣べられた。第一条は子代の民や屯倉、部曲の民と田荘をやめて食封を与えること、第二条は京師を整え畿内・国司・郡司・関塞・防人・駅馬・伝馬などを置くこと、第三条は戸籍・計帳・班田収授の法を始め五十戸を里とすること、第四条は旧い賦役をやめて田の調などを定めることであった。</p>
-      <p>二月には、匱に納められた民の諫めを受けて各所の雑役をやめた。三月には東国の国司たちの功過が朝集使の報告で一人ずつ明らかにされて処分が述べられ、皇太子は入部五百二十四口と屯倉一百八十一所を献じた。また墓の制を身分ごとに定め、殉死や祓除を強いる習俗などを禁じる詔が出された。八月には品部をやめて国家の民とすることを宣べ、九月には高向博士黒麻呂（玄理）を新羅に遣わして人質を出させ、任那の調をやめた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>或本云</b><p>本文では吉備笠臣垂は中大兄に自首したとするが、或本は阿倍大臣と蘇我大臣に、吉野の皇子の謀反の仲間だったと自首したとする。</p></div>
-      <div class="var"><b>或本云</b><p>或本は、十一月三十日に中大兄が阿倍渠曾倍臣と佐伯部子麻呂に兵三十人を率いさせて古人大兄を攻め、古人大兄とその子を斬り、妃妾は自ら命を絶ったと具体的に記す。</p></div>
-      <div class="var"><b>或本云</b><p>別の或本は、十一月に吉野大兄王が謀反し、事が発覚して誅されたとだけ記し、本文の九月とは月が異なる。</p></div>
-      <div class="var"><b>或本云</b><p>本文は九月に諸国に使者を遣わして兵を治めたとするが、或本は六月から九月にかけて四方の国に使者を遣わし、さまざまな兵器を集めたとする。</p></div>
-      <div class="var"><b>或本云</b><p>二年正月に天皇が子代離宮に出かけた記事について、或本は難波の狭屋部邑の子代屯倉を壊して行宮を建てたとする。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">天覆地載，帝道唯一。</blockquote><p>大槻の木の下の盟の初めの言葉。天は覆い地は載せるように、帝の道はただ一つである、という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">罷昔在天皇等所立子代之民、處處屯倉</blockquote><p>改新之詔の第一条の書き出し。昔の天皇たちが置いた子代の民と各地の屯倉をやめる、という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">初造戶籍、計帳、班田收授之法。</blockquote><p>改新之詔の第三条の書き出し。戸籍・計帳と、田を分け与え収める法を初めて作る、という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">天無雙日，國無二王。</blockquote><p>皇太子が入部と屯倉を献じる理由として述べた言葉。天に二つの太陽がないように、国に二人の王はいない、という意味。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全5件）。</p>
+      <details><summary>或本云</summary><p>本文では吉備笠臣垂は中大兄に自首したとするが、或本は阿倍大臣と蘇我大臣に、吉野の皇子の謀反の仲間だったと自首したとする。</p></details>
+      <details><summary>或本云</summary><p>或本は、十一月三十日に中大兄が阿倍渠曾倍臣と佐伯部子麻呂に兵三十人を率いさせて古人大兄を攻め、古人大兄とその子を斬り、妃妾は自ら命を絶ったと具体的に記す。</p></details>
+      <details><summary>或本云</summary><p>別の或本は、十一月に吉野大兄王が謀反し、事が発覚して誅されたとだけ記し、本文の九月とは月が異なる。</p></details>
+      <details><summary>或本云</summary><p>本文は九月に諸国に使者を遣わして兵を治めたとするが、或本は六月から九月にかけて四方の国に使者を遣わし、さまざまな兵器を集めたとする。</p></details>
+      <details><summary>或本云</summary><p>二年正月に天皇が子代離宮に出かけた記事について、或本は難波の狭屋部邑の子代屯倉を壊して行宮を建てたとする。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -168,12 +209,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="kogyoku.html"><small>← 前のページ（巻第二十四 皇極天皇）</small>皇極天皇 ― 上宮王家の滅亡と蘇我入鹿の誅殺</a><a class="next" href="kotoku-2.html"><small>次のページ（巻第二十五 孝徳天皇）→</small>孝徳天皇 ― 冠位の制・石川麻呂の死・白雉改元と難波の宮</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿五" target="_blank" rel="noopener">日本書紀 巻第二十五</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94</a>　https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">天覆地載，帝道唯一。</blockquote><p>大槻の木の下の盟の初めの言葉。天は覆い地は載せるように、帝の道はただ一つである、という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">罷昔在天皇等所立子代之民、處處屯倉</blockquote><p>改新之詔の第一条の書き出し。昔の天皇たちが置いた子代の民と各地の屯倉をやめる、という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">初造戶籍、計帳、班田收授之法。</blockquote><p>改新之詔の第三条の書き出し。戸籍・計帳と、田を分け与え収める法を初めて作る、という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">天無雙日，國無二王。</blockquote><p>皇太子が入部と屯倉を献じる理由として述べた言葉。天に二つの太陽がないように、国に二人の王はいない、という意味。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿五" target="_blank" rel="noopener">日本書紀 巻第二十五</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94</a>　https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

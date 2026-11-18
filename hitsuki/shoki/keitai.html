@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十七 継体天皇（全50ページ中 32）</p>
-    <h1>継体天皇の擁立と筑紫国造磐井の反乱</h1>
-    <p class="pg-lead">小泊瀬天皇（武烈天皇）が跡継ぎなく亡くなったあと、大伴金村大連らが応神天皇の五世の孫である男大迹王を三国から迎え、即位させた。在位中は任那をめぐる百済・新羅・加羅との交渉が続き、二十一年には筑紫国造磐井が反乱を起こして物部麁鹿火に討たれた。</p>
-    <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十七 継体天皇（全50ページ中 32）</p>
+        <h1>継体天皇の擁立と筑紫国造磐井の反乱</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">小泊瀬天皇（武烈天皇）が跡継ぎなく亡くなったあと、大伴金村大連らが応神天皇の五世の孫である男大迹王を三国から迎え、即位させた。在位中は任那をめぐる百済・新羅・加羅との交渉が続き、二十一年には筑紫国造磐井が反乱を起こして物部麁鹿火に討たれた。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>振媛が育てた男大迹天皇と倭彦王</h3>
+      <p class="t">男大迹天皇（またの名は彦太尊）は譽田天皇の五世の孫で、彦主人王の子であり、母の振媛は活目天皇の七世の孫であった。父は近江国高嶋郡三尾の別業から三国の坂中井に使いを送って振媛を妃に迎えたが、天皇が幼いうちに亡くなった。振媛は故郷の越前国高向に帰って天皇を育てた。小泊瀬天皇が八年十二月に子のないまま亡くなると、大伴金村大連はまず足仲彦天皇の五世の孫の倭彦王を丹波国桑田郡から迎えようとしたが、倭彦王は迎えの兵を見て恐れ、山に逃げて行方が分からなくなった。</p>
+      <h3>男大迹王を推し樟葉宮で即位</h3>
+      <p class="t">元年正月、大伴金村大連は男大迹王を推し、物部麁鹿火大連・許勢男人大臣もこれに賛成して、使者を三国に遣わした。男大迹王は胡床に落ち着いて座っていたが、なお疑って応じなかった。河内馬飼首荒籠がひそかに使いを送って大臣・大連らの本意を伝えたので、ようやく出発し、のちに荒籠を厚く遇した。二月、金村が鏡・剣・璽符を奉ると、天皇は西に向かって三度、南に向かって二度辞退したのち受け、樟葉宮で即位し、大臣・大連はもとの職のままとされた。</p>
+      <h3>手白香皇女を皇后に立てる</h3>
+      <p class="t">金村の進言で、三月に手白香皇女が皇后に立てられ、天國排開廣庭尊を生んだ。同じ月、天皇は、帝王が自ら耕し后妃が自ら蚕を飼うという例を挙げ、役人も民も農業と機織りを怠らないよう天下に告げさせよと詔した。さらに八人の妃を迎え、元妃の目子媛は勾大兄皇子と檜隈高田皇子を生んだ。二年十月には小泊瀬稚鷦鷯天皇を傍丘磐杯丘陵に葬った。都は五年に山背の筒城、十二年に弟国、二十年に磐余玉穂へと移された。</p>
+      <h3>任那の四県を百済に与える</h3>
+      <p class="t">六年、百済は任那の四県を求め、哆唎国守の穂積臣押山と大伴金村がこれに同意して、四県は百済に与えられた。勅を伝える役の物部麁鹿火は、妻に住吉大神の教えや神功皇后以来の由来を説かれて病と称して辞退し、のちに大兄皇子が取り消そうとしたが百済の使者は従わなかった。七年、百済は五経博士の段楊爾を送り、伴跛国に奪われた己汶の地を返すよう求め、十一月に己汶・帯沙が百済に与えられた。同じ年、勾大兄皇子は春日皇女を妃とし、十二月に天皇は勾大兄を春宮に置いた。八年正月、春日皇女が跡継ぎのないことを嘆いたので、その名を残すために匝布屯倉が与えられた。</p>
+      <h3>筑紫国造磐井が反逆し麁鹿火に斬られる</h3>
+      <p class="t">二十一年六月、近江毛野臣が六万の兵を率い、新羅に破られた南加羅・喙己呑を立て直すため任那へ向かおうとした。筑紫国造磐井は前から反逆をたくらんでおり、新羅の賄賂を受けて火・豊の二国に拠り、諸国の貢ぎの船を引き入れ、毛野臣の軍を妨げた。天皇は物部麁鹿火を将とし、八月に斧鉞を授けて、長門より東は自分が、筑紫より西は麁鹿火が治めよと命じた。二十二年十一月、麁鹿火は筑紫の御井郡で磐井と戦ってこれを斬り、十二月に磐井の子の筑紫君葛子は糟屋屯倉を献じて死罪のつぐないを求めた。</p>
+      <h3>毛野臣が誓湯で裁き対馬で病死</h3>
+      <p class="t">二十三年、百済の求めで加羅の多沙津が百済に与えられ、これを恨んだ加羅は新羅と結んだ。毛野臣は安羅に遣わされ、熊川で新羅・百済の王を呼び出したが王たちは来ず、新羅の上臣が兵を率いて来て四つの村を奪った。二十四年九月、任那の使者は、毛野臣が久斯牟羅に家を建てて政務を怠り、誓湯で裁いて多くの人を死なせたと訴えた。毛野臣は召還に応じず、百済・新羅の兵との争いを招いたが、のちに召されて対馬で病死し、その妻が歌を詠んだ。</p>
+      <h3>磐余玉穂宮で亡くなり藍野陵に葬る</h3>
+      <p class="t">二十四年二月、天皇は昔の天皇が賢い臣に頼ったことを挙げ、清廉な人を推挙させよと詔した。二十五年二月、天皇は重い病になり、丁未の日に磐余玉穂宮で亡くなった。年は八十二であった。十二月、藍野陵に葬られた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>小泊瀬天皇が子のないまま亡くなると、大伴金村大連らは譽田天皇（応神天皇）の五世の孫の男大迹王を三国から迎えた。男大迹王は何度も辞退したのち、元年二月に璽符を受けて即位した。</li>
         <li><span class="kind ">本文</span>二十一年、筑紫国造磐井は新羅から賄賂を受けて火・豊の二国に拠り、任那へ向かう近江毛野臣の軍をさえぎった。二十二年十一月、物部麁鹿火大連が筑紫の御井郡で磐井を斬り、子の筑紫君葛子は糟屋屯倉を献じて死罪を免れようとした。</li>
@@ -115,34 +176,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>男大迹天皇（またの名は彦太尊）は譽田天皇の五世の孫で、彦主人王の子であり、母の振媛は活目天皇の七世の孫であった。父は近江国高嶋郡三尾の別業から三国の坂中井に使いを送って振媛を妃に迎えたが、天皇が幼いうちに亡くなった。振媛は故郷の越前国高向に帰って天皇を育てた。小泊瀬天皇が八年十二月に子のないまま亡くなると、大伴金村大連はまず足仲彦天皇の五世の孫の倭彦王を丹波国桑田郡から迎えようとしたが、倭彦王は迎えの兵を見て恐れ、山に逃げて行方が分からなくなった。</p>
-      <p>元年正月、大伴金村大連は男大迹王を推し、物部麁鹿火大連・許勢男人大臣もこれに賛成して、使者を三国に遣わした。男大迹王は胡床に落ち着いて座っていたが、なお疑って応じなかった。河内馬飼首荒籠がひそかに使いを送って大臣・大連らの本意を伝えたので、ようやく出発し、のちに荒籠を厚く遇した。二月、金村が鏡・剣・璽符を奉ると、天皇は西に向かって三度、南に向かって二度辞退したのち受け、樟葉宮で即位し、大臣・大連はもとの職のままとされた。</p>
-      <p>金村の進言で、三月に手白香皇女が皇后に立てられ、天國排開廣庭尊を生んだ。同じ月、天皇は、帝王が自ら耕し后妃が自ら蚕を飼うという例を挙げ、役人も民も農業と機織りを怠らないよう天下に告げさせよと詔した。さらに八人の妃を迎え、元妃の目子媛は勾大兄皇子と檜隈高田皇子を生んだ。二年十月には小泊瀬稚鷦鷯天皇を傍丘磐杯丘陵に葬った。都は五年に山背の筒城、十二年に弟国、二十年に磐余玉穂へと移された。</p>
-      <p>六年、百済は任那の四県を求め、哆唎国守の穂積臣押山と大伴金村がこれに同意して、四県は百済に与えられた。勅を伝える役の物部麁鹿火は、妻に住吉大神の教えや神功皇后以来の由来を説かれて病と称して辞退し、のちに大兄皇子が取り消そうとしたが百済の使者は従わなかった。七年、百済は五経博士の段楊爾を送り、伴跛国に奪われた己汶の地を返すよう求め、十一月に己汶・帯沙が百済に与えられた。同じ年、勾大兄皇子は春日皇女を妃とし、十二月に天皇は勾大兄を春宮に置いた。八年正月、春日皇女が跡継ぎのないことを嘆いたので、その名を残すために匝布屯倉が与えられた。</p>
-      <p>二十一年六月、近江毛野臣が六万の兵を率い、新羅に破られた南加羅・喙己呑を立て直すため任那へ向かおうとした。筑紫国造磐井は前から反逆をたくらんでおり、新羅の賄賂を受けて火・豊の二国に拠り、諸国の貢ぎの船を引き入れ、毛野臣の軍を妨げた。天皇は物部麁鹿火を将とし、八月に斧鉞を授けて、長門より東は自分が、筑紫より西は麁鹿火が治めよと命じた。二十二年十一月、麁鹿火は筑紫の御井郡で磐井と戦ってこれを斬り、十二月に磐井の子の筑紫君葛子は糟屋屯倉を献じて死罪のつぐないを求めた。</p>
-      <p>二十三年、百済の求めで加羅の多沙津が百済に与えられ、これを恨んだ加羅は新羅と結んだ。毛野臣は安羅に遣わされ、熊川で新羅・百済の王を呼び出したが王たちは来ず、新羅の上臣が兵を率いて来て四つの村を奪った。二十四年九月、任那の使者は、毛野臣が久斯牟羅に家を建てて政務を怠り、誓湯で裁いて多くの人を死なせたと訴えた。毛野臣は召還に応じず、百済・新羅の兵との争いを招いたが、のちに召されて対馬で病死し、その妻が歌を詠んだ。</p>
-      <p>二十四年二月、天皇は昔の天皇が賢い臣に頼ったことを挙げ、清廉な人を推挙させよと詔した。二十五年二月、天皇は重い病になり、丁未の日に磐余玉穂宮で亡くなった。年は八十二であった。十二月、藍野陵に葬られた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>或本云</b><p>本文は天皇の崩御を二十五年（辛亥）とするが、或本は二十八年（甲寅）とする。本文は、百済本記に辛亥の年に日本の天皇・太子・皇子がともに亡くなったと聞いたとあることによって二十五年としたと注記する。</p></div>
-      <div class="var"><b>一本云</b><p>本文は磐余玉穂への遷都を二十年九月とするが、一本は七年のこととする。</p></div>
-      <div class="var"><b>一本云</b><p>本文は毛野臣が熊川にとどまったとするが、一本は任那の久斯牟羅にとどまったとする。また新羅の上臣が奪った四村を、本文は金官・背伐・安多・委陀、一本は多多羅・須那羅・和多・費智とする。</p></div>
-      <div class="var"><b>或曰</b><p>多々羅など四村が奪われたのは毛野臣の過ちによる、という説を付け加えている。</p></div>
-      <div class="var"><b>百濟本記云</b><p>三年に百済へ使者を遣わした記事について、百済本記は「久羅麻致支彌」が日本から来たと記すが、本文は詳しくは分からないと注記する。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">西向讓者三。南向讓者再</blockquote><p>男大迹天皇は西に向かって三度、南に向かって二度、位を辞退した。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">世云、勿論貴賤。但重其心</blockquote><p>身分の上下は問わず、ただその心を重んじよ、と世に言う（荒籠の働きをたたえた言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">長門以東朕制之。筑紫以西汝制之</blockquote><p>長門より東は私が治める。筑紫より西はお前（麁鹿火）が治めよ。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">天皇崩于磐余玉穗宮。時年八十二</blockquote><p>天皇は磐余玉穂宮で亡くなった。年は八十二であった。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全5件）。</p>
+      <details><summary>或本云</summary><p>本文は天皇の崩御を二十五年（辛亥）とするが、或本は二十八年（甲寅）とする。本文は、百済本記に辛亥の年に日本の天皇・太子・皇子がともに亡くなったと聞いたとあることによって二十五年としたと注記する。</p></details>
+      <details><summary>一本云</summary><p>本文は磐余玉穂への遷都を二十年九月とするが、一本は七年のこととする。</p></details>
+      <details><summary>一本云</summary><p>本文は毛野臣が熊川にとどまったとするが、一本は任那の久斯牟羅にとどまったとする。また新羅の上臣が奪った四村を、本文は金官・背伐・安多・委陀、一本は多多羅・須那羅・和多・費智とする。</p></details>
+      <details><summary>或曰</summary><p>多々羅など四村が奪われたのは毛野臣の過ちによる、という説を付け加えている。</p></details>
+      <details><summary>百濟本記云</summary><p>三年に百済へ使者を遣わした記事について、百済本記は「久羅麻致支彌」が日本から来たと記すが、本文は詳しくは分からないと注記する。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -173,7 +214,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 継体天皇の段（系譜と崩御）</span><p>古事記は天皇の年齢を四十三歳とし、御陵を三嶋の藍とする。日本書紀は年八十二で崩じ、藍野陵に葬ったとする。</p><blockquote lang="zh-Hant">天皇御年。肆拾參歲</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 継体天皇の段（石井の反乱）</span><p>古事記は磐井を「竺紫君石井」と書き、物部荒甲之大連と大伴之金村連の二人を遣わして殺したとする。日本書紀は「筑紫國造磐井」とし、物部麁鹿火が大将軍として筑紫の御井郡で斬ったとする。</p><blockquote lang="zh-Hant">竺紫君石井。不從天皇之命而。多无禮</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 武烈天皇の段の末尾（継体天皇の迎え入れ）</span><p>古事記は袁本杼命を近淡海国から上らせ、手白髮命と合わせて天下を授けたと短く記す。日本書紀は越前の高向で育ち三国から迎えられたとし、辞退と即位のいきさつを詳しく書く。</p><blockquote lang="zh-Hant">自近淡海國。令上坐而。合於手白髮命</blockquote></div>
@@ -181,12 +222,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="buretsu.html"><small>← 前のページ（巻第十六 武烈天皇）</small>武烈天皇と平群氏の滅亡</a><a class="next" href="ankan-senka.html"><small>次のページ（巻第十八 安閑天皇・宣化天皇）→</small>安閑天皇・宣化天皇と屯倉の設置</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十七" target="_blank" rel="noopener">日本書紀 巻第十七</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十七" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十七</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十七</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">西向讓者三。南向讓者再</blockquote><p>男大迹天皇は西に向かって三度、南に向かって二度、位を辞退した。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">世云、勿論貴賤。但重其心</blockquote><p>身分の上下は問わず、ただその心を重んじよ、と世に言う（荒籠の働きをたたえた言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">長門以東朕制之。筑紫以西汝制之</blockquote><p>長門より東は私が治める。筑紫より西はお前（麁鹿火）が治めよ。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">天皇崩于磐余玉穗宮。時年八十二</blockquote><p>天皇は磐余玉穂宮で亡くなった。年は八十二であった。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十七" target="_blank" rel="noopener">日本書紀 巻第十七</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十七" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十七</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十七</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

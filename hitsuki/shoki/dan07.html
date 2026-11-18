@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第一 神代上（全50ページ中 5）</p>
-    <h1>天の石窟（第七段）</h1>
-    <p class="pg-lead">素戔嗚尊の乱暴な行いに驚いて傷ついた天照大神は天石窟にこもり、世界は昼も夜もない闇になる。八十万の神々が思兼神の計画で祭りを行って天照大神を連れ出し、素戔嗚尊に罪の償いを負わせて天から追放する。</p>
-    <div class="xlink"><a href="../kojiki/iwayado.html">古事記で読む：天の岩屋戸 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第一 神代上（全50ページ中 5）</p>
+        <h1>天の石窟（第七段）</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">素戔嗚尊の乱暴な行いに驚いて傷ついた天照大神は天石窟にこもり、世界は昼も夜もない闇になる。八十万の神々が思兼神の計画で祭りを行って天照大神を連れ出し、素戔嗚尊に罪の償いを負わせて天から追放する。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/iwayado.html">古事記で読む：天の岩屋戸 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>素戔嗚尊の乱暴</h3>
+      <p class="t">誓約のあと、素戔嗚尊の行いはひどく乱暴になった。天照大神は天狭田と長田を御田としていたが、素戔嗚尊は春には種を重ねてまき、畔をこわし、秋には天斑駒を放って田に伏せさせた。天照大神が新嘗を行うときには、ひそかに新宮に糞をし、天照大神が斎服殿で神の衣を織っていると、天斑駒の皮をはいで、御殿の屋根に穴をあけて投げ入れた。</p>
+      <h3>天照大神が天石窟にこもる</h3>
+      <p class="t">天照大神は驚いて梭で身を傷つけ、怒って天石窟に入り、磐戸を閉じてこもった。そのため六合の内はいつも暗く、昼と夜の入れ替わりがわからなくなった。</p>
+      <h3>天安河に八十万の神々が集まる</h3>
+      <p class="t">八十万の神々は天安河のほとりに集まり、どのように祈るかを相談した。思兼神は深く計画をめぐらし、常世の長鳴鳥を集めて長く鳴かせ、手力雄神を磐戸のそばに立たせた。中臣連の遠祖の天児屋命と忌部の遠祖の太玉命は、天香山の五百箇真坂樹を根ごと掘り取り、上の枝に八坂瓊の五百箇御統、中の枝に八咫鏡、下の枝に青和幣・白和幣（にきて）を掛けて、ともに祈った。</p>
+      <h3>天鈿女命が俳優をする</h3>
+      <p class="t">猿女君の遠祖の天鈿女命は、茅を巻いた矛を手に持ち、天石窟の戸の前に立って巧みに俳優をした。天香山の真坂樹を鬘にし、蘿（ひかげ）を手繦（たすき）にし、火をたき、覆槽（うけ）を伏せ置いて、神がかりのことばを述べた。</p>
+      <h3>手力雄神が天照大神を引き出す</h3>
+      <p class="t">天照大神はこれを聞いて、自分がこもっているので豊葦原中国は長い夜になっているはずなのに、なぜ天鈿女命はこんなに楽しんでいるのかと言い、手で磐戸を細く開けてのぞいた。そのとき手力雄神がその手を取って引き出した。中臣神と忌部神は端出之縄を張りめぐらし、もう戻らないでくださいと願った。</p>
+      <h3>千座置戸を科される</h3>
+      <p class="t">そのあと神々は罪を素戔嗚尊に負わせて千座置戸を科し、髪を抜かせて罪を償わせた。手足の爪を抜かせたともいう。こうして素戔嗚尊はついに天から追い払われた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>本文では、素戔嗚尊は天照大神の田に種を重ねてまき、畔をこわし、新嘗のときに新宮に糞をし、斎服殿の屋根に穴をあけて皮をはいだ天斑駒を投げ入れる。驚いた天照大神は梭（ひ）で自分の身を傷つけ、怒って天石窟にこもる。</li>
         <li><span class="kind ">本文</span>天照大神が磐戸を閉じると「六合の内」は常に闇となり、昼と夜の区別がなくなる。神々は天安河のほとりに集まり、思兼神が長鳴鳥を鳴かせ、天児屋命と太玉命が天香山の真坂樹に御統・八咫鏡・和幣を掛けて祈り、天鈿女命が戸の前で俳優（わざおき）をする。</li>
@@ -115,38 +174,19 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>誓約のあと、素戔嗚尊の行いはひどく乱暴になった。天照大神は天狭田と長田を御田としていたが、素戔嗚尊は春には種を重ねてまき、畔をこわし、秋には天斑駒を放って田に伏せさせた。天照大神が新嘗を行うときには、ひそかに新宮に糞をし、天照大神が斎服殿で神の衣を織っていると、天斑駒の皮をはいで、御殿の屋根に穴をあけて投げ入れた。</p>
-      <p>天照大神は驚いて梭で身を傷つけ、怒って天石窟に入り、磐戸を閉じてこもった。そのため六合の内はいつも暗く、昼と夜の入れ替わりがわからなくなった。</p>
-      <p>八十万の神々は天安河のほとりに集まり、どのように祈るかを相談した。思兼神は深く計画をめぐらし、常世の長鳴鳥を集めて長く鳴かせ、手力雄神を磐戸のそばに立たせた。中臣連の遠祖の天児屋命と忌部の遠祖の太玉命は、天香山の五百箇真坂樹を根ごと掘り取り、上の枝に八坂瓊の五百箇御統、中の枝に八咫鏡、下の枝に青和幣・白和幣（にきて）を掛けて、ともに祈った。</p>
-      <p>猿女君の遠祖の天鈿女命は、茅を巻いた矛を手に持ち、天石窟の戸の前に立って巧みに俳優をした。天香山の真坂樹を鬘にし、蘿（ひかげ）を手繦（たすき）にし、火をたき、覆槽（うけ）を伏せ置いて、神がかりのことばを述べた。</p>
-      <p>天照大神はこれを聞いて、自分がこもっているので豊葦原中国は長い夜になっているはずなのに、なぜ天鈿女命はこんなに楽しんでいるのかと言い、手で磐戸を細く開けてのぞいた。そのとき手力雄神がその手を取って引き出した。中臣神と忌部神は端出之縄を張りめぐらし、もう戻らないでくださいと願った。</p>
-      <p>そのあと神々は罪を素戔嗚尊に負わせて千座置戸を科し、髪を抜かせて罪を償わせた。手足の爪を抜かせたともいう。こうして素戔嗚尊はついに天から追い払われた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一書第一</b><p>斎服殿で神の衣を織っていたのは稚日女尊で、投げ込まれた斑駒に驚いて機から落ち、梭で体を傷つけて亡くなる（神退）。天照大神は素戔嗚尊に「まだ黒い心がある」と言って石窟にこもる。神々は天高市に集まり、高皇産霊の子の思兼神の提案で、石凝姥（いしこりどめ）が天香山の金と鹿の皮のふいごで神の像を作る。これが紀伊国の日前神だとされ、天照大神が出てくる場面は記されない。</p></div>
-      <div class="var"><b>一書第二</b><p>日神は素戔嗚尊の田荒らしや斑駒の投げ込みを、怒らず恨まず許していたが、新嘗のとき席の下にひそかに糞を置かれ、知らずに座って体の具合を悪くし、石窟にこもる。鏡作部の遠祖天糠戸が鏡、忌部の遠祖太玉が幣、玉作部の遠祖豊玉が玉を作り、天児屋命が神祝をとなえると日神が出る。石窟に入れた鏡が戸に触れてできた傷が残り、これが伊勢崇秘之大神だとされる。素戔嗚尊には手足の物や唾・洟で祓えの具を出させて追放する。</p></div>
-      <div class="var"><b>一書第三</b><p>日神の良田と素戔嗚尊のやせた田の対比から、ねたんだ素戔嗚尊が田を荒らす。天児屋命が真坂木に石凝戸辺の八咫鏡・天明玉の曲玉・天日鷲の木綿を掛け、太玉命が捧げ持って祈ると、日神は「これほど美しいことばはなかった」と言って戸を開け、天手力雄神が引き開けて光が満ちる。爪による祓えや、笠蓑で宿を乞うて断られた話を習わしのいわれとして語り、さらに素戔嗚尊が再び昇天して誓約をし、六柱の男神を生んで姉に奉り、根国へ下る話まで続く。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">閉磐戶而幽居焉。故六合之內常闇而不知晝夜之相代。</blockquote><p>磐戸を閉じてこもったので、世界じゅうが常に暗く、昼と夜の移り変わりがわからなくなった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">時手力雄神則奉承天照大神之手引而奉出。</blockquote><p>そのとき手力雄神が天照大神の手を取って引き出した。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">然後諸神歸罪過於素戔鳴尊。而科之以千座置戶。</blockquote><p>そのあと神々は罪を素戔嗚尊に負わせ、千座置戸（多くの償いの品）を科した。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">頃者人雖多請。未有若此言之麗美者也。</blockquote><p>このごろ多くの者が願ってきたが、これほど美しいことばはなかった、という一書第三の日神の言葉。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全3件）。</p>
+      <details><summary>一書第一</summary><p>斎服殿で神の衣を織っていたのは稚日女尊で、投げ込まれた斑駒に驚いて機から落ち、梭で体を傷つけて亡くなる（神退）。天照大神は素戔嗚尊に「まだ黒い心がある」と言って石窟にこもる。神々は天高市に集まり、高皇産霊の子の思兼神の提案で、石凝姥（いしこりどめ）が天香山の金と鹿の皮のふいごで神の像を作る。これが紀伊国の日前神だとされ、天照大神が出てくる場面は記されない。</p></details>
+      <details><summary>一書第二</summary><p>日神は素戔嗚尊の田荒らしや斑駒の投げ込みを、怒らず恨まず許していたが、新嘗のとき席の下にひそかに糞を置かれ、知らずに座って体の具合を悪くし、石窟にこもる。鏡作部の遠祖天糠戸が鏡、忌部の遠祖太玉が幣、玉作部の遠祖豊玉が玉を作り、天児屋命が神祝をとなえると日神が出る。石窟に入れた鏡が戸に触れてできた傷が残り、これが伊勢崇秘之大神だとされる。素戔嗚尊には手足の物や唾・洟で祓えの具を出させて追放する。</p></details>
+      <details><summary>一書第三</summary><p>日神の良田と素戔嗚尊のやせた田の対比から、ねたんだ素戔嗚尊が田を荒らす。天児屋命が真坂木に石凝戸辺の八咫鏡・天明玉の曲玉・天日鷲の木綿を掛け、太玉命が捧げ持って祈ると、日神は「これほど美しいことばはなかった」と言って戸を開け、天手力雄神が引き開けて光が満ちる。爪による祓えや、笠蓑で宿を乞うて断られた話を習わしのいわれとして語り、さらに素戔嗚尊が再び昇天して誓約をし、六柱の男神を生んで姉に奉り、根国へ下る話まで続く。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
-        <li><b><a href="../../shrine-note/map/?d=susanoo">須佐之男命</a></b><small>すさのおのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=tsurugijinja">劔神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=susanoo">須佐之男命</a></b><small>すさのおのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=tsurugijinja">劔神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a>、<a href="../../shrine-note/map/?s=susa">須佐神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=omoikane">八意思兼命</a></b><small>やごころおもいかねのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=chichibu">秩父神社</a>、<a href="../../shrine-note/map/?s=nichizen">日前神宮・國懸神宮</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=tajikarao">天手力男神</a></b><small>あめのたぢからおのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=togakushi">戸隠神社 奥社</a>、<a href="../../shrine-note/map/?s=oyama">雄山神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=amenokoyane">天児屋命</a></b><small>あめのこやねのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kasuga">春日大社</a>、<a href="../../shrine-note/map/?s=hiraoka">枚岡神社</a></span></li>
@@ -176,7 +216,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 上巻・須佐之男命の乱行（うけいのあと）</span><p>古事記では、斎服殿の事件で死ぬのは天衣織女で、梭で陰上を突いて亡くなる。日本書紀本文では天照大神自身が梭で身を傷つけ、一書第一では稚日女尊が亡くなる。</p><blockquote lang="zh-Hant">天衣織女見驚而於梭衝陰上而死</blockquote></div>
       <div class="ns"><span class="where">古事記 上巻・天の石屋</span><p>古事記では八百万の神が笑い、天児屋命と布刀玉命が鏡を差し出して天照大御神に見せ、不思議に思って出てきたところを手力男神が引き出す。日本書紀本文には鏡を見せる場面や神々の笑いは無く、天鈿女命の楽しむ声を聞いた天照大神が自分で戸を開ける。</p><blockquote lang="zh-Hant">天兒屋命、布刀玉命指出其鏡</blockquote></div>
       <div class="ns"><span class="where">古事記 上巻・須佐之男命の追放と大気津比売</span><p>古事記では追放のすぐあとに、須佐之男命が大気津比売神を殺して体から五穀などが生じる話が続くが、日本書紀第七段の本文・一書には対応する記事を確認できなかった（似た話は第五段一書第十一に月夜見尊と保食神の話として見える）。</p><blockquote lang="zh-Hant">又，食物乞大氣津比賣神。</blockquote></div>
@@ -184,12 +224,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="dan06.html"><small>← 前のページ（巻第一 神代上）</small>素戔嗚尊の昇天と誓約（第六段）</a><a class="next" href="dan08.html"><small>次のページ（巻第一 神代上）→</small>八岐大蛇と大己貴神（第八段）</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amaterasuomikami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amaterasuomikami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omoikanenokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/omoikanenokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenotadikaraonokmi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenotadikaraonokmi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenokoyanenomikoto-amenokoyanomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenokoyanenomikoto-amenokoyanomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/futotamanomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/futotamanomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenouzumenomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenouzumenomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ishikoridomenomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ishikoridomenomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tamanooyanomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tamanooyanomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takamimusuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/takamimusuhinokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">閉磐戶而幽居焉。故六合之內常闇而不知晝夜之相代。</blockquote><p>磐戸を閉じてこもったので、世界じゅうが常に暗く、昼と夜の移り変わりがわからなくなった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">時手力雄神則奉承天照大神之手引而奉出。</blockquote><p>そのとき手力雄神が天照大神の手を取って引き出した。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">然後諸神歸罪過於素戔鳴尊。而科之以千座置戶。</blockquote><p>そのあと神々は罪を素戔嗚尊に負わせ、千座置戸（多くの償いの品）を科した。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">頃者人雖多請。未有若此言之麗美者也。</blockquote><p>このごろ多くの者が願ってきたが、これほど美しいことばはなかった、という一書第三の日神の言葉。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amaterasuomikami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amaterasuomikami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omoikanenokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/omoikanenokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenotadikaraonokmi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenotadikaraonokmi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenokoyanenomikoto-amenokoyanomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenokoyanenomikoto-amenokoyanomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/futotamanomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/futotamanomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenouzumenomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenouzumenomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ishikoridomenomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ishikoridomenomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tamanooyanomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tamanooyanomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takamimusuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/takamimusuhinokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

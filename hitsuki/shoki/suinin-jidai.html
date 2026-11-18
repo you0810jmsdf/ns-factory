@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第六 垂仁天皇（全50ページ中 16）</p>
-    <h1>倭姫命と伊勢の祭祀、埴輪の起こり、天日槍の神宝、田道間守</h1>
-    <p class="pg-lead">垂仁天皇二十五年以後の記事で、倭姫命が天照大神を伊勢に祭ったこと、殉死をやめて埴輪を立てたこと、池や溝の開発、石上神宮の神宝、天日槍の神宝の献上などを記す。天皇は九十九年に崩じ、常世国から非時香菓を持ち帰った田道間守は天皇の陵で泣き叫んで死んだ。</p>
-    <div class="xlink"><a href="../kojiki/homuchiwake.html">古事記で読む：本牟智和気御子と多遅摩毛理 ›</a><a href="../kojiki/amenohiboko.html">古事記で読む：天之日矛と秋山・春山の兄弟 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第六 垂仁天皇（全50ページ中 16）</p>
+        <h1>倭姫命と伊勢の祭祀、埴輪の起こり、天日槍の神宝、田道間守</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">垂仁天皇二十五年以後の記事で、倭姫命が天照大神を伊勢に祭ったこと、殉死をやめて埴輪を立てたこと、池や溝の開発、石上神宮の神宝、天日槍の神宝の献上などを記す。天皇は九十九年に崩じ、常世国から非時香菓を持ち帰った田道間守は天皇の陵で泣き叫んで死んだ。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/homuchiwake.html">古事記で読む：本牟智和気御子と多遅摩毛理 ›</a><a href="../kojiki/amenohiboko.html">古事記で読む：天之日矛と秋山・春山の兄弟 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>倭姫命に天照大神を託す</h3>
+      <p class="t">二十五年二月、天皇は阿倍臣・和珥臣・中臣連・物部連・大伴連の遠祖である五人の大夫に、先帝の崇神天皇がつつしんで神々を祭ったので天下が太平であったと述べ、自分の世にも神々の祭りを怠ってはならないと告げた。三月、天照大神を豊耜入姫命から離して倭姫命に託した。倭姫命は大神の鎮まる地を求めて菟田の筱幡に行き、近江国、美濃国を経て伊勢国に至った。大神は伊勢を常世の浪が寄せる美しい国だとして、ここにいたいと教えたので、伊勢国に祠を立て、五十鈴川のほとりに斎宮を興した。二十六年、物部十千根大連が出雲に行って神宝を調べ、その管理を任された。二十七年、武器を神への幣とすることを占って吉と出たので、弓矢と横刀を諸社に納め、神地・神戸を定めた。武器で神を祭ることはこのとき始まったとされる。この年、来目邑に屯倉を興した。</p>
+      <h3>倭彦命の陵と殉死</h3>
+      <p class="t">二十八年、天皇の同母弟倭彦命が亡くなり、その陵のまわりに近習の者を生きたまま埋めた。彼らは数日死なずに昼夜泣き叫び、天皇はその声を聞いて悲しみ、殉死をやめるよう議させた。三十年、天皇は二人の皇子に望みを尋ね、兄の五十瓊敷命は弓矢を、弟の大足彦尊は皇位を望んだので、それぞれの望みどおりにした。</p>
+      <h3>野見宿禰が埴輪を立てる</h3>
+      <p class="t">三十二年、皇后日葉酢媛命が亡くなった。殉死はよくないと知りながら葬り方に迷う天皇に、野見宿禰が進言し、出雲国の土部百人を呼んで埴土で人や馬などの形を作らせて献上した。天皇は喜んでこれを日葉酢媛命の墓に初めて立て、埴輪または立物と名づけ、以後は陵墓に必ずこの土物を立てるよう命じた。野見宿禰は土部臣の姓と土部の職を与えられ、土部連らが天皇の喪葬をつかさどる由来とされた。</p>
+      <h3>山背の綺戸辺と池や溝を開く</h3>
+      <p class="t">三十四年、天皇は山背に行き、美しい綺戸辺を後宮に入れて磐衝別命が生まれた。天皇がしるしを祈ると、行宮に着くころ川から大亀が出て、矛で刺すと白い石に変わったという。三十五年、五十瓊敷命に河内国で高石池・茅渟池を作らせ、さらに倭の狭城池・迹見池を作り、諸国に八百あまりの池や溝を開かせて農業を盛んにしたので、民は豊かになった。三十七年、大足彦尊を皇太子とした。</p>
+      <h3>五十瓊敷命が石上神宮の神宝をつかさどる</h3>
+      <p class="t">三十九年、五十瓊敷命は茅渟の菟砥川上宮で剣一千口を作って石上神宮に納め、その後、石上神宮の神宝をつかさどった。八十七年、老いた五十瓊敷命は妹の大中姫命に神宝を任せようとしたが、大中姫命は物部十千根大連に治めさせた。また丹波国の甕襲の犬が獣を殺すと腹から八尺瓊勾玉が出て、それが石上神宮にあるという話も記される。</p>
+      <h3>清彦が天日槍の宝を献上する</h3>
+      <p class="t">八十八年、天皇は天日槍が持ってきた宝を見たいと言い、曽孫の清彦に献上させた。清彦は出石という小刀だけを衣の中に隠したが見つかって献上し、宝は神府に納められた。ところが小刀は消えて清彦の家に戻り、さらに淡路島に移って島の人に祭られたという。続いて、天日槍が但馬にとどまり前津耳の娘を娶って但馬諸助を生んだことが記される。</p>
+      <h3>田道間守が非時香菓を求める</h3>
+      <p class="t">九十年、天皇は田道間守を常世国に遣わし、非時香菓（今の橘）を求めさせた。九十九年七月、天皇は纒向宮で百四十歳で崩じ、十二月に菅原伏見陵に葬られた。翌年三月、田道間守は非時香菓八竿八縵を持って帰ったが、天皇はすでに亡く、十年かけて往来した苦労を嘆いて陵に向かって泣き叫び、自ら死んだ。田道間守は三宅連の始祖とされる。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>二十五年三月、天照大神を豊耜入姫命から離して倭姫命に託した。倭姫命は菟田・近江・美濃をめぐって伊勢に至り、大神の教えによって伊勢に祠を建て、五十鈴川のほとりに斎宮を興した。</li>
         <li><span class="kind ">本文</span>二十八年、天皇の同母弟倭彦命の陵に近習の者を生き埋めにすると、数日泣き叫んで死んだ。天皇はこれを悲しみ、殉死をやめるよう命じた。</li>
@@ -115,39 +176,19 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>二十五年二月、天皇は阿倍臣・和珥臣・中臣連・物部連・大伴連の遠祖である五人の大夫に、先帝の崇神天皇がつつしんで神々を祭ったので天下が太平であったと述べ、自分の世にも神々の祭りを怠ってはならないと告げた。三月、天照大神を豊耜入姫命から離して倭姫命に託した。倭姫命は大神の鎮まる地を求めて菟田の筱幡に行き、近江国、美濃国を経て伊勢国に至った。大神は伊勢を常世の浪が寄せる美しい国だとして、ここにいたいと教えたので、伊勢国に祠を立て、五十鈴川のほとりに斎宮を興した。二十六年、物部十千根大連が出雲に行って神宝を調べ、その管理を任された。二十七年、武器を神への幣とすることを占って吉と出たので、弓矢と横刀を諸社に納め、神地・神戸を定めた。武器で神を祭ることはこのとき始まったとされる。この年、来目邑に屯倉を興した。</p>
-      <p>二十八年、天皇の同母弟倭彦命が亡くなり、その陵のまわりに近習の者を生きたまま埋めた。彼らは数日死なずに昼夜泣き叫び、天皇はその声を聞いて悲しみ、殉死をやめるよう議させた。三十年、天皇は二人の皇子に望みを尋ね、兄の五十瓊敷命は弓矢を、弟の大足彦尊は皇位を望んだので、それぞれの望みどおりにした。</p>
-      <p>三十二年、皇后日葉酢媛命が亡くなった。殉死はよくないと知りながら葬り方に迷う天皇に、野見宿禰が進言し、出雲国の土部百人を呼んで埴土で人や馬などの形を作らせて献上した。天皇は喜んでこれを日葉酢媛命の墓に初めて立て、埴輪または立物と名づけ、以後は陵墓に必ずこの土物を立てるよう命じた。野見宿禰は土部臣の姓と土部の職を与えられ、土部連らが天皇の喪葬をつかさどる由来とされた。</p>
-      <p>三十四年、天皇は山背に行き、美しい綺戸辺を後宮に入れて磐衝別命が生まれた。天皇がしるしを祈ると、行宮に着くころ川から大亀が出て、矛で刺すと白い石に変わったという。三十五年、五十瓊敷命に河内国で高石池・茅渟池を作らせ、さらに倭の狭城池・迹見池を作り、諸国に八百あまりの池や溝を開かせて農業を盛んにしたので、民は豊かになった。三十七年、大足彦尊を皇太子とした。</p>
-      <p>三十九年、五十瓊敷命は茅渟の菟砥川上宮で剣一千口を作って石上神宮に納め、その後、石上神宮の神宝をつかさどった。八十七年、老いた五十瓊敷命は妹の大中姫命に神宝を任せようとしたが、大中姫命は物部十千根大連に治めさせた。また丹波国の甕襲の犬が獣を殺すと腹から八尺瓊勾玉が出て、それが石上神宮にあるという話も記される。</p>
-      <p>八十八年、天皇は天日槍が持ってきた宝を見たいと言い、曽孫の清彦に献上させた。清彦は出石という小刀だけを衣の中に隠したが見つかって献上し、宝は神府に納められた。ところが小刀は消えて清彦の家に戻り、さらに淡路島に移って島の人に祭られたという。続いて、天日槍が但馬にとどまり前津耳の娘を娶って但馬諸助を生んだことが記される。</p>
-      <p>九十年、天皇は田道間守を常世国に遣わし、非時香菓（今の橘）を求めさせた。九十九年七月、天皇は纒向宮で百四十歳で崩じ、十二月に菅原伏見陵に葬られた。翌年三月、田道間守は非時香菓八竿八縵を持って帰ったが、天皇はすでに亡く、十年かけて往来した苦労を嘆いて陵に向かって泣き叫び、自ら死んだ。田道間守は三宅連の始祖とされる。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云（二十五年三月条の別伝）</b><p>倭姫命は天照大神を磯城の厳橿の本に祭り、その後、丁巳年十月に伊勢国の渡遇宮に遷したとする。また倭大神が穂積臣の遠祖大水口宿禰にかかって、先皇が神祇祭祀の根源を探らなかったため短命だったと告げ、渟名城稚姫命が占いで選ばれたが体が弱って祭れず、倭直の祖長尾市宿禰に祭らせたと記す。</p></div>
-      <div class="var"><b>一云（三十二年七月条の小注）</b><p>皇后日葉酢媛命の名を日葉酢根命とする。</p></div>
-      <div class="var"><b>一云（三十九年十月条の別伝）</b><p>五十瓊敷皇子は河上という鍛冶に大刀一千口を作らせ、楯部・倭文部など十の品部を賜ったとする。大刀はまず忍坂邑に納め、のちに石上神宮に移し、神の求めで春日臣の一族の市河に治めさせたとし、これを物部首の始祖とする。</p></div>
-      <div class="var"><b>一云（八十八年七月条の小注）</b><p>天日槍が娶った娘の父前津耳を、前津見または太耳とする。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">是神風伊勢國。則常世之浪重浪歸國也。</blockquote><p>天照大神が倭姫命に告げた言葉。伊勢は常世の浪が重ねて寄せる国だという。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">夫以生所愛令殉亡者。是甚傷矣。</blockquote><p>生前に愛した者を死者に殉じさせるのは、とても痛ましいことだという天皇の言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">仍號是土物謂埴輪。亦名立物也。</blockquote><p>この土で作った物を埴輪と名づけ、立物ともいった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">天皇命田道間守。遣常世國。令求非時香菓。</blockquote><p>天皇が田道間守を常世国に遣わし、非時香菓を求めさせた。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全4件）。</p>
+      <details><summary>一云（二十五年三月条の別伝）</summary><p>倭姫命は天照大神を磯城の厳橿の本に祭り、その後、丁巳年十月に伊勢国の渡遇宮に遷したとする。また倭大神が穂積臣の遠祖大水口宿禰にかかって、先皇が神祇祭祀の根源を探らなかったため短命だったと告げ、渟名城稚姫命が占いで選ばれたが体が弱って祭れず、倭直の祖長尾市宿禰に祭らせたと記す。</p></details>
+      <details><summary>一云（三十二年七月条の小注）</summary><p>皇后日葉酢媛命の名を日葉酢根命とする。</p></details>
+      <details><summary>一云（三十九年十月条の別伝）</summary><p>五十瓊敷皇子は河上という鍛冶に大刀一千口を作らせ、楯部・倭文部など十の品部を賜ったとする。大刀はまず忍坂邑に納め、のちに石上神宮に移し、神の求めで春日臣の一族の市河に治めさせたとし、これを物部首の始祖とする。</p></details>
+      <details><summary>一云（八十八年七月条の小注）</summary><p>天日槍が娶った娘の父前津耳を、前津見または太耳とする。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
-        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=amenohiboko">天日槍命</a></b><small>あめのひぼこのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=izushi">出石神社</a></span></li>
         <li><b>倭姫命</b><span class="sh">垂仁天皇の皇女。天照大神を託され、伊勢に祠を立てた。</span></li>
         <li><b>豐耜入姫命</b><span class="sh">倭姫命の前に天照大神を託されていた皇女。</span></li>
@@ -165,7 +206,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 中巻 垂仁天皇の段（多遅摩毛理）</span><p>古事記では多遅摩毛理が持ち帰った縵八縵・矛八矛のうち半分を大后に献じ、残りを天皇の御陵に置いて泣き叫んで死んだとする。書紀では「八竿八縵」を持ち帰り、十年の苦労を嘆いて陵の前で死んだとし、大后への献上は記さない。</p><blockquote lang="zh-Hant">分縵四縵。矛四矛。獻于大后。</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 崇神天皇の段（御子の系譜の小注）・垂仁天皇の段の末尾</span><p>古事記は崇神天皇の段の小注で、倭日子命のときに初めて陵に「人垣」を立てたと記し、垂仁天皇の段では大后比婆須比売命のときに土師部を定めたとする。書紀のように倭彦命の殉死を悲しんで殉死をやめ、野見宿禰の提案で埴輪を立てた話は確認できなかった。</p><blockquote lang="zh-Hant">始而於陵立人垣</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 応神天皇の段（天之日矛）</span><p>古事記は天之日矛の話を応神天皇の段に「昔」のこととして載せ、宝は珠二貫・比礼四種・鏡二種の八種で、伊豆志之八前大神とされる。系譜でも清日子は多遅摩毛理の兄弟とされ、書紀の一云で清彦を田道間守の父とするのと異なる。</p><blockquote lang="zh-Hant">珠二貫。又振浪比禮。</blockquote></div>
@@ -173,12 +214,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="suinin-sahohiko.html"><small>← 前のページ（巻第六 垂仁天皇）</small>垂仁天皇の即位、狭穂彦王の反乱と誉津別命</a><a class="next" href="keiko-junko.html"><small>次のページ（巻第七 景行天皇）→</small>景行天皇の即位と九州巡幸</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第六" target="_blank" rel="noopener">日本書紀 巻第六</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izushinoyamaenookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izushinoyamaenookami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">是神風伊勢國。則常世之浪重浪歸國也。</blockquote><p>天照大神が倭姫命に告げた言葉。伊勢は常世の浪が重ねて寄せる国だという。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">夫以生所愛令殉亡者。是甚傷矣。</blockquote><p>生前に愛した者を死者に殉じさせるのは、とても痛ましいことだという天皇の言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">仍號是土物謂埴輪。亦名立物也。</blockquote><p>この土で作った物を埴輪と名づけ、立物ともいった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">天皇命田道間守。遣常世國。令求非時香菓。</blockquote><p>天皇が田道間守を常世国に遣わし、非時香菓を求めさせた。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第六" target="_blank" rel="noopener">日本書紀 巻第六</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izushinoyamaenookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izushinoyamaenookami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

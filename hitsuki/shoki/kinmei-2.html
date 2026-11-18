@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十九 欽明天皇（全50ページ中 35）</p>
-    <h1>聖明王の戦死と任那の滅亡</h1>
-    <p class="pg-lead">欽明天皇十四年以降、百済は高麗・新羅との戦いのために援軍を求め続け、十五年に聖明王が新羅との戦いで殺された。二十三年に新羅が任那の官家を滅ぼし、天皇は死の床で皇太子に新羅を討ち任那を建て直すよう言い残した。</p>
-    <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十九 欽明天皇（全50ページ中 35）</p>
+        <h1>聖明王の戦死と任那の滅亡</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">欽明天皇十四年以降、百済は高麗・新羅との戦いのために援軍を求め続け、十五年に聖明王が新羅との戦いで殺された。二十三年に新羅が任那の官家を滅ぼし、天皇は死の床で皇太子に新羅を討ち任那を建て直すよう言い残した。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>溝邊直が光る樟の木で仏像を造る</h3>
+      <p class="t">十四年正月、百済は援軍を求めた。五月、河内国から、茅渟の海に雷のような梵音が響き日のように光るものがあると報告があり、溝邊直が海に入って光る樟の木を見つけて献じ、天皇はそれで仏像二体を造らせた。六月、内臣を百済に遣わして馬・船・弓矢を与え、医博士・易博士・暦博士の交代と、卜書・暦本・薬の送付を求めた。七月、蘇我稻目は王辰爾に船の賦を記録させ、王辰爾は船長とされて船史の姓を賜った。八月、百済は、新羅と狛が通じて安羅を取り日本への道を断とうとしているとして、急いで援軍を送るよう上表した。</p>
+      <h3>餘昌が高麗に向かう</h3>
+      <p class="t">十月、百済の王子餘昌は国中の兵を出して高麗に向かい、百合野に砦を築いた。高麗の騎兵と名乗りを交わしたのち戦い、高麗の勇士を討ち取って高麗の王を東聖山の上まで追った。十五年正月、渟中倉太珠敷尊が皇太子に立てられた。百済は筑紫の内臣に援軍の数を問い、内臣は兵一千・馬百匹・船四十隻を送ると答えた。二月には百済から五経博士・僧・易博士・暦博士・医博士・採薬師・楽人が交代として送られ、五月に内臣が水軍を率いて百済へ渡った。</p>
+      <h3>苦都が聖明王を捕らえ首を斬る</h3>
+      <p class="t">十二月、百済の上表によると、倭の兵とともに新羅の函山城を攻め、竹斯の物部莫奇委沙奇の火箭で城を焼き落とした。しかし餘昌は老臣の諫めを聞かずに新羅に入って久陀牟羅塞を築き、父の聖明王は苦労する子をねぎらおうと自ら出向いた。新羅はこれを聞いて道を断ち、馬飼いの奴の苦都が明王を捕らえて首を斬った。囲まれた餘昌は、筑紫国造が矢を射続けて囲みを破ったので逃げ帰ることができ、餘昌はこの国造を鞍橋君と名づけた。新羅の将の一人は、日本の天皇の怒りを恐れて、百済を滅ぼすことを止めさせた。</p>
+      <h3>惠に建邦之神を語る蘇我臣</h3>
+      <p class="t">十六年二月、餘昌は王子惠を遣わして聖明王の死を伝えた。蘇我臣は惠に、大泊瀬天皇の世に百済が高麗に攻められたとき、天皇が神祇伯に命じて神々に策を受けさせ、建邦之神を請うて救いに向かわせたことを語った。そして百済がその神を祀らなくなったと聞くが、神宮を修めて祀れば国は栄えるだろうと述べた。八月、餘昌は父のために出家しようとしたが、臣下に止められ、代わりに百人を出家させた。この間、吉備の五郡に白猪屯倉、備前の兒嶋郡に屯倉、倭国高市郡に韓人大身狹屯倉・高麗人小身狹屯倉などが置かれた。十七年正月に惠は兵仗や良馬を賜って送り返され、十八年三月に餘昌が王位を継いで威徳王となった。</p>
+      <h3>新羅が任那の官家を滅ぼす</h3>
+      <p class="t">二十一年・二十二年、新羅の調使は扱いの悪さに怒って帰り、新羅は阿羅波斯山に城を築いて日本に備えた。二十三年正月、新羅は任那の官家を打ち滅ぼし、六月に天皇は、氣長足姫尊（神功皇后）の恩義に背いて任那を損なった新羅を責める詔を出した。七月、紀男麻呂宿禰は新羅軍を破ったが、副将の河邊臣瓊缶は兵法を知らずに進んで敗れ、妻の甘美媛とともに捕らえられ、命と引き換えに妻を差し出した。調吉士伊企儺は、日本に向かって辱めの言葉を叫ぶよう迫られても、逆に新羅の王をののしる言葉を叫び続けて殺され、子の舅子も父を抱いて死に、妻の大葉子は歌を詠んだ。八月、大伴連狹手彦は百済の計を用いて高麗を破り、七織帳や鉄屋などを持ち帰って、美女媛らを蘇我稻目に送った。</p>
+      <h3>高麗の使者と白猪史の姓</h3>
+      <p class="t">二十六年、高麗人が筑紫に来て山背国に置かれた。二十八年には国々で大水と飢饉があった。三十年、王辰爾の甥の膽津が白猪田部の丁の籍を定め、白猪史の姓を賜った。三十一年三月、蘇我稻目が亡くなった。四月、越に漂着した高麗の使者を郡司が隠していると江渟臣裾代が訴え、天皇は山背国相樂郡に館を建てて厚くもてなさせた。高麗の大使は調を横取りしていた道君の偽りを見抜き、膳臣傾子が調を取り戻して与え、七月に使者は近江から山背の高威館・相樂館に迎えられた。</p>
+      <h3>天皇が病で新羅を討てと言い残す</h3>
+      <p class="t">三十二年三月、坂田耳子郎君を新羅に遣わして任那が滅びた理由を問わせた。四月、天皇は病が重くなり、外にいた皇太子を急ぎ呼び寄せて手を取り、新羅を討って任那を建て直せと言い残した。その月に天皇は内寝で亡くなった。五月に河内の古市で殯をし、八月に新羅の弔使が殯で哀悼を述べ、九月に檜隈坂合陵に葬った。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>十五年十二月、百済の王子餘昌が新羅の地に久陀牟羅塞を築くと、父の聖明王は子をねぎらいに向かったが、新羅軍に道を断たれ、佐知村の馬飼いの奴の苦都に斬られた。</li>
         <li><span class="kind ">本文</span>二十三年正月、新羅が任那の官家を打ち滅ぼした。六月に天皇は新羅を責める詔を出し、七月に紀男麻呂宿禰らを遣わしたが、副将の河邊臣瓊缶は敗れて捕らえられ、調吉士伊企儺は降伏を拒んで殺された。</li>
@@ -115,34 +176,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>十四年正月、百済は援軍を求めた。五月、河内国から、茅渟の海に雷のような梵音が響き日のように光るものがあると報告があり、溝邊直が海に入って光る樟の木を見つけて献じ、天皇はそれで仏像二体を造らせた。六月、内臣を百済に遣わして馬・船・弓矢を与え、医博士・易博士・暦博士の交代と、卜書・暦本・薬の送付を求めた。七月、蘇我稻目は王辰爾に船の賦を記録させ、王辰爾は船長とされて船史の姓を賜った。八月、百済は、新羅と狛が通じて安羅を取り日本への道を断とうとしているとして、急いで援軍を送るよう上表した。</p>
-      <p>十月、百済の王子餘昌は国中の兵を出して高麗に向かい、百合野に砦を築いた。高麗の騎兵と名乗りを交わしたのち戦い、高麗の勇士を討ち取って高麗の王を東聖山の上まで追った。十五年正月、渟中倉太珠敷尊が皇太子に立てられた。百済は筑紫の内臣に援軍の数を問い、内臣は兵一千・馬百匹・船四十隻を送ると答えた。二月には百済から五経博士・僧・易博士・暦博士・医博士・採薬師・楽人が交代として送られ、五月に内臣が水軍を率いて百済へ渡った。</p>
-      <p>十二月、百済の上表によると、倭の兵とともに新羅の函山城を攻め、竹斯の物部莫奇委沙奇の火箭で城を焼き落とした。しかし餘昌は老臣の諫めを聞かずに新羅に入って久陀牟羅塞を築き、父の聖明王は苦労する子をねぎらおうと自ら出向いた。新羅はこれを聞いて道を断ち、馬飼いの奴の苦都が明王を捕らえて首を斬った。囲まれた餘昌は、筑紫国造が矢を射続けて囲みを破ったので逃げ帰ることができ、餘昌はこの国造を鞍橋君と名づけた。新羅の将の一人は、日本の天皇の怒りを恐れて、百済を滅ぼすことを止めさせた。</p>
-      <p>十六年二月、餘昌は王子惠を遣わして聖明王の死を伝えた。蘇我臣は惠に、大泊瀬天皇の世に百済が高麗に攻められたとき、天皇が神祇伯に命じて神々に策を受けさせ、建邦之神を請うて救いに向かわせたことを語った。そして百済がその神を祀らなくなったと聞くが、神宮を修めて祀れば国は栄えるだろうと述べた。八月、餘昌は父のために出家しようとしたが、臣下に止められ、代わりに百人を出家させた。この間、吉備の五郡に白猪屯倉、備前の兒嶋郡に屯倉、倭国高市郡に韓人大身狹屯倉・高麗人小身狹屯倉などが置かれた。十七年正月に惠は兵仗や良馬を賜って送り返され、十八年三月に餘昌が王位を継いで威徳王となった。</p>
-      <p>二十一年・二十二年、新羅の調使は扱いの悪さに怒って帰り、新羅は阿羅波斯山に城を築いて日本に備えた。二十三年正月、新羅は任那の官家を打ち滅ぼし、六月に天皇は、氣長足姫尊（神功皇后）の恩義に背いて任那を損なった新羅を責める詔を出した。七月、紀男麻呂宿禰は新羅軍を破ったが、副将の河邊臣瓊缶は兵法を知らずに進んで敗れ、妻の甘美媛とともに捕らえられ、命と引き換えに妻を差し出した。調吉士伊企儺は、日本に向かって辱めの言葉を叫ぶよう迫られても、逆に新羅の王をののしる言葉を叫び続けて殺され、子の舅子も父を抱いて死に、妻の大葉子は歌を詠んだ。八月、大伴連狹手彦は百済の計を用いて高麗を破り、七織帳や鉄屋などを持ち帰って、美女媛らを蘇我稻目に送った。</p>
-      <p>二十六年、高麗人が筑紫に来て山背国に置かれた。二十八年には国々で大水と飢饉があった。三十年、王辰爾の甥の膽津が白猪田部の丁の籍を定め、白猪史の姓を賜った。三十一年三月、蘇我稻目が亡くなった。四月、越に漂着した高麗の使者を郡司が隠していると江渟臣裾代が訴え、天皇は山背国相樂郡に館を建てて厚くもてなさせた。高麗の大使は調を横取りしていた道君の偽りを見抜き、膳臣傾子が調を取り戻して与え、七月に使者は近江から山背の高威館・相樂館に迎えられた。</p>
-      <p>三十二年三月、坂田耳子郎君を新羅に遣わして任那が滅びた理由を問わせた。四月、天皇は病が重くなり、外にいた皇太子を急ぎ呼び寄せて手を取り、新羅を討って任那を建て直せと言い残した。その月に天皇は内寝で亡くなった。五月に河内の古市で殯をし、八月に新羅の弔使が殯で哀悼を述べ、九月に檜隈坂合陵に葬った。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一本云</b><p>本文は苦都が聖明王の首を斬ったとするが、一本は、明王が胡床に腰かけ、佩いていた刀を谷知（苦都）に渡して斬らせたとする。</p></div>
-      <div class="var"><b>一本云</b><p>本文は苦都が首を斬って穴に埋めたとするが、一本は、新羅が明王の頭の骨をとどめ、残りの骨を礼をもって百済に送ったとし、頭の骨は都堂と呼ぶ北廳の階段の下に埋められたと伝える。</p></div>
-      <div class="var"><b>一本云</b><p>本文は任那の官家の滅亡を二十三年正月とするが、一本は二十一年に任那が滅んだとし、任那とは加羅国・安羅国など十国の総称だと記す。</p></div>
-      <div class="var"><b>一本云</b><p>本文は狹手彦の高麗攻めを二十三年八月とするが、一本は十一年に大伴狹手彦連が百済とともに高麗王陽香を比津留都に追い払ったとする。</p></div>
-      <div class="var"><b>一本云</b><p>大身狹屯倉・小身狹屯倉の名について、一本は、各地の韓人・高麗人をそれぞれの屯倉の田部としたことから名づけられたと説明する。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">王頭不合受奴手</blockquote><p>王の首が奴の手にかかるのはふさわしくない（聖明王の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">新羅打滅任那官家</blockquote><p>新羅が任那の官家を打ち滅ぼした。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">夫勝不忘敗。安必慮危</blockquote><p>勝っても負けを忘れず、安らかでも危うさを思え（紀男麻呂が軍中に出した言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">汝須打新羅。封建任那</blockquote><p>お前は必ず新羅を討ち、任那を建て直せ（天皇の遺言）。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全5件）。</p>
+      <details><summary>一本云</summary><p>本文は苦都が聖明王の首を斬ったとするが、一本は、明王が胡床に腰かけ、佩いていた刀を谷知（苦都）に渡して斬らせたとする。</p></details>
+      <details><summary>一本云</summary><p>本文は苦都が首を斬って穴に埋めたとするが、一本は、新羅が明王の頭の骨をとどめ、残りの骨を礼をもって百済に送ったとし、頭の骨は都堂と呼ぶ北廳の階段の下に埋められたと伝える。</p></details>
+      <details><summary>一本云</summary><p>本文は任那の官家の滅亡を二十三年正月とするが、一本は二十一年に任那が滅んだとし、任那とは加羅国・安羅国など十国の総称だと記す。</p></details>
+      <details><summary>一本云</summary><p>本文は狹手彦の高麗攻めを二十三年八月とするが、一本は十一年に大伴狹手彦連が百済とともに高麗王陽香を比津留都に追い払ったとする。</p></details>
+      <details><summary>一本云</summary><p>大身狹屯倉・小身狹屯倉の名について、一本は、各地の韓人・高麗人をそれぞれの屯倉の田部としたことから名づけられたと説明する。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -168,19 +209,29 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 欽明天皇の段（系譜の末尾）</span><p>古事記は欽明天皇の子を合わせて二十五王とし、そのうち沼名倉太玉敷命・橘之豐日命・豐御氣炊屋比賣命・長谷部之若雀命の四王が天下を治めたとまとめる。日本書紀のこの部分は、十五年に渟中倉太珠敷尊を皇太子に立てたことを記す。</p><blockquote lang="zh-Hant">凡此天皇之御子等。并廿五王</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 欽明天皇の段</span><p>古事記の欽明天皇の段には、崩御・殯・御陵の記事も、聖明王の死や任那の滅亡に対応する記事も確認できなかった。日本書紀は三十二年四月の崩御と、檜隈坂合陵への埋葬を記す。</p><blockquote lang="zh-Hant">天國押波流岐廣庭天皇。坐師木嶋大宮</blockquote></div>
     </section>
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="kinmei-1.html"><small>← 前のページ（巻第十九 欽明天皇）</small>欽明天皇の即位・任那復興の協議と仏像の献上</a><a class="next" href="bidatsu.html"><small>次のページ（巻第二十 敏達天皇）→</small>敏達天皇と高麗の国書・仏法の始まり</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十九" target="_blank" rel="noopener">日本書紀 巻第十九</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十九" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十九</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十九</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">王頭不合受奴手</blockquote><p>王の首が奴の手にかかるのはふさわしくない（聖明王の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">新羅打滅任那官家</blockquote><p>新羅が任那の官家を打ち滅ぼした。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">夫勝不忘敗。安必慮危</blockquote><p>勝っても負けを忘れず、安らかでも危うさを思え（紀男麻呂が軍中に出した言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">汝須打新羅。封建任那</blockquote><p>お前は必ず新羅を討ち、任那を建て直せ（天皇の遺言）。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十九" target="_blank" rel="noopener">日本書紀 巻第十九</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十九" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十九</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十九</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

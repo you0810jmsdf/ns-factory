@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第二十九 天武天皇 下（全50ページ中 47）</p>
-    <h1>天武天皇の即位と吉野の盟約</h1>
-    <p class="pg-lead">天武天皇二年に飛鳥浄御原宮で即位してから九年までの記事をまとめる。壬申年の功臣への贈位、神々の祭りと仏教の行事、新羅・高麗・耽羅との往来、吉野での皇子たちの盟い、薬師寺の発願などが年ごとに記される。</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第二十九 天武天皇 下（全50ページ中 47）</p>
+        <h1>天武天皇の即位と吉野の盟約</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">天武天皇二年に飛鳥浄御原宮で即位してから九年までの記事をまとめる。壬申年の功臣への贈位、神々の祭りと仏教の行事、新羅・高麗・耽羅との往来、吉野での皇子たちの盟い、薬師寺の発願などが年ごとに記される。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>飛鳥浄御原宮で即位する</h3>
+      <p class="t">二年正月、群臣に宴を開いた。二月、天皇は飛鳥浄御原宮で即位し、正妃を皇后に立てた。三月には備後国から白い雉が献上されて天下に大赦があり、川原寺で書生を集めて一切経の書写を始めた。四月には大来皇女を天照大神宮に仕えさせるため、まず泊瀬の斎宮に住まわせた。五月、初めて仕える者はまず大舎人として仕えさせ、女性も望めば仕えることを許すと詔した。</p>
+      <h3>新羅と耽羅の使いが来る</h3>
+      <p class="t">二年閏六月、新羅は即位を祝う使いと、先の天皇の喪を弔う使いを送ってきた。耽羅の王子も朝貢し、八月には耽羅の使いに初めて爵位を与えた。十二月には大嘗に仕えた中臣・忌部・神官や播磨・丹波の郡司らに禄を与え、高市大寺を造る役所の長官を任じた。</p>
+      <h3>対馬国から銀が出る</h3>
+      <p class="t">三年三月、対馬国から銀が初めて出たと報告され、国司に位が与えられた。八月、忍壁皇子を石上神宮に遣わして神宝を油で磨かせ、諸家が神府に預けていた宝物を子孫に返すよう命じた。十月、大来皇女は泊瀬の斎宮から伊勢神宮へ向かった。</p>
+      <h3>占星台を建てる</h3>
+      <p class="t">四年正月、初めて占星台を建てた。二月、部曲の廃止などを詔し、四月には龍田の風神と広瀬の大忌神を祭らせ、漁猟と肉食の制限を定めた。五年には夏の大旱で神々や仏に祈っても雨が降らず、人々が飢えた。八月には四方で大祓をさせ、罪を減じる赦を出した。この年、新城に都を置こうとして田畑を荒れるにまかせたが、結局都にはしなかった。</p>
+      <h3>東漢直らを許す</h3>
+      <p class="t">六年六月、天皇は東漢直らに、これまで犯してきた罪を責めながらも、氏を絶やさないため大恩をもって許すと詔した。八月、飛鳥寺で大斎を設けて一切経を読ませ、親王・諸王・群卿に一人ずつ出家させることを認めた。七年春には天神地祇を祭るため倉梯の河上に斎宮を建てたが、四月の出発の直前に十市皇女が宮中で急に亡くなり、行幸は取りやめとなって神祇を祭らなかった。七年十二月には筑紫で大地震があり、地が裂けて多くの家が倒れた。</p>
+      <h3>吉野宮で皇后と六皇子が盟う</h3>
+      <p class="t">八年三月、天皇は越智で後岡本天皇の陵を拝んだ。五月、吉野宮で皇后と六皇子とともに盟いを立て、宮に戻ると六皇子がそろって天皇を拝んだ。十月、悪い者が町に多いのは王卿が見逃すからだとして、上も下も互いに正すよう詔し、僧尼の身なりも定めた。十一月、龍田山と大坂山に初めて関を置き、難波に羅城を築いた。</p>
+      <h3>薬師寺を興す</h3>
+      <p class="t">九年四月、国の大寺二、三を除いて役所は寺を治めないと定めた。五月、宮中と諸寺で初めて金光明経を説かせた。七月には飛鳥寺の西の槻の枝が自然に折れ、舎人王が亡くなった。十一月、皇后が病気になると、皇后のために誓願して薬師寺を初めて興し、百人の僧を得度させて皇后は回復した。同じ月に天皇も病気になったが、百人の僧を得度させるとすぐに治った。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>二年二月、天皇は役人に壇場を設けさせ、飛鳥浄御原宮で即位した。正妃を皇后に立て、皇后は草壁皇子尊を生んだと記し、続けて妃・夫人たちとその皇子・皇女を並べる。</li>
         <li><span class="kind ">本文</span>八年五月、天皇は吉野宮で皇后と草壁皇子尊・大津皇子・高市皇子・河嶋皇子・忍壁皇子・芝基皇子に、互いに助け合い争わないことを盟わせた。天皇は、母の違う子たちを一人の母から生まれたように慈しむと言って六皇子を抱いた。</li>
@@ -115,36 +176,16 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>二年正月、群臣に宴を開いた。二月、天皇は飛鳥浄御原宮で即位し、正妃を皇后に立てた。三月には備後国から白い雉が献上されて天下に大赦があり、川原寺で書生を集めて一切経の書写を始めた。四月には大来皇女を天照大神宮に仕えさせるため、まず泊瀬の斎宮に住まわせた。五月、初めて仕える者はまず大舎人として仕えさせ、女性も望めば仕えることを許すと詔した。</p>
-      <p>二年閏六月、新羅は即位を祝う使いと、先の天皇の喪を弔う使いを送ってきた。耽羅の王子も朝貢し、八月には耽羅の使いに初めて爵位を与えた。十二月には大嘗に仕えた中臣・忌部・神官や播磨・丹波の郡司らに禄を与え、高市大寺を造る役所の長官を任じた。</p>
-      <p>三年三月、対馬国から銀が初めて出たと報告され、国司に位が与えられた。八月、忍壁皇子を石上神宮に遣わして神宝を油で磨かせ、諸家が神府に預けていた宝物を子孫に返すよう命じた。十月、大来皇女は泊瀬の斎宮から伊勢神宮へ向かった。</p>
-      <p>四年正月、初めて占星台を建てた。二月、部曲の廃止などを詔し、四月には龍田の風神と広瀬の大忌神を祭らせ、漁猟と肉食の制限を定めた。五年には夏の大旱で神々や仏に祈っても雨が降らず、人々が飢えた。八月には四方で大祓をさせ、罪を減じる赦を出した。この年、新城に都を置こうとして田畑を荒れるにまかせたが、結局都にはしなかった。</p>
-      <p>六年六月、天皇は東漢直らに、これまで犯してきた罪を責めながらも、氏を絶やさないため大恩をもって許すと詔した。八月、飛鳥寺で大斎を設けて一切経を読ませ、親王・諸王・群卿に一人ずつ出家させることを認めた。七年春には天神地祇を祭るため倉梯の河上に斎宮を建てたが、四月の出発の直前に十市皇女が宮中で急に亡くなり、行幸は取りやめとなって神祇を祭らなかった。七年十二月には筑紫で大地震があり、地が裂けて多くの家が倒れた。</p>
-      <p>八年三月、天皇は越智で後岡本天皇の陵を拝んだ。五月、吉野宮で皇后と六皇子とともに盟いを立て、宮に戻ると六皇子がそろって天皇を拝んだ。十月、悪い者が町に多いのは王卿が見逃すからだとして、上も下も互いに正すよう詔し、僧尼の身なりも定めた。十一月、龍田山と大坂山に初めて関を置き、難波に羅城を築いた。</p>
-      <p>九年四月、国の大寺二、三を除いて役所は寺を治めないと定めた。五月、宮中と諸寺で初めて金光明経を説かせた。七月には飛鳥寺の西の槻の枝が自然に折れ、舎人王が亡くなった。十一月、皇后が病気になると、皇后のために誓願して薬師寺を初めて興し、百人の僧を得度させて皇后は回復した。同じ月に天皇も病気になったが、百人の僧を得度させるとすぐに治った。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云</b><p>本文は、新羅の金薩儒らを先の天皇の喪を弔う使いとして記す。そこに付いた小注には「一云，調使」とあり、この使いを調（みつぎ）を納める使いとする伝えもあったことがわかる。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">即帝位於飛鳥淨御原宮</blockquote><p>飛鳥浄御原宮で天皇の位についた、という即位の記事。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">朕男等各異腹而生，然今如一母同產慈之</blockquote><p>吉野の盟いでの天皇の言葉。母の違う皇子たちを、同じ母から生まれた子のように慈しむと言っている。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">凡銀有倭國，初出于此時</blockquote><p>対馬から銀が出た記事で、倭国で銀が出たのはこの時が初めてだと記す。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">爲皇后誓願之，初興藥師寺</blockquote><p>皇后の病気のために誓願して、薬師寺を初めて興したという記事。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全1件）。</p>
+      <details><summary>一云</summary><p>本文は、新羅の金薩儒らを先の天皇の喪を弔う使いとして記す。そこに付いた小注には「一云，調使」とあり、この使いを調（みつぎ）を納める使いとする伝えもあったことがわかる。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
-        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b>草壁皇子尊</b><span class="sh">皇后の子。吉野の盟いで最初に進み出て盟った皇子。</span></li>
         <li><b>大津皇子</b><span class="sh">大田皇女の子。吉野の盟いに加わった六皇子の一人。</span></li>
         <li><b>高市皇子</b><span class="sh">尼子娘の子。吉野の盟いに加わり、九年には飛鳥寺の僧の弔いや舎人王の見舞いに遣わされた。</span></li>
@@ -160,12 +201,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="tenmu-jo.html"><small>← 前のページ（巻第二十八 天武天皇 上）</small>大海人皇子の吉野入りと壬申の乱</a><a class="next" href="tenmu-ge-2.html"><small>次のページ（巻第二十九 天武天皇 下）→</small>天武天皇の律令・帝紀の編纂と崩御</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">日本書紀 巻第二十九</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第廿九</a>　https://zh.wikisource.org/wiki/日本書紀/卷第廿九</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">即帝位於飛鳥淨御原宮</blockquote><p>飛鳥浄御原宮で天皇の位についた、という即位の記事。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">朕男等各異腹而生，然今如一母同產慈之</blockquote><p>吉野の盟いでの天皇の言葉。母の違う皇子たちを、同じ母から生まれた子のように慈しむと言っている。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">凡銀有倭國，初出于此時</blockquote><p>対馬から銀が出た記事で、倭国で銀が出たのはこの時が初めてだと記す。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">爲皇后誓願之，初興藥師寺</blockquote><p>皇后の病気のために誓願して、薬師寺を初めて興したという記事。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">日本書紀 巻第二十九</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第廿九</a>　https://zh.wikisource.org/wiki/日本書紀/卷第廿九</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第七 景行天皇（全50ページ中 18）</p>
-    <h1>日本武尊の熊襲征伐と東征への出発</h1>
-    <p class="pg-lead">景行天皇二十七年、ふたたび背いた熊襲を討つため十六歳の日本武尊が遣わされ、童女の姿で川上梟帥を刺し、その名を献じられて「日本武」と名のるまでを記す。四十年に東夷が背くと、逃げ隠れた大碓皇子に代わって日本武尊が斧鉞を受け、伊勢で倭姫命から草薙剣を授かって出発する。</p>
-    <div class="xlink"><a href="../kojiki/yamatotakeru-saisei.html">古事記で読む：小碓命の西征（熊曾建と出雲建） ›</a><a href="../kojiki/yamatotakeru-tosei.html">古事記で読む：倭建命の東征 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第七 景行天皇（全50ページ中 18）</p>
+        <h1>日本武尊の熊襲征伐と東征への出発</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">景行天皇二十七年、ふたたび背いた熊襲を討つため十六歳の日本武尊が遣わされ、童女の姿で川上梟帥を刺し、その名を献じられて「日本武」と名のるまでを記す。四十年に東夷が背くと、逃げ隠れた大碓皇子に代わって日本武尊が斧鉞を受け、伊勢で倭姫命から草薙剣を授かって出発する。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/yamatotakeru-saisei.html">古事記で読む：小碓命の西征（熊曾建と出雲建） ›</a><a href="../kojiki/yamatotakeru-tosei.html">古事記で読む：倭建命の東征 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>日本武尊を遣わし熊襲を討たせる</h3>
+      <p class="t">二十七年八月、熊襲がまた背き、辺境を侵し続けた。十月、天皇は十六歳の日本武尊を遣わして熊襲を討たせた。尊が弓の上手を求めると、美濃国の弟彦公がよいと勧められ、葛城の宮戸彦に呼びに行かせた。弟彦公は石占横立や尾張の田子の稲置・乳近の稲置を連れて尊に従った。</p>
+      <h3>童女の姿で熊襲の宴に入る</h3>
+      <p class="t">十二月、尊は熊襲国に着き、様子と地形をうかがった。熊襲の首長取石鹿文、またの名を川上梟帥が親族を集めて宴を開くと聞き、尊は髪を解いて童女の姿となり、剣を衣の中に隠して宴の席の女たちの中に入った。梟帥はその姿に心ひかれて手を取って同席させ、杯を勧めて戯れた。夜が更けて梟帥が酔うと、尊は剣を抜いてその胸を刺した。</p>
+      <h3>梟帥が日本武皇子の名を献じる</h3>
+      <p class="t">梟帥は死ぬ前にしばし待てと言い、尊が誰かを問うた。尊が大足彦天皇の子の日本童男だと名のると、梟帥は自分は国中の強力者で多くの武力に出会ったが皇子に及ぶ者はいなかったとして、日本武皇子の名を献じ、言い終わると尊に刺し殺された。弟彦らが梟帥の仲間をことごとく斬った後、尊は海路で倭へ帰る途中、吉備で穴海を渡る所の悪神を殺し、難波でも柏の渡りの悪神を殺した。</p>
+      <h3>熊襲平定を奏上する</h3>
+      <p class="t">二十八年二月、日本武尊は熊襲平定を奏上し、天皇の神霊のおかげで首長を討ち、西の地は静まったと述べた。また、吉備の穴済の神と難波の柏済の神が毒気を放って道行く人を苦しめていたので、どちらも殺して水陸の道を開いたと報告した。天皇は尊の功をほめ、特に愛した。</p>
+      <h3>東夷が背き日本武尊が名のり出る</h3>
+      <p class="t">四十年六月、東夷の多くが背き、辺境が騒がしくなった。七月、天皇が誰を遣わすかを群臣に問うと、日本武尊は自分は西征で働いたので今度は大碓皇子の役目だと言った。大碓皇子は驚いて草むらに逃げ隠れ、天皇はこれを責めて美濃に封じた。これが身毛津君・守君の始祖である。日本武尊が自ら平定に向かうと名のり出ると、天皇は斧鉞を授け、東夷、特に蝦夷の荒々しさを語ったうえで、尊を「形は我が子、実は神人」とたたえ、威を示し徳で懐けて従わせるよう命じた。吉備武彦と大伴武日連が従い、七掬脛が膳夫となった。</p>
+      <h3>伊勢神宮で草薙剣を授かる</h3>
+      <p class="t">十月癸丑の日に日本武尊は出発した。戊午の日、道を曲げて伊勢神宮を拝み、倭姫命に東征に向かうことを告げた。倭姫命は草薙剣を取って尊に授け、つつしんで怠ることのないようにと言った。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>二十七年十月、十六歳の日本武尊は熊襲征伐に遣わされた。十二月、髪を解いて童女の姿となり、剣を衣の中に隠して熊襲の首長川上梟帥（取石鹿文）の宴に入り込み、酔った梟帥の胸を刺した。</li>
         <li><span class="kind ">本文</span>死に際の川上梟帥は、これほどの武力の者に会ったことはないとして「日本武皇子」の名を献じ、尊はそれ以来日本武尊と呼ばれるようになったとされる。</li>
@@ -113,25 +172,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">古事記と比較</span>古事記では小碓命が兄の大碓命を殺したため天皇にその荒々しさを恐れられて西へ遣わされるが、書紀では熊襲が再び背いたために遣わされ、大碓皇子はのちに東征を恐れて隠れ、美濃に封じられる。</li>
         <li><span class="kind k-int">解説</span>日本武尊は熊襲からの帰り道に吉備の穴海と難波の柏の渡りの悪神を殺した。古事記の対応する場面で言向けられる「穴戸神」について、神名データベースは、長門の穴門とする説、吉備の穴海とする説、海峡一般を指すとする説を挙げている。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/ajisukitakahikonokami/" target="_blank" rel="noopener">［出典］</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>二十七年八月、熊襲がまた背き、辺境を侵し続けた。十月、天皇は十六歳の日本武尊を遣わして熊襲を討たせた。尊が弓の上手を求めると、美濃国の弟彦公がよいと勧められ、葛城の宮戸彦に呼びに行かせた。弟彦公は石占横立や尾張の田子の稲置・乳近の稲置を連れて尊に従った。</p>
-      <p>十二月、尊は熊襲国に着き、様子と地形をうかがった。熊襲の首長取石鹿文、またの名を川上梟帥が親族を集めて宴を開くと聞き、尊は髪を解いて童女の姿となり、剣を衣の中に隠して宴の席の女たちの中に入った。梟帥はその姿に心ひかれて手を取って同席させ、杯を勧めて戯れた。夜が更けて梟帥が酔うと、尊は剣を抜いてその胸を刺した。</p>
-      <p>梟帥は死ぬ前にしばし待てと言い、尊が誰かを問うた。尊が大足彦天皇の子の日本童男だと名のると、梟帥は自分は国中の強力者で多くの武力に出会ったが皇子に及ぶ者はいなかったとして、日本武皇子の名を献じ、言い終わると尊に刺し殺された。弟彦らが梟帥の仲間をことごとく斬った後、尊は海路で倭へ帰る途中、吉備で穴海を渡る所の悪神を殺し、難波でも柏の渡りの悪神を殺した。</p>
-      <p>二十八年二月、日本武尊は熊襲平定を奏上し、天皇の神霊のおかげで首長を討ち、西の地は静まったと述べた。また、吉備の穴済の神と難波の柏済の神が毒気を放って道行く人を苦しめていたので、どちらも殺して水陸の道を開いたと報告した。天皇は尊の功をほめ、特に愛した。</p>
-      <p>四十年六月、東夷の多くが背き、辺境が騒がしくなった。七月、天皇が誰を遣わすかを群臣に問うと、日本武尊は自分は西征で働いたので今度は大碓皇子の役目だと言った。大碓皇子は驚いて草むらに逃げ隠れ、天皇はこれを責めて美濃に封じた。これが身毛津君・守君の始祖である。日本武尊が自ら平定に向かうと名のり出ると、天皇は斧鉞を授け、東夷、特に蝦夷の荒々しさを語ったうえで、尊を「形は我が子、実は神人」とたたえ、威を示し徳で懐けて従わせるよう命じた。吉備武彦と大伴武日連が従い、七掬脛が膳夫となった。</p>
-      <p>十月癸丑の日に日本武尊は出発した。戊午の日、道を曲げて伊勢神宮を拝み、倭姫命に東征に向かうことを告げた。倭姫命は草薙剣を取って尊に授け、つつしんで怠ることのないようにと言った。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">吾多遇武力矣。未有若皇子者。</blockquote><p>川上梟帥の言葉。多くの武力に出会ったが、皇子のような者はいなかった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">自今以後號皇子。應稱日本武皇子。</blockquote><p>今後は皇子を日本武皇子と呼ぶべきだと、川上梟帥が名を献じた言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">形則我子。實則神人。</blockquote><p>天皇が日本武尊を評した言葉。姿は我が子だが、実は神のような人である。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">倭姫命取草薙釼。授日本武尊曰。愼之莫怠也。</blockquote><p>倭姫命が草薙剣を日本武尊に授け、つつしんで怠るなと言った。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -152,7 +192,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 中巻 景行天皇の段（小碓命の西征）</span><p>古事記では熊曾建は兄弟二人で、小碓命は兄を胸から、逃げる弟を尻から刺して殺し、弟の建から倭建の名を献じられる。書紀では首長は川上梟帥一人である。古事記はさらに帰り道で出雲建をだまし討ちにする話を載せるが、書紀のこの条には見えない。</p><blockquote lang="zh-Hant">熊曾建兄弟二人</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 景行天皇の段（小碓命の西征の冒頭）</span><p>古事記では、朝夕の食事に出てこない兄の大碓命を、小碓命が厠で捕らえて手足をもぎ取り、薦に包んで捨てたとする。書紀では大碓皇子は生きており、東征を恐れて隠れ、美濃に封じられる。</p><blockquote lang="zh-Hant">引闕其枝。裹薦投棄。</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 景行天皇の段（倭建命の東征）</span><p>古事記では倭建命が伊勢で叔母の倭比売命に、天皇は自分が死ねばよいと思っているのかと嘆き、倭比売命は草那芸剣と御嚢を授ける。書紀では天皇が尊を神人とたたえて斧鉞を授け、倭姫命は草薙剣を授けて「つつしんで怠るな」と言うのみである。</p><blockquote lang="zh-Hant">天皇。既所以思吾死乎</blockquote></div>
@@ -160,12 +200,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="keiko-junko.html"><small>← 前のページ（巻第七 景行天皇）</small>景行天皇の即位と九州巡幸</a><a class="next" href="yamatotakeru-saigo.html"><small>次のページ（巻第七 景行天皇・成務天皇）→</small>日本武尊の東征と最期、景行天皇の晩年と成務天皇</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第七" target="_blank" rel="noopener">日本書紀 巻第七</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ajisukitakahikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ajisukitakahikonokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">吾多遇武力矣。未有若皇子者。</blockquote><p>川上梟帥の言葉。多くの武力に出会ったが、皇子のような者はいなかった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">自今以後號皇子。應稱日本武皇子。</blockquote><p>今後は皇子を日本武皇子と呼ぶべきだと、川上梟帥が名を献じた言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">形則我子。實則神人。</blockquote><p>天皇が日本武尊を評した言葉。姿は我が子だが、実は神のような人である。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">倭姫命取草薙釼。授日本武尊曰。愼之莫怠也。</blockquote><p>倭姫命が草薙剣を日本武尊に授け、つつしんで怠るなと言った。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第七" target="_blank" rel="noopener">日本書紀 巻第七</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ajisukitakahikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ajisukitakahikonokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十八 安閑天皇・宣化天皇（全50ページ中 33）</p>
-    <h1>安閑天皇・宣化天皇と屯倉の設置</h1>
-    <p class="pg-lead">継体天皇の子の勾大兄（安閑天皇）と、その同母弟の武小廣國押盾（宣化天皇）の二代を記す巻である。安閑天皇の代には各地に多くの屯倉が置かれ、宣化天皇の代には屯倉の穀を那津之口の官家に集めるよう命じられた。</p>
-    <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十八 安閑天皇・宣化天皇（全50ページ中 33）</p>
+        <h1>安閑天皇・宣化天皇と屯倉の設置</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">継体天皇の子の勾大兄（安閑天皇）と、その同母弟の武小廣國押盾（宣化天皇）の二代を記す巻である。安閑天皇の代には各地に多くの屯倉が置かれ、宣化天皇の代には屯倉の穀を那津之口の官家に集めるよう命じられた。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>勾大兄を天皇に立てる</h3>
+      <p class="t">勾大兄廣國押武金日天皇は男大迹天皇の長子で、母は目子媛である。継体天皇の二十五年二月丁未、男大迹天皇は大兄を天皇に立て、その日に亡くなった。大伴金村と物部麁鹿火はもとどおり大連とされた。元年正月、都を大倭国の勾金橋に移し、三月に億計天皇の娘の春日山田皇女を皇后とし、紗手媛・香香有媛・宅媛の三人を妃とした。</p>
+      <h3>伊甚屯倉と三嶋の縣主飯粒</h3>
+      <p class="t">元年四月、膳臣大麻呂が伊甚に珠を求めたところ、伊甚国造らは遅れて来て、問い詰められると後宮に逃げこみ、皇后を驚かせて倒れさせた。国造らは罪をつぐなうため伊甚屯倉を献じた。七月、皇后のための屯倉の地を求めた勅使に、大河内直味張は良田を惜しんで偽りを言った。閏十二月、三嶋で縣主飯粒が四十町の地を進んで献じたので、大伴金村は味張を責めて郡司から外し、味張は春と秋に五百人ずつの钁丁を差し出すことを約束した。</p>
+      <h3>皇后と妃のために屯倉を建てる</h3>
+      <p class="t">十月、天皇は四人の妻がいても子がなく、自分の名が絶えることを憂えた。大伴金村は、子の有無にかかわらず物によって名を残すべきだとして、皇后と妃のために屯倉を建てることを勧め、小墾田屯倉・櫻井屯倉・難波屯倉が妃たちに与えられた。この月、廬城部連の娘の幡媛が物部尾輿の瓔珞を盗んで皇后に献じた事件があり、つぐないとして部や土地が献じられた。また武蔵国造の地位を笠原直使主と小杵が争い、朝廷が使主を国造とし小杵を誅したので、使主は横渟・橘花・多氷・倉樔の四つの屯倉を献じた。</p>
+      <h3>筑紫から駿河・上毛野に屯倉を置く</h3>
+      <p class="t">二年正月、豊作が続き国が富んだことを喜んで、五日間の大宴を天下に許した。五月には筑紫から駿河・上毛野に至る国々に多くの屯倉を置き、八月には国々に犬養部を置き、九月には櫻井田部連らに屯倉の税をつかさどらせた。十二月、天皇は勾金橋宮で亡くなった。年は七十であった。河内の舊市高屋丘陵に葬られ、皇后の春日山田皇女と天皇の妹の神前皇女も同じ陵に合わせ葬られた。</p>
+      <h3>武小廣國押盾天皇の即位</h3>
+      <p class="t">武小廣國押盾天皇は男大迹天皇の第二子で、勾大兄天皇の同母弟である。兄が子のないまま亡くなると、群臣が剣と鏡を奉って即位させた。元年正月に都を檜隈廬入野に移し、二月に大伴金村・物部麁鹿火をもとどおり大連とし、蘇我稻目宿禰を大臣、阿倍火麻呂臣を大夫とした。三月、億計天皇の娘の橘仲皇女を皇后とし、皇后は石姫皇女・小石姫皇女・倉稚綾姫皇女と上殖葉皇子を生んだ。</p>
+      <h3>那津之口に官家を造る</h3>
+      <p class="t">元年五月、天皇は「食は天下の本」であるとして、筑紫は遠近の国が来朝する門口であるから、茨田郡・尾張・新家・伊賀などの屯倉の穀を運ばせ、那津之口に官家を造って凶年や非常に備えるよう命じた。七月、物部麁鹿火大連が亡くなった。二年十月、新羅が任那を侵したため、大伴金村の子の磐と狭手彦を遣わし、磐は筑紫で政をとって三韓に備え、狭手彦は任那を鎮め百済を救った。四年二月、天皇は檜隈廬入野宮で亡くなった。年は七十三で、十一月に身狹桃花鳥坂上陵に葬られ、皇后橘皇女とその幼い子も合わせ葬られた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>安閑天皇は四人の妻を迎えても子がなかったため、大伴金村の進言により、皇后・妃の名を後の世に残すための屯倉（小墾田屯倉・櫻井屯倉・難波屯倉）を定めた。</li>
         <li><span class="kind ">本文</span>安閑天皇二年五月には、筑紫・豊・火・播磨・備後・阿波・紀・丹波・近江・尾張・上毛野・駿河などの国々に、二十を超える屯倉が一度に置かれた。</li>
@@ -115,29 +174,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>勾大兄廣國押武金日天皇は男大迹天皇の長子で、母は目子媛である。継体天皇の二十五年二月丁未、男大迹天皇は大兄を天皇に立て、その日に亡くなった。大伴金村と物部麁鹿火はもとどおり大連とされた。元年正月、都を大倭国の勾金橋に移し、三月に億計天皇の娘の春日山田皇女を皇后とし、紗手媛・香香有媛・宅媛の三人を妃とした。</p>
-      <p>元年四月、膳臣大麻呂が伊甚に珠を求めたところ、伊甚国造らは遅れて来て、問い詰められると後宮に逃げこみ、皇后を驚かせて倒れさせた。国造らは罪をつぐなうため伊甚屯倉を献じた。七月、皇后のための屯倉の地を求めた勅使に、大河内直味張は良田を惜しんで偽りを言った。閏十二月、三嶋で縣主飯粒が四十町の地を進んで献じたので、大伴金村は味張を責めて郡司から外し、味張は春と秋に五百人ずつの钁丁を差し出すことを約束した。</p>
-      <p>十月、天皇は四人の妻がいても子がなく、自分の名が絶えることを憂えた。大伴金村は、子の有無にかかわらず物によって名を残すべきだとして、皇后と妃のために屯倉を建てることを勧め、小墾田屯倉・櫻井屯倉・難波屯倉が妃たちに与えられた。この月、廬城部連の娘の幡媛が物部尾輿の瓔珞を盗んで皇后に献じた事件があり、つぐないとして部や土地が献じられた。また武蔵国造の地位を笠原直使主と小杵が争い、朝廷が使主を国造とし小杵を誅したので、使主は横渟・橘花・多氷・倉樔の四つの屯倉を献じた。</p>
-      <p>二年正月、豊作が続き国が富んだことを喜んで、五日間の大宴を天下に許した。五月には筑紫から駿河・上毛野に至る国々に多くの屯倉を置き、八月には国々に犬養部を置き、九月には櫻井田部連らに屯倉の税をつかさどらせた。十二月、天皇は勾金橋宮で亡くなった。年は七十であった。河内の舊市高屋丘陵に葬られ、皇后の春日山田皇女と天皇の妹の神前皇女も同じ陵に合わせ葬られた。</p>
-      <p>武小廣國押盾天皇は男大迹天皇の第二子で、勾大兄天皇の同母弟である。兄が子のないまま亡くなると、群臣が剣と鏡を奉って即位させた。元年正月に都を檜隈廬入野に移し、二月に大伴金村・物部麁鹿火をもとどおり大連とし、蘇我稻目宿禰を大臣、阿倍火麻呂臣を大夫とした。三月、億計天皇の娘の橘仲皇女を皇后とし、皇后は石姫皇女・小石姫皇女・倉稚綾姫皇女と上殖葉皇子を生んだ。</p>
-      <p>元年五月、天皇は「食は天下の本」であるとして、筑紫は遠近の国が来朝する門口であるから、茨田郡・尾張・新家・伊賀などの屯倉の穀を運ばせ、那津之口に官家を造って凶年や非常に備えるよう命じた。七月、物部麁鹿火大連が亡くなった。二年十月、新羅が任那を侵したため、大伴金村の子の磐と狭手彦を遣わし、磐は筑紫で政をとって三韓に備え、狭手彦は任那を鎮め百済を救った。四年二月、天皇は檜隈廬入野宮で亡くなった。年は七十三で、十一月に身狹桃花鳥坂上陵に葬られ、皇后橘皇女とその幼い子も合わせ葬られた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一本云</b><p>本文は香香有媛に櫻井屯倉を与えたとするが、一本は茅渟山屯倉も加えて与えたとする。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">朕納四妻。至今無嗣。萬歳之後朕名絶矣</blockquote><p>私は四人の妻を迎えたが、今も跡継ぎがない。私の死後、名が絶えてしまう。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">率土之上莫匪王封。普天之下莫匪王域</blockquote><p>地の上で王の領地でない所はなく、天の下で王の土地でない所はない（味張を責める言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">食者天下之本也。黄金萬貫不可療飢</blockquote><p>食こそ天下の根本である。黄金がどれほどあっても飢えを治すことはできない。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">磐留筑紫執其國政以備三韓</blockquote><p>磐は筑紫にとどまってその国の政をとり、三韓に備えた。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全1件）。</p>
+      <details><summary>一本云</summary><p>本文は香香有媛に櫻井屯倉を与えたとするが、一本は茅渟山屯倉も加えて与えたとする。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -157,19 +197,29 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 安閑天皇の段</span><p>古事記の安閑天皇の段は、勾之金箸宮にいたこと、子がなかったこと、御陵が河内の古市高屋村にあることだけを記し、屯倉の話は確認できなかった。日本書紀は河内の舊市高屋丘陵に皇后と天皇の妹も合わせ葬ったとする。</p><blockquote lang="zh-Hant">此天皇無御子也</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 宣化天皇の段（系譜）</span><p>古事記は惠波王（韋那君・多治比君の祖）を川内之若子比賣の子とする。日本書紀は、丹比公・偉那公の祖である上殖葉皇子（またの名は椀子）を皇后橘仲皇女の子とし、大河内稚子媛の子は火焔皇子一人とする。</p><blockquote lang="zh-Hant">惠波王者。〔韋那君。多治比君之祖也。〕</blockquote></div>
     </section>
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="keitai.html"><small>← 前のページ（巻第十七 継体天皇）</small>継体天皇の擁立と筑紫国造磐井の反乱</a><a class="next" href="kinmei-1.html"><small>次のページ（巻第十九 欽明天皇）→</small>欽明天皇の即位・任那復興の協議と仏像の献上</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十八" target="_blank" rel="noopener">日本書紀 巻第十八</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十八" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十八</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十八</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">朕納四妻。至今無嗣。萬歳之後朕名絶矣</blockquote><p>私は四人の妻を迎えたが、今も跡継ぎがない。私の死後、名が絶えてしまう。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">率土之上莫匪王封。普天之下莫匪王域</blockquote><p>地の上で王の領地でない所はなく、天の下で王の土地でない所はない（味張を責める言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">食者天下之本也。黄金萬貫不可療飢</blockquote><p>食こそ天下の根本である。黄金がどれほどあっても飢えを治すことはできない。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">磐留筑紫執其國政以備三韓</blockquote><p>磐は筑紫にとどまってその国の政をとり、三韓に備えた。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十八" target="_blank" rel="noopener">日本書紀 巻第十八</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十八" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十八</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十八</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

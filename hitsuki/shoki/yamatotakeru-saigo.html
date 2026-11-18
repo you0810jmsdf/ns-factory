@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第七 景行天皇・成務天皇（全50ページ中 19）</p>
-    <h1>日本武尊の東征と最期、景行天皇の晩年と成務天皇</h1>
-    <p class="pg-lead">東征に出た日本武尊は駿河の野火、弟橘媛の入水、蝦夷の帰服、信濃の山の神を経て尾張に戻るが、膽吹山の神に惑わされて病み、能褒野で三十歳で崩じ、白鳥となって飛び去った。その後の景行天皇の東国巡幸と崩御、成務天皇による国郡・県邑の長の設置までを記す。</p>
-    <div class="xlink"><a href="../kojiki/yamatotakeru-tosei.html">古事記で読む：倭建命の東征 ›</a><a href="../kojiki/yamatotakeru-saigo.html">古事記で読む：倭建命の最期と白鳥 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第七 景行天皇・成務天皇（全50ページ中 19）</p>
+        <h1>日本武尊の東征と最期、景行天皇の晩年と成務天皇</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">東征に出た日本武尊は駿河の野火、弟橘媛の入水、蝦夷の帰服、信濃の山の神を経て尾張に戻るが、膽吹山の神に惑わされて病み、能褒野で三十歳で崩じ、白鳥となって飛び去った。その後の景行天皇の東国巡幸と崩御、成務天皇による国郡・県邑の長の設置までを記す。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/yamatotakeru-tosei.html">古事記で読む：倭建命の東征 ›</a><a href="../kojiki/yamatotakeru-saigo.html">古事記で読む：倭建命の最期と白鳥 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>野に火を放たれ弟橘媛が海に入る</h3>
+      <p class="t">この年、日本武尊は駿河に至った。賊は従うふりをして、野に獣が多いので狩りをしようと尊を誘い、野に火を放った。だまされたと知った尊は火打ちで火を出して迎え火で逃れ、賊をすべて焼き滅ぼしたので、その地を焼津という。相模から上総へ渡ろうとして「小さな海だ、跳んでも渡れる」と言うと、海の中で暴風が起こった。従っていた妾の弟橘媛は、これは海神の心だとして王の命の代わりに海に入り、風は止んで船は岸に着いた。その海は馳水と呼ばれた。</p>
+      <h3>蝦夷が降伏し酒折宮に入る</h3>
+      <p class="t">尊は上総から陸奥国に入り、大きな鏡を船に掛けて海路を進み、蝦夷の境に至った。竹水門で迎え撃とうとした蝦夷の首領たちは、王の船を見てその威勢に恐れ、弓矢を捨てて名を尋ねた。尊が「現人神の子である」と答えると、蝦夷は船を岸に引き寄せて降伏した。蝦夷を平らげて日高見国から戻り、常陸を経て甲斐国の酒折宮に入ると、尊は歌で侍者に問いかけ、火をともす者が歌の末を続けたのでほめて褒美を与えた。</p>
+      <h3>碓日坂で吾嬬はやと嘆く</h3>
+      <p class="t">信濃と越がまだ従わないので、尊は武蔵・上野をめぐって碓日坂に至り、弟橘媛をしのんで東南を望み「吾嬬はや」と三度嘆いた。これにより山の東の国々を吾嬬国という。吉備武彦を越国に遣わし、尊は険しい信濃に入った。山の神が白鹿となって現れたので蒜を弾いて目に当てて殺すと、道に迷ったが、白い犬に導かれて美濃に出た。それ以来、この坂を越える者は蒜をかんで人や牛馬に塗れば神の気にあたらなくなったという。</p>
+      <h3>膽吹山の荒ぶる神と居醒泉</h3>
+      <p class="t">尾張に戻った尊は宮簀媛を娶って月を越えてとどまった。近江の膽吹山に荒ぶる神がいると聞くと、剣を宮簀媛の家に置いて徒歩で向かった。山の神は大蛇となって道をふさいだが、尊はこれを神の使いと思い、またいで進んだ。山の神が雲を起こし氷を降らせたので、尊は霧の中を無理に進んでようやく抜け出し、正気を失ったようになって泉の水を飲んで醒めた。その泉を居醒泉という。尊はこのとき初めて体を病み、尾張に戻ったが宮簀媛の家には入らず、伊勢の尾津で、以前に松の下に置き忘れた剣がまだあるのを見て歌を詠んだ。</p>
+      <h3>能褒野に崩じ白鳥となる</h3>
+      <p class="t">能褒野に至って病が重くなると、尊は捕虜の蝦夷を神宮に献じ、吉備武彦を遣わして天皇に復命できない無念を伝え、三十歳で能褒野に崩じた。天皇は嘆き悲しみ、能褒野陵に葬らせた。ところが尊は白鳥となって陵から出て倭国へ飛び、棺には衣だけが残っていた。白鳥は倭の琴弾原、さらに河内の旧市邑にとどまったので、それぞれに陵を造り、この三陵を白鳥陵という。白鳥はついに天に上り、尊の功名を伝えるために武部が定められた。</p>
+      <h3>稚足彦尊を皇太子とし天皇が崩じる</h3>
+      <p class="t">五十一年、宴に出なかった稚足彦尊と武内宿禰は、非常に備えて門を守っていたと答え、天皇に重んじられた。八月、稚足彦尊を皇太子とし、武内宿禰を棟梁の臣とした。草薙横刀は熱田社にあり、神宮に献じられた蝦夷は佐伯部の祖となったこと、日本武尊の妃と子（足仲彦天皇を含む）も記される。五十二年に皇后が亡くなり、八坂入媛命が皇后となった。五十三年、天皇は小碓王の平らげた国を巡ろうと伊勢から東海に入り、上総で磐鹿六鴈が白蛤を膾にして献じたので膳大伴部を賜った。五十五年、東山道十五国の都督とした彦狭嶋王が任地に着く前に亡くなり、五十六年、その子御諸別王が東国を治めて蝦夷を従わせた。五十八年に近江の高穴穂宮に移り、六十年十一月、百六歳で崩じた。</p>
+      <h3>成務天皇の即位と国郡の造長</h3>
+      <p class="t">稚足彦天皇（成務天皇）は景行天皇の第四子で、母は皇后八坂入姫命である。元年正月に即位し、二年十一月に景行天皇を倭国の山辺道上陵に葬った。三年、天皇と同じ日に生まれた武内宿禰を大臣とした。四年、国郡に君長がいないことを憂える詔を出し、五年九月に国郡には造長、県邑には稲置を置いて境界を定め、民は安らかになったという。四十八年、甥の足仲彦尊を皇太子とし、六十年六月、百七歳で崩じた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>駿河で賊にだまされて野に火を放たれた日本武尊は、火打ちで迎え火をつけて難を逃れ、その地を焼津と名づけた。相模から上総へ渡る海で暴風にあうと、妾の弟橘媛が王の身代わりに海に入り、風が止んで船は岸に着いた。</li>
         <li><span class="kind ">本文</span>尾張で宮簀媛を娶った尊は、剣を宮簀媛の家に置いて膽吹山の荒ぶる神を討ちに行ったが、大蛇となった山の神を使いと思い込んでまたいで進み、雲と氷雨に惑わされて病んだ。能褒野で三十歳で崩じ、白鳥となって倭の琴弾原、河内の旧市邑へ飛び、三つの陵は白鳥陵と呼ばれた。</li>
@@ -115,30 +176,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>この年、日本武尊は駿河に至った。賊は従うふりをして、野に獣が多いので狩りをしようと尊を誘い、野に火を放った。だまされたと知った尊は火打ちで火を出して迎え火で逃れ、賊をすべて焼き滅ぼしたので、その地を焼津という。相模から上総へ渡ろうとして「小さな海だ、跳んでも渡れる」と言うと、海の中で暴風が起こった。従っていた妾の弟橘媛は、これは海神の心だとして王の命の代わりに海に入り、風は止んで船は岸に着いた。その海は馳水と呼ばれた。</p>
-      <p>尊は上総から陸奥国に入り、大きな鏡を船に掛けて海路を進み、蝦夷の境に至った。竹水門で迎え撃とうとした蝦夷の首領たちは、王の船を見てその威勢に恐れ、弓矢を捨てて名を尋ねた。尊が「現人神の子である」と答えると、蝦夷は船を岸に引き寄せて降伏した。蝦夷を平らげて日高見国から戻り、常陸を経て甲斐国の酒折宮に入ると、尊は歌で侍者に問いかけ、火をともす者が歌の末を続けたのでほめて褒美を与えた。</p>
-      <p>信濃と越がまだ従わないので、尊は武蔵・上野をめぐって碓日坂に至り、弟橘媛をしのんで東南を望み「吾嬬はや」と三度嘆いた。これにより山の東の国々を吾嬬国という。吉備武彦を越国に遣わし、尊は険しい信濃に入った。山の神が白鹿となって現れたので蒜を弾いて目に当てて殺すと、道に迷ったが、白い犬に導かれて美濃に出た。それ以来、この坂を越える者は蒜をかんで人や牛馬に塗れば神の気にあたらなくなったという。</p>
-      <p>尾張に戻った尊は宮簀媛を娶って月を越えてとどまった。近江の膽吹山に荒ぶる神がいると聞くと、剣を宮簀媛の家に置いて徒歩で向かった。山の神は大蛇となって道をふさいだが、尊はこれを神の使いと思い、またいで進んだ。山の神が雲を起こし氷を降らせたので、尊は霧の中を無理に進んでようやく抜け出し、正気を失ったようになって泉の水を飲んで醒めた。その泉を居醒泉という。尊はこのとき初めて体を病み、尾張に戻ったが宮簀媛の家には入らず、伊勢の尾津で、以前に松の下に置き忘れた剣がまだあるのを見て歌を詠んだ。</p>
-      <p>能褒野に至って病が重くなると、尊は捕虜の蝦夷を神宮に献じ、吉備武彦を遣わして天皇に復命できない無念を伝え、三十歳で能褒野に崩じた。天皇は嘆き悲しみ、能褒野陵に葬らせた。ところが尊は白鳥となって陵から出て倭国へ飛び、棺には衣だけが残っていた。白鳥は倭の琴弾原、さらに河内の旧市邑にとどまったので、それぞれに陵を造り、この三陵を白鳥陵という。白鳥はついに天に上り、尊の功名を伝えるために武部が定められた。</p>
-      <p>五十一年、宴に出なかった稚足彦尊と武内宿禰は、非常に備えて門を守っていたと答え、天皇に重んじられた。八月、稚足彦尊を皇太子とし、武内宿禰を棟梁の臣とした。草薙横刀は熱田社にあり、神宮に献じられた蝦夷は佐伯部の祖となったこと、日本武尊の妃と子（足仲彦天皇を含む）も記される。五十二年に皇后が亡くなり、八坂入媛命が皇后となった。五十三年、天皇は小碓王の平らげた国を巡ろうと伊勢から東海に入り、上総で磐鹿六鴈が白蛤を膾にして献じたので膳大伴部を賜った。五十五年、東山道十五国の都督とした彦狭嶋王が任地に着く前に亡くなり、五十六年、その子御諸別王が東国を治めて蝦夷を従わせた。五十八年に近江の高穴穂宮に移り、六十年十一月、百六歳で崩じた。</p>
-      <p>稚足彦天皇（成務天皇）は景行天皇の第四子で、母は皇后八坂入姫命である。元年正月に即位し、二年十一月に景行天皇を倭国の山辺道上陵に葬った。三年、天皇と同じ日に生まれた武内宿禰を大臣とした。四年、国郡に君長がいないことを憂える詔を出し、五年九月に国郡には造長、県邑には稲置を置いて境界を定め、民は安らかになったという。四十八年、甥の足仲彦尊を皇太子とし、六十年六月、百七歳で崩じた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云（四十年是歳条の小注）</b><p>駿河の野火の場面で、本文は火打ちで迎え火をつけて逃れたとするが、一云では王の佩いた剣叢雲がひとりでに抜けて王のそばの草をなぎ払ったので逃れられたとし、そのためこの剣を草薙というとする。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">願以妾之身。贖王之命而入海。</blockquote><p>弟橘媛の言葉。わたしの身を王の命の代わりにして海に入りたい。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">三歎曰。吾嬬者耶</blockquote><p>碓日の嶺で尊が弟橘媛をしのんで三度嘆いた言葉。吾嬬国の名の由来とされる。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">明衣空留而屍骨無之。</blockquote><p>棺を開けると衣だけが残り、亡骸は無かった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">以國郡立造長。縣邑置稻置。</blockquote><p>成務天皇が国郡に造長を、県邑に稲置を置いたこと。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全1件）。</p>
+      <details><summary>一云（四十年是歳条の小注）</summary><p>駿河の野火の場面で、本文は火打ちで迎え火をつけて逃れたとするが、一云では王の佩いた剣叢雲がひとりでに抜けて王のそばの草をなぎ払ったので逃れられたとし、そのためこの剣を草薙というとする。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -164,7 +205,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 中巻 景行天皇の段（倭建命の最期・伊服岐能山の神）</span><p>伊吹山の神は、古事記では牛ほどの大きさの白い猪として現れ、倭建命はそれを神の使いと言挙げしたため大氷雨に打たれる。書紀では大蛇として現れ、尊は神の使いと考えてまたいで進む。</p><blockquote lang="zh-Hant">白猪逢于山邊。其大如牛。</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 景行天皇の段（倭建命の最期・白鳥）</span><p>古事記では倭建命は八尋の白智鳥となって飛び、后や御子たちが歌いながら追い、河内国の志幾にとどまって白鳥御陵が造られたとする。書紀では能褒野・倭の琴弾原・河内の旧市邑の三つの陵を白鳥陵と呼ぶ。</p><blockquote lang="zh-Hant">留河内國之志幾。故於其地作御陵。</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 成務天皇の段</span><p>成務天皇について、古事記は建内宿禰を大臣とし、大小の国の国造と国々の境、大小の県の県主を定めたと簡潔に記し、年齢を九十五歳とする。書紀は造長と稲置を置いたとし、百七歳で崩じたとする。</p><blockquote lang="zh-Hant">定賜大國。小國之國造</blockquote></div>
@@ -172,12 +213,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="yamatotakeru-seito.html"><small>← 前のページ（巻第七 景行天皇）</small>日本武尊の熊襲征伐と東征への出発</a><a class="next" href="chuai.html"><small>次のページ（巻第八 仲哀天皇）→</small>仲哀天皇（白鳥・熊襲征討と神託・崩御）</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第七" target="_blank" rel="noopener">日本書紀 巻第七</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ifukinoyamanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ifukinoyamanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/shinanonosakanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/shinanonosakanokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">願以妾之身。贖王之命而入海。</blockquote><p>弟橘媛の言葉。わたしの身を王の命の代わりにして海に入りたい。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">三歎曰。吾嬬者耶</blockquote><p>碓日の嶺で尊が弟橘媛をしのんで三度嘆いた言葉。吾嬬国の名の由来とされる。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">明衣空留而屍骨無之。</blockquote><p>棺を開けると衣だけが残り、亡骸は無かった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">以國郡立造長。縣邑置稻置。</blockquote><p>成務天皇が国郡に造長を、県邑に稲置を置いたこと。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第七" target="_blank" rel="noopener">日本書紀 巻第七</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ifukinoyamanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ifukinoyamanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/shinanonosakanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/shinanonosakanokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

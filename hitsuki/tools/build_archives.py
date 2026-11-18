@@ -29,6 +29,8 @@ HAS_EN = os.path.exists(os.path.join(HIT, 'kojiki', 'data', 'myths.en.json')) an
 # 「読みもの」の型（扉絵・場面の小見出し・挿絵）。書いてある話だけ新しい型で作る。無い話は今までの型のまま
 _LP = os.path.join(HIT, 'kojiki', 'data', 'layout.json')
 LAYOUT = json.load(open(_LP, encoding='utf-8'))['pages'] if os.path.exists(_LP) else {}
+_SLP = os.path.join(HIT, 'shoki', 'data', 'layout.json')
+SLAYOUT = json.load(open(_SLP, encoding='utf-8'))['pages'] if os.path.exists(_SLP) else {}
 ART = '../assets/kiki/book/'
 ART_SIZE = {'tall': (810, 1440), 'port': (900, 1125), 'wide': (1152, 768)}
 
@@ -416,8 +418,74 @@ def kojiki_index():
 # ---------- 日本書紀 ----------
 def slabel(s): return s['kan']
 
+def shoki_book_page(i, lay):
+    """読みものの型（日本書紀）：導入 → 場面ごとの本文の話 → 要点 → 一書 → 神と神社 → 古事記との違い → 資料編。文章は episodes.json のまま。"""
+    s = SHO[i]
+    if len(lay['heads']) != len(s['story']): raise SystemExit(f'{s["id"]}: layout.json の heads が {len(lay["heads"])}個、story は {len(s["story"])}段です')
+    title = f"{s['title']}｜日本書紀 {s['kan']}｜日本書紀アーカイブ"
+    out = [head('shoki', title, s['lead'], SITE + 'shoki/' + s['id'] + '.html', BK_CSS)]
+    xl = ''.join(f'<a href="../kojiki/{k}.html">古事記で読む：{e(KBY[k]["title"])} ›</a>' for k in s.get('kojiki_pages', []) if k in KBY)
+    mins = max(1, -(-sum(len(x['text']) for x in s['story']) // 500))
+    hero = dict(lay['hero'], shape='tall') if lay.get('hero') else None
+    hero_html = f'<div class="bk-hero">{fig_html(hero, eager=True)}</div>' if hero else ''
+    out.append(f'''  <main class="pg-main bk">
+    <header class="bk-open{'' if hero else ' nohero'}">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 {e(s['kan'])}（全{len(SHO)}ページ中 {i + 1}）</p>
+        <h1>{e(s['title'])}</h1>
+      </div>
+      {hero_html}
+      <div class="bk-intro">
+        <p class="bk-lead">{e(s['lead'])}</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約{mins}分　／　<a href="#pts-title">要点だけ読む</a></p>
+        {f'<div class="xlink">{xl}</div>' if xl else ''}
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>''')
+    for n, x in enumerate(s['story']):
+        out.append(f'      <h3>{e(lay["heads"][n])}</h3>\n      <p class="t">{e(x["text"])}</p>')
+        fs = [f for f in lay.get('figs', []) if f['after'] == n]
+        if fs: out.append(f'      <div class="bk-figs{" two" if len(fs) == 2 else ""}">' + ''.join(fig_html(f) for f in fs) + '</div>')
+    out.append('      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>\n    </section>\n')
+    out.append(points_html(s, 'shoki').replace('覚えておくポイント', 'このページの要点'))
+    if s.get('variants'):
+        out.append(f'\n    <section class="pg-card bk-app" aria-labelledby="var-title">\n      <h2 id="var-title">一書（別の伝え）</h2>\n      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全{len(s["variants"])}件）。</p>')
+        out += [f'      <details><summary>{e(v["name"])}</summary><p>{e(v["text"])}</p></details>' for v in s['variants']]
+        out.append('    </section>')
+    out.append(''); out.append(who_html(s))
+    out.append(cmp_html(s.get('kojiki'), '古事記との違い'))
+    if not s.get('kojiki') and vol_of(s) >= 23:
+        out.append('\n    <section class="pg-card"><h2>古事記では</h2><p>古事記は推古天皇の時代で終わります。この巻の時代は、日本書紀にしか書かれていません。</p></section>')
+    kv = sorted({{'K': '上巻', 'C': '中巻', 'G': '下巻'}[k['ref'][0]] for k in s.get('kojiki', []) if k.get('ref')})
+    base = shoki_vols(s['span']) + [WS(KOJ_WS[v], f'古事記 {v} 校訂本文') for v in kv]
+    qs = ''.join(f'\n          <div class="q"><blockquote lang="zh-Hant">{e(q["text"])}</blockquote><p>{e(q["note"])}</p></div>' for q in s['quotes'])
+    out.append(f'''
+    {pager_html(SHO, i, slabel, 'ページ')}
+
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（{len(s['quotes'])}か所）</summary>{qs}
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          {src_list(s.get('sources', []), base)}
+        </ul>
+      </details>
+      <a class="pg-back" href="./">← ページの一覧へ</a>
+    </section>
+  </main>
+''')
+    out.append(FOOT)
+    return '\n'.join(out)
+
 def shoki_page(i):
     s = SHO[i]
+    if s['id'] in SLAYOUT: return shoki_book_page(i, SLAYOUT[s['id']])
     title = f"{s['title']}｜日本書紀 {s['kan']}｜日本書紀アーカイブ"
     out = [head('shoki', title, s['lead'], SITE + 'shoki/' + s['id'] + '.html')]
     xl = ''.join(f'<a href="../kojiki/{k}.html">古事記で読む：{e(KBY[k]["title"])} ›</a>' for k in s.get('kojiki_pages', []) if k in KBY)
@@ -459,7 +527,7 @@ def shoki_page(i):
 
 def shoki_index():
     title = "日本書紀アーカイブ｜神代から持統天皇まで全三十巻｜教育幕僚室｜N's factory"
-    desc = f'日本書紀の全三十巻（神代と、神武天皇から持統天皇まで）を{len(SHO)}ページに分け、「覚えておくポイント」「本文の話」「一書（別の伝え）」「原文」「古事記との違い」をまとめた研究ノート。'
+    desc = f'日本書紀の全三十巻（神代と、神武天皇から持統天皇まで）を{len(SHO)}ページに分け、場面ごとの本文の話・要点・一書（別の伝え）・古事記との違い・原文をまとめた読みもの。'
     out = [head('shoki', title, desc, SITE + 'shoki/')]
     kans = []
     for s in SHO:
@@ -468,7 +536,7 @@ def shoki_index():
     <p class="eyebrow">Nihon Shoki Archive</p>
     <h1>日本書紀アーカイブ</h1>
     <p class="pg-lead">日本書紀の全三十巻を、{len(SHO)}ページに分けてまとめました。神代（巻第一・第二）は「段」ごとに、本文と一書（別の伝え）を並べています。巻第三からは、神武天皇から持統天皇までを天皇ごとに読めます。推古天皇までは古事記アーカイブと同じ場面どうしでつながり、舒明天皇から後は日本書紀だけが記す時代です。</p>
-    <div class="jump"><a href="#era-1">神代</a><a href="#era-2">神武〜応神</a><a href="#era-3">仁徳〜推古</a><a href="#era-4">舒明〜持統</a><a href="#review">ポイントの復習</a><a href="../kojiki/">古事記アーカイブ ›</a></div>
+    <div class="jump"><a href="#era-1">神代</a><a href="#era-2">神武〜応神</a><a href="#era-3">仁徳〜推古</a><a href="#era-4">舒明〜持統</a><a href="#review">要点の復習</a><a href="../kojiki/">古事記アーカイブ ›</a></div>
 
     <section class="pg-card" aria-labelledby="how-title">
       <h2 id="how-title">このアーカイブの決まり</h2>
@@ -489,7 +557,7 @@ def shoki_index():
         out.append(f'      <h3>{e(k)}</h3>\n      <ol class="toc">')
         out += [f'        <li><a href="{s["id"]}.html"><span class="no">{j + 1}</span><b>{e(s["title"])}</b><span class="lead">{e(s["points"][0]["text"])}</span></a></li>' for j, s in ss]
         out.append('      </ol>')
-    out.append('    </section>\n\n    <section class="pg-card" id="review" aria-labelledby="all-title">\n      <h2 id="all-title">全ページの「覚えておくポイント」</h2>\n      <p class="pg-note">復習用に、各ページのポイントを上から2つずつ並べました。</p>')
+    out.append('    </section>\n\n    <section class="pg-card" id="review" aria-labelledby="all-title">\n      <h2 id="all-title">全ページの要点（復習用）</h2>\n      <p class="pg-note">復習用に、各ページの要点を上から2つずつ並べました。</p>')
     for s in SHO:
         out.append(f'      <h3><a href="{s["id"]}.html">{e(s["kan"])}　{e(s["title"])}</a></h3><ul style="margin:0;padding-left:1.2em;line-height:1.85;">'
                    + ''.join(f'<li>{e(p["text"])}</li>' for p in s['points'][:2]) + '</ul>')

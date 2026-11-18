@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十九 欽明天皇（全50ページ中 34）</p>
-    <h1>欽明天皇の即位・任那復興の協議と仏像の献上</h1>
-    <p class="pg-lead">男大迹天皇の嫡子である天國排開廣庭天皇（欽明天皇）が即位し、蘇我稻目の娘たちを妃に迎えた。在位前半は百済の聖明王と任那の復興をめぐる協議が続き、十三年十月には聖明王から釈迦仏の金銅像と経論が献じられた。</p>
-    <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十九 欽明天皇（全50ページ中 34）</p>
+        <h1>欽明天皇の即位・任那復興の協議と仏像の献上</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">男大迹天皇の嫡子である天國排開廣庭天皇（欽明天皇）が即位し、蘇我稻目の娘たちを妃に迎えた。在位前半は百済の聖明王と任那の復興をめぐる協議が続き、十三年十月には聖明王から釈迦仏の金銅像と経論が献じられた。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>秦大津父と天國排開廣庭天皇の即位</h3>
+      <p class="t">天國排開廣庭天皇は男大迹天皇の嫡子で、母は手白香皇后である。幼いとき、秦大津父という者を寵愛すれば天下を治めるという夢を見て、山背国紀伊郡深草里で大津父を見つけた。大津父は、伊勢からの帰りに山で争う二匹の狼を止めて逃がしたことを語り、天皇はそれを報いだとして近くに仕えさせ、即位すると大蔵の役に任じた。宣化天皇が四年十月に亡くなると、皇子は山田皇后に政務を任せようとしたが、皇后は辞退した。十二月甲申、皇子は即位し、大伴金村と物部尾輿を大連、蘇我稻目を大臣とした。</p>
+      <h3>石姫を皇后に立て磯城嶋に移る</h3>
+      <p class="t">元年正月、宣化天皇の娘の石姫を皇后に立て、皇后は箭田珠勝大兄皇子・譯語田渟中倉太珠敷尊・笠縫皇女を生んだ。七月に都を磯城嶋に移して金刺宮と名づけ、八月には秦人・漢人など渡来した人々を国郡に置いて戸籍に付け、秦人は七千五十三戸であった。九月、難波祝津宮で新羅を討つ兵の数を問うと、物部尾輿は継体朝の四県割譲以来新羅が恨んでいると答え、大伴金村は住吉の家にこもった。天皇は使いを送って慰め、罪とはしなかった。</p>
+      <h3>堅鹽媛・小姉君らの妃と皇子</h3>
+      <p class="t">二年三月、天皇は五人の妃を迎えた。皇后の妹の稚綾姫皇女は石上皇子を、日影皇女は倉皇子を生んだ。蘇我稻目の娘の堅鹽媛は大兄皇子（橘豐日尊）・豐御食炊屋姫尊など七男六女を、その同母の妹の小姉君は茨城皇子・泥部穴穗部皇子・泊瀬部皇子など四男一女を、春日日柧臣の娘の糠子は春日山田皇女と橘麻呂皇子を生んだ。</p>
+      <h3>任那の復興と聖明王の協議</h3>
+      <p class="t">二年四月、安羅・加羅などの旱岐たちと任那日本府の吉備臣が百済へ行き、聖明王は天皇の詔である任那の復興をどう進めるか問いかけた。聖明王は、喙己呑・南加羅・卓淳が新羅に滅ぼされたのは、それぞれに内側の弱さがあったからだと述べた。七月には、安羅の日本府が新羅と通じたと聞いて河内直を責めた。四年十一月、津守連が遣わされ、下韓にある百済の郡令・城主を日本府に属させよとの詔を伝えると、聖明王は臣下と協議した。</p>
+      <h3>聖明王が三つの策を示す</h3>
+      <p class="t">百済は任那と日本府の執事を何度も呼んだが、正月が過ぎてから、祭りが終わってからと言って来ず、身分の低い者だけを送ってきた。五年三月、百済は上表して、移那斯・麻都が日本府の政を専らにし新羅の冠を着けて往来しているとして、本国に移すよう求めた。十一月、ようやく日本府の吉備臣や任那の旱岐たちが集まり、聖明王は、天皇に三千の兵を請い六つの城を修める策、南韓に郡令・城主を置き続ける策、吉備臣・河内直・移那斯・麻都を本国へ帰す策の三つを示した。</p>
+      <h3>佐渡島の肅愼人と丈六の仏像</h3>
+      <p class="t">五年十二月、越国から、佐渡島に肅愼人が船で来て住みつき、鬼のようだと恐れられたと報告があった。六年九月、百済は丈六の仏像を造り、天皇と衆生の福を願う願文を作った。十一月、百済から帰った膳臣巴提便は、子が虎にさらわれたので虎を追い、舌をつかんで刺し殺したと語った。八年から十二年にかけて、百済は高麗との戦いのために援軍を求め、天皇は三百七十人を遣わして得爾辛の築城を助けさせ、十二年には麦の種一千斛を賜った。この年、聖明王は新羅・任那の兵とともに高麗を討ち、漠城の地を得て平壌も討ち、もとの地を取り戻した。</p>
+      <h3>釈迦仏の金銅像が献じられる</h3>
+      <p class="t">十三年四月、箭田珠勝大兄皇子が亡くなった。五月、百済・加羅・安羅は、高麗と新羅が手を結んで攻めようとしていると援軍を求めた。十月、聖明王は釈迦仏の金銅像と幡蓋・経論を献じ、天皇は群臣に礼拝の可否を問うた。蘇我稻目は礼拝を勧め、物部尾輿と中臣鎌子は反対したので、天皇は稻目に試しに礼拝させた。のちに疫病が広がると仏像は難波の堀江に捨てられ寺は焼かれたが、風も雲もないのに大殿が焼けた。この年、百済は漢城と平壌を捨て、新羅が漢城に入った。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>十三年十月、百済の聖明王は釈迦仏の金銅像一体と幡蓋・経論を献じ、この法がすぐれていると上表した。天皇は喜んだが自分では決めず群臣に問い、蘇我稻目は礼拝すべきとし、物部尾輿・中臣鎌子は国神の怒りを招くと反対した。</li>
         <li><span class="kind ">本文</span>天皇は仏像を稻目に預けて試しに礼拝させ、稻目は小墾田の家に安置し向原の家を寺とした。その後疫病がはやると、尾輿・鎌子の進言で仏像は難波の堀江に流し捨てられ、寺は焼かれたが、そのとき風も雲もないのに大殿が焼けた。</li>
@@ -115,34 +176,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>天國排開廣庭天皇は男大迹天皇の嫡子で、母は手白香皇后である。幼いとき、秦大津父という者を寵愛すれば天下を治めるという夢を見て、山背国紀伊郡深草里で大津父を見つけた。大津父は、伊勢からの帰りに山で争う二匹の狼を止めて逃がしたことを語り、天皇はそれを報いだとして近くに仕えさせ、即位すると大蔵の役に任じた。宣化天皇が四年十月に亡くなると、皇子は山田皇后に政務を任せようとしたが、皇后は辞退した。十二月甲申、皇子は即位し、大伴金村と物部尾輿を大連、蘇我稻目を大臣とした。</p>
-      <p>元年正月、宣化天皇の娘の石姫を皇后に立て、皇后は箭田珠勝大兄皇子・譯語田渟中倉太珠敷尊・笠縫皇女を生んだ。七月に都を磯城嶋に移して金刺宮と名づけ、八月には秦人・漢人など渡来した人々を国郡に置いて戸籍に付け、秦人は七千五十三戸であった。九月、難波祝津宮で新羅を討つ兵の数を問うと、物部尾輿は継体朝の四県割譲以来新羅が恨んでいると答え、大伴金村は住吉の家にこもった。天皇は使いを送って慰め、罪とはしなかった。</p>
-      <p>二年三月、天皇は五人の妃を迎えた。皇后の妹の稚綾姫皇女は石上皇子を、日影皇女は倉皇子を生んだ。蘇我稻目の娘の堅鹽媛は大兄皇子（橘豐日尊）・豐御食炊屋姫尊など七男六女を、その同母の妹の小姉君は茨城皇子・泥部穴穗部皇子・泊瀬部皇子など四男一女を、春日日柧臣の娘の糠子は春日山田皇女と橘麻呂皇子を生んだ。</p>
-      <p>二年四月、安羅・加羅などの旱岐たちと任那日本府の吉備臣が百済へ行き、聖明王は天皇の詔である任那の復興をどう進めるか問いかけた。聖明王は、喙己呑・南加羅・卓淳が新羅に滅ぼされたのは、それぞれに内側の弱さがあったからだと述べた。七月には、安羅の日本府が新羅と通じたと聞いて河内直を責めた。四年十一月、津守連が遣わされ、下韓にある百済の郡令・城主を日本府に属させよとの詔を伝えると、聖明王は臣下と協議した。</p>
-      <p>百済は任那と日本府の執事を何度も呼んだが、正月が過ぎてから、祭りが終わってからと言って来ず、身分の低い者だけを送ってきた。五年三月、百済は上表して、移那斯・麻都が日本府の政を専らにし新羅の冠を着けて往来しているとして、本国に移すよう求めた。十一月、ようやく日本府の吉備臣や任那の旱岐たちが集まり、聖明王は、天皇に三千の兵を請い六つの城を修める策、南韓に郡令・城主を置き続ける策、吉備臣・河内直・移那斯・麻都を本国へ帰す策の三つを示した。</p>
-      <p>五年十二月、越国から、佐渡島に肅愼人が船で来て住みつき、鬼のようだと恐れられたと報告があった。六年九月、百済は丈六の仏像を造り、天皇と衆生の福を願う願文を作った。十一月、百済から帰った膳臣巴提便は、子が虎にさらわれたので虎を追い、舌をつかんで刺し殺したと語った。八年から十二年にかけて、百済は高麗との戦いのために援軍を求め、天皇は三百七十人を遣わして得爾辛の築城を助けさせ、十二年には麦の種一千斛を賜った。この年、聖明王は新羅・任那の兵とともに高麗を討ち、漠城の地を得て平壌も討ち、もとの地を取り戻した。</p>
-      <p>十三年四月、箭田珠勝大兄皇子が亡くなった。五月、百済・加羅・安羅は、高麗と新羅が手を結んで攻めようとしていると援軍を求めた。十月、聖明王は釈迦仏の金銅像と幡蓋・経論を献じ、天皇は群臣に礼拝の可否を問うた。蘇我稻目は礼拝を勧め、物部尾輿と中臣鎌子は反対したので、天皇は稻目に試しに礼拝させた。のちに疫病が広がると仏像は難波の堀江に捨てられ寺は焼かれたが、風も雲もないのに大殿が焼けた。この年、百済は漢城と平壌を捨て、新羅が漢城に入った。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一書云</b><p>小姉君の子の名と順序について、本文のほかに二つの一書の伝えを並べる。本文は、帝王本紀は書き写される間に乱れたので、一つを選んで本文とし、違いを注に記したと述べる。</p></div>
-      <div class="var"><b>百濟本記云</b><p>本文の上表では任那は安羅を兄とし、安羅は日本府を天とするが、百済本記は安羅を父とし、日本府を本とすると記す。</p></div>
-      <div class="var"><b>百濟本記云</b><p>本文は五年十月に百済の使者が帰ったとだけ記すが、百済本記は、河内直移那斯・麻都らについて奏上したことに天皇の返事がなかったと伝える。</p></div>
-      <div class="var"><b>百濟本記云</b><p>本文は六年に高麗で大乱があったとだけ記すが、百済本記は、細群と麁群が宮門で戦い、細群の子孫が誅されたことと、狛の王が亡くなったことを伝える。</p></div>
-      <div class="var"><b>百濟本記云</b><p>七年の高麗の大乱について、百済本記は、王の三人の夫人のうち中夫人と小夫人の子の外戚である麁群と細群が王位をめぐって争ったと伝える。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">是法於諸法中最爲殊勝</blockquote><p>この法は、もろもろの法の中で最もすぐれている（聖明王の上表の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">西蕃諸國一皆禮之。豐秋日本豈獨背也</blockquote><p>西の国々はみなこれを礼拝している。日本だけが背いてよいだろうか（蘇我稻目の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">方今改拜蕃神。恐致國神之怒</blockquote><p>いま外国の神を拝めば、国の神の怒りを招くおそれがある（物部尾輿・中臣鎌子の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">今寡人與汝戮力并心。翳頼天皇。任那必起</blockquote><p>いま私とあなたがたが力と心を合わせ、天皇を頼めば、任那は必ず再び立つ（聖明王の言葉）。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全5件）。</p>
+      <details><summary>一書云</summary><p>小姉君の子の名と順序について、本文のほかに二つの一書の伝えを並べる。本文は、帝王本紀は書き写される間に乱れたので、一つを選んで本文とし、違いを注に記したと述べる。</p></details>
+      <details><summary>百濟本記云</summary><p>本文の上表では任那は安羅を兄とし、安羅は日本府を天とするが、百済本記は安羅を父とし、日本府を本とすると記す。</p></details>
+      <details><summary>百濟本記云</summary><p>本文は五年十月に百済の使者が帰ったとだけ記すが、百済本記は、河内直移那斯・麻都らについて奏上したことに天皇の返事がなかったと伝える。</p></details>
+      <details><summary>百濟本記云</summary><p>本文は六年に高麗で大乱があったとだけ記すが、百済本記は、細群と麁群が宮門で戦い、細群の子孫が誅されたことと、狛の王が亡くなったことを伝える。</p></details>
+      <details><summary>百濟本記云</summary><p>七年の高麗の大乱について、百済本記は、王の三人の夫人のうち中夫人と小夫人の子の外戚である麁群と細群が王位をめぐって争ったと伝える。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -164,7 +205,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 欽明天皇の段（系譜）</span><p>古事記は小兄比賣を岐多志比賣命の「姨」とし、五柱の子を記す。日本書紀は小姉君を堅鹽媛の同母の妹とし、四男一女を生んだとする。</p><blockquote lang="zh-Hant">又娶岐多志比賣命之姨。小兄比賣</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 欽明天皇の段（系譜）</span><p>古事記は春日之日爪臣の娘の糠子郎女の子を春日山田郎女・麻呂古王・宗賀之倉王の三柱とするが、日本書紀は糠子の子を春日山田皇女と橘麻呂皇子の二人とする。</p><blockquote lang="zh-Hant">又娶春日之日爪臣之女。糠子郎女</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 欽明天皇の段（冒頭）</span><p>古事記の欽明天皇の段は師木嶋大宮にいたことと系譜だけを記し、任那の協議や仏像の献上に対応する記事は確認できなかった。日本書紀は宮を磯城嶋金刺宮とする。</p><blockquote lang="zh-Hant">坐師木嶋大宮。治天下也</blockquote></div>
@@ -172,12 +213,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="ankan-senka.html"><small>← 前のページ（巻第十八 安閑天皇・宣化天皇）</small>安閑天皇・宣化天皇と屯倉の設置</a><a class="next" href="kinmei-2.html"><small>次のページ（巻第十九 欽明天皇）→</small>聖明王の戦死と任那の滅亡</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十九" target="_blank" rel="noopener">日本書紀 巻第十九</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十九" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十九</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十九</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">是法於諸法中最爲殊勝</blockquote><p>この法は、もろもろの法の中で最もすぐれている（聖明王の上表の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">西蕃諸國一皆禮之。豐秋日本豈獨背也</blockquote><p>西の国々はみなこれを礼拝している。日本だけが背いてよいだろうか（蘇我稻目の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">方今改拜蕃神。恐致國神之怒</blockquote><p>いま外国の神を拝めば、国の神の怒りを招くおそれがある（物部尾輿・中臣鎌子の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">今寡人與汝戮力并心。翳頼天皇。任那必起</blockquote><p>いま私とあなたがたが力と心を合わせ、天皇を頼めば、任那は必ず再び立つ（聖明王の言葉）。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十九" target="_blank" rel="noopener">日本書紀 巻第十九</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十九" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十九</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十九</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

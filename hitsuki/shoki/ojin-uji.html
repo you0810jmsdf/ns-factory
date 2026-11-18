@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十 応神天皇（全50ページ中 24）</p>
-    <h1>渡来の人々と菟道稚郎子の立太子</h1>
-    <p class="pg-lead">十四年から四十一年まで、百済や呉などから工女・学者・人々が渡来した記事を中心に、吉野の国樔の来朝、吉備の兄媛、枯野の船で作った琴などを記す。四十年に天皇は菟道稚郎子を後継ぎと定め、四十一年に明宮で崩じたところで巻が終わり、大山守命の反乱はこの巻には記されていない。</p>
-    <div class="xlink"><a href="../kojiki/ojin-oyamamori.html">古事記で読む：応神天皇の時代と大山守命の反乱 ›</a><a href="../kojiki/amenohiboko.html">古事記で読む：天之日矛と秋山・春山の兄弟 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十 応神天皇（全50ページ中 24）</p>
+        <h1>渡来の人々と菟道稚郎子の立太子</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">十四年から四十一年まで、百済や呉などから工女・学者・人々が渡来した記事を中心に、吉野の国樔の来朝、吉備の兄媛、枯野の船で作った琴などを記す。四十年に天皇は菟道稚郎子を後継ぎと定め、四十一年に明宮で崩じたところで巻が終わり、大山守命の反乱はこの巻には記されていない。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/ojin-oyamamori.html">古事記で読む：応神天皇の時代と大山守命の反乱 ›</a><a href="../kojiki/amenohiboko.html">古事記で読む：天之日矛と秋山・春山の兄弟 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>百済王が真毛津を献じ弓月君が来る</h3>
+      <p class="t">十四年二月、百済王が衣を縫う工女の真毛津を献じ、これが来目衣縫の始祖だという。この年、弓月君が百済から来て、百二十県の人夫を連れて帰化しようとしたが新羅人に阻まれて加羅国に留まっていると奏したので、葛城襲津彦を加羅に遣わして呼び寄せようとしたが、三年たっても襲津彦は戻らなかった。</p>
+      <h3>阿直岐と王仁を召す</h3>
+      <p class="t">十五年八月、百済王が阿直岐を遣わして良馬二匹を献じ、軽の坂上の廐で飼わせて阿直岐に世話をさせたので、その場所を廐坂という。阿直岐は経典を読むことができたので太子菟道稚郎子の師となり、天皇がより優れた博士はいるかと問うと王仁の名を挙げたので、上毛野君の祖の荒田別らを百済に遣わして王仁を召した。十六年二月に王仁が来て、太子は諸典籍を学んで通じないものはなかった。王仁は書首らの始祖とされる。この年、百済の阿花王が薨じ、天皇は直支王を国に返して位を継がせ、東韓の地を与えた。八月、平群木菟宿禰・的戸田宿禰を精兵とともに加羅へ遣わすと、新羅王は罪に服し、弓月の人夫が襲津彦とともに来た。</p>
+      <h3>国樔の人が醴酒を献じる</h3>
+      <p class="t">十九年十月、天皇が吉野宮に行くと、国樔の人が来て醴酒を献じて歌い、歌い終わると口を打って天を仰いで笑った。今も国樔が土地の産物を献じる日に、歌のあとで口を打って笑うのは、昔からの遺則だという。国樔の人々はたいへん素朴で、山の木の実を食べ、蝦蟆を煮て上等の味とし毛瀰と呼んだ。京の東南、山を隔てた吉野河の上流の険しい土地に住み、まれにしか来なかったが、このあとはたびたび来て栗・菌・年魚などを献じた。二十年九月、倭漢直の祖の阿知使主と子の都加使主が、十七県の党類を率いて来た。</p>
+      <h3>兄媛を吉備へ送り吉備国を分ける</h3>
+      <p class="t">二十二年三月、天皇は難波の大隅宮に住んだ。高台から遠くを望んだとき、妃の兄媛が西を見て深く嘆き、父母に会いたいと願ったので、天皇は淡路御原の海人八十人を水手として吉備へ送らせた。四月、兄媛が大津から船出すると、天皇は高台からその船を見送って歌った。九月、天皇は淡路島で狩りをし、吉備に移って小豆島に遊び、葉田の葦守宮に住んだ。兄媛の兄の御友別が兄弟・子孫を膳夫として慎んでもてなしたので、天皇は喜んで吉備国を分け、川嶋県を長子の稲速別（下道臣の始祖）に、上道県を仲彦（上道臣・香屋臣の始祖）に、三野県を弟彦（三野臣の始祖）に、波区芸県を御友別の弟の鴨別（笠臣の祖）に、苑県を兄の浦凝別（苑臣の始祖）に封じ、織部県を兄媛に与えた。</p>
+      <h3>木満致と高麗王の上表</h3>
+      <p class="t">二十五年、百済の直支王が薨じて子の久爾辛が王に立ったが、幼かったため木満致が国政を執り、王の母と通じて無礼を重ねたので、天皇は木満致を召した。二十八年九月、高麗王の使いが上表したが、表に「高麗王が日本国に教える」とあったので、太子菟道稚郎子は無礼だと怒って表を破った。三十一年八月、天皇は官船枯野が朽ちたものの長く役に立った功を忘れず、名を後に伝えるよう命じた。群卿はその船材を薪にして塩を焼き、五百籠の塩を諸国に配って船を造らせた。集まった五百の船は武庫水門で新羅の使いの宿から出た火で多く焼け、新羅王は恐れて腕のよい匠を献じた（猪名部らの始祖）。焼け残った枯野の木で作らせた琴は遠くまで響き、天皇は歌を詠んだ。</p>
+      <h3>阿知使主を呉に遣わし縫工女を求める</h3>
+      <p class="t">三十七年二月、阿知使主・都加使主を呉に遣わして縫工女を求めさせた。二人は高麗に渡ったが道がわからず、高麗王が久礼波・久礼志の二人を案内に付けて呉に着き、呉王は兄媛・弟媛・呉織・穴織の四人の工女を与えた。三十九年二月、百済の直支王が妹の新斉都媛を仕えさせ、新斉都媛は七人の女を連れて来た。</p>
+      <h3>菟道稚郎子を太子とし天皇が崩じる</h3>
+      <p class="t">四十年正月、天皇は大山守命と大鷦鷯尊を召して、子はかわいいか、年長と年少ではどちらがよりかわいいかと問うた。大山守命は年長の子だと答えて天皇を不快にさせ、大鷦鷯尊は天皇の顔色を察して、年長の子はもう成人して心配がないが、年少の子はまだどうなるかわからないのでかわいいと答え、天皇は大いに喜んだ。天皇は菟道稚郎子を太子にしたいと思っていて、二人の考えを知るためにこう問うたのであった。甲子の日、菟道稚郎子を後継ぎとし、大山守命に山川林野をつかさどらせ、大鷦鷯尊には太子を助けて国の政治を見させた。四十一年二月、天皇は明宮で崩じた。百十歳であった。同じ月、阿知使主らが呉から筑紫に着き、胸形大神が工女を求めたので兄媛を奉った。残る三人を連れて津国の武庫に着いたが天皇の崩御に間に合わず、大鷦鷯尊に献じた。その子孫が今の呉衣縫・蚊屋衣縫だという。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>十五年、百済王が阿直岐に良馬二匹を届けさせ、経典を読めた阿直岐は太子菟道稚郎子の師となった。阿直岐がより優れた博士として王仁を挙げたので王仁を召し、十六年に来た王仁から太子は諸典籍を学び、すべてに通じた。</li>
         <li><span class="kind ">本文</span>十四年、弓月君が百済から来て、率いてきた百二十県の人夫が新羅に阻まれて加羅に留まっていると奏した。葛城襲津彦は三年たっても戻らず、十六年に木菟宿禰らが新羅の境に兵を進めると、弓月の人夫は襲津彦とともに来た。二十年には倭漢直の祖の阿知使主らが十七県の党類を率いて来た。</li>
@@ -115,30 +176,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>十四年二月、百済王が衣を縫う工女の真毛津を献じ、これが来目衣縫の始祖だという。この年、弓月君が百済から来て、百二十県の人夫を連れて帰化しようとしたが新羅人に阻まれて加羅国に留まっていると奏したので、葛城襲津彦を加羅に遣わして呼び寄せようとしたが、三年たっても襲津彦は戻らなかった。</p>
-      <p>十五年八月、百済王が阿直岐を遣わして良馬二匹を献じ、軽の坂上の廐で飼わせて阿直岐に世話をさせたので、その場所を廐坂という。阿直岐は経典を読むことができたので太子菟道稚郎子の師となり、天皇がより優れた博士はいるかと問うと王仁の名を挙げたので、上毛野君の祖の荒田別らを百済に遣わして王仁を召した。十六年二月に王仁が来て、太子は諸典籍を学んで通じないものはなかった。王仁は書首らの始祖とされる。この年、百済の阿花王が薨じ、天皇は直支王を国に返して位を継がせ、東韓の地を与えた。八月、平群木菟宿禰・的戸田宿禰を精兵とともに加羅へ遣わすと、新羅王は罪に服し、弓月の人夫が襲津彦とともに来た。</p>
-      <p>十九年十月、天皇が吉野宮に行くと、国樔の人が来て醴酒を献じて歌い、歌い終わると口を打って天を仰いで笑った。今も国樔が土地の産物を献じる日に、歌のあとで口を打って笑うのは、昔からの遺則だという。国樔の人々はたいへん素朴で、山の木の実を食べ、蝦蟆を煮て上等の味とし毛瀰と呼んだ。京の東南、山を隔てた吉野河の上流の険しい土地に住み、まれにしか来なかったが、このあとはたびたび来て栗・菌・年魚などを献じた。二十年九月、倭漢直の祖の阿知使主と子の都加使主が、十七県の党類を率いて来た。</p>
-      <p>二十二年三月、天皇は難波の大隅宮に住んだ。高台から遠くを望んだとき、妃の兄媛が西を見て深く嘆き、父母に会いたいと願ったので、天皇は淡路御原の海人八十人を水手として吉備へ送らせた。四月、兄媛が大津から船出すると、天皇は高台からその船を見送って歌った。九月、天皇は淡路島で狩りをし、吉備に移って小豆島に遊び、葉田の葦守宮に住んだ。兄媛の兄の御友別が兄弟・子孫を膳夫として慎んでもてなしたので、天皇は喜んで吉備国を分け、川嶋県を長子の稲速別（下道臣の始祖）に、上道県を仲彦（上道臣・香屋臣の始祖）に、三野県を弟彦（三野臣の始祖）に、波区芸県を御友別の弟の鴨別（笠臣の祖）に、苑県を兄の浦凝別（苑臣の始祖）に封じ、織部県を兄媛に与えた。</p>
-      <p>二十五年、百済の直支王が薨じて子の久爾辛が王に立ったが、幼かったため木満致が国政を執り、王の母と通じて無礼を重ねたので、天皇は木満致を召した。二十八年九月、高麗王の使いが上表したが、表に「高麗王が日本国に教える」とあったので、太子菟道稚郎子は無礼だと怒って表を破った。三十一年八月、天皇は官船枯野が朽ちたものの長く役に立った功を忘れず、名を後に伝えるよう命じた。群卿はその船材を薪にして塩を焼き、五百籠の塩を諸国に配って船を造らせた。集まった五百の船は武庫水門で新羅の使いの宿から出た火で多く焼け、新羅王は恐れて腕のよい匠を献じた（猪名部らの始祖）。焼け残った枯野の木で作らせた琴は遠くまで響き、天皇は歌を詠んだ。</p>
-      <p>三十七年二月、阿知使主・都加使主を呉に遣わして縫工女を求めさせた。二人は高麗に渡ったが道がわからず、高麗王が久礼波・久礼志の二人を案内に付けて呉に着き、呉王は兄媛・弟媛・呉織・穴織の四人の工女を与えた。三十九年二月、百済の直支王が妹の新斉都媛を仕えさせ、新斉都媛は七人の女を連れて来た。</p>
-      <p>四十年正月、天皇は大山守命と大鷦鷯尊を召して、子はかわいいか、年長と年少ではどちらがよりかわいいかと問うた。大山守命は年長の子だと答えて天皇を不快にさせ、大鷦鷯尊は天皇の顔色を察して、年長の子はもう成人して心配がないが、年少の子はまだどうなるかわからないのでかわいいと答え、天皇は大いに喜んだ。天皇は菟道稚郎子を太子にしたいと思っていて、二人の考えを知るためにこう問うたのであった。甲子の日、菟道稚郎子を後継ぎとし、大山守命に山川林野をつかさどらせ、大鷦鷯尊には太子を助けて国の政治を見させた。四十一年二月、天皇は明宮で崩じた。百十歳であった。同じ月、阿知使主らが呉から筑紫に着き、胸形大神が工女を求めたので兄媛を奉った。残る三人を連れて津国の武庫に着いたが天皇の崩御に間に合わず、大鷦鷯尊に献じた。その子孫が今の呉衣縫・蚊屋衣縫だという。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云（崩御の宮）</b><p>本文は天皇が明宮で崩じたとするが、小注の一云は大隅宮で崩じたとする。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">習諸典籍於王仁，莫不通達</blockquote><p>太子菟道稚郎子が王仁から諸典籍を学び、通じないものはなかった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">歌訖即撃口仰咲者，蓋上古之遣則也</blockquote><p>国樔が歌い終わると口を打って天を仰いで笑うのは、昔からの遺則だろうという説明。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">高麗王教日本國也</blockquote><p>高麗王の上表の言葉。太子はこれを無礼として表を破った。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">汝言寔合朕之心</blockquote><p>大鷦鷯尊の答えに対し、天皇が「お前の言葉はまことに自分の心にかなう」と喜んだ言葉。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全1件）。</p>
+      <details><summary>一云（崩御の宮）</summary><p>本文は天皇が明宮で崩じたとするが、小注の一云は大隅宮で崩じたとする。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -164,7 +205,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 中巻 応神天皇の段（三皇子の分担）</span><p>古事記でも天皇は大山守命と大雀命に兄の子と弟の子のどちらを愛するかを問い、大雀命の答えを喜ぶ。古事記ではそのうえで大山守命に山海の政、大雀命に食国の政、宇遅能和紀郎子に天津日継を割り当て、崩御のあとに大山守命の反乱と宇遅の渡りでの最期が語られる。</p><blockquote lang="zh-Hant">孰愛兄子與弟子</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 応神天皇の段（渡来した人々）</span><p>古事記では阿知吉師が百済の照古王の馬二匹をもたらし、和邇吉師が論語十巻・千字文一巻を持って来たと記す。書紀本文では阿直岐の推薦で王仁が召され太子の師となるが、持って来た書名は記されない。</p><blockquote lang="zh-Hant">名和邇吉師。即論語十卷。千字文一卷。</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 応神天皇の段（吉野の国主の歌）</span><p>古事記では吉野の国主らが横臼で大御酒を醸して献じ、口鼓を打って歌い、それが今も大贄を献じるときの歌だとする。書紀では十九年に吉野宮で国樔人が醴酒を献じて歌い、口を打って笑う。</p><blockquote lang="zh-Hant">撃口鼓爲伎而歌曰</blockquote></div>
@@ -172,12 +213,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="ojin-jidai.html"><small>← 前のページ（巻第十 応神天皇）</small>応神天皇の誕生・即位と前半の治世</a><a class="next" href="nintoku.html"><small>次のページ（巻第十一 仁徳天皇）→</small>仁徳天皇と民のかまど・磐之媛皇后</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">日本書紀 巻第十</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">習諸典籍於王仁，莫不通達</blockquote><p>太子菟道稚郎子が王仁から諸典籍を学び、通じないものはなかった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">歌訖即撃口仰咲者，蓋上古之遣則也</blockquote><p>国樔が歌い終わると口を打って天を仰いで笑うのは、昔からの遺則だろうという説明。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">高麗王教日本國也</blockquote><p>高麗王の上表の言葉。太子はこれを無礼として表を破った。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">汝言寔合朕之心</blockquote><p>大鷦鷯尊の答えに対し、天皇が「お前の言葉はまことに自分の心にかなう」と喜んだ言葉。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">日本書紀 巻第十</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

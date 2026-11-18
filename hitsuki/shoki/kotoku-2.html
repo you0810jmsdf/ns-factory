@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第二十五 孝徳天皇（全50ページ中 43）</p>
-    <h1>孝徳天皇 ― 冠位の制・石川麻呂の死・白雉改元と難波の宮</h1>
-    <p class="pg-lead">大化三年から白雉五年まで、冠位と官制の整備、右大臣蘇我倉山田石川麻呂の死、白雉の献上による改元、難波長柄豊碕宮の完成と遣唐使の派遣が記される。白雉四年には皇太子が皇祖母尊・間人皇后らと倭の飛鳥河辺行宮へ移り、五年に天皇は難波宮で亡くなった。</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第二十五 孝徳天皇（全50ページ中 43）</p>
+        <h1>孝徳天皇 ― 冠位の制・石川麻呂の死・白雉改元と難波の宮</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">大化三年から白雉五年まで、冠位と官制の整備、右大臣蘇我倉山田石川麻呂の死、白雉の献上による改元、難波長柄豊碕宮の完成と遣唐使の派遣が記される。白雉四年には皇太子が皇祖母尊・間人皇后らと倭の飛鳥河辺行宮へ移り、五年に天皇は難波宮で亡くなった。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>七色十三階の冠を定める</h3>
+      <p class="t">大化三年、小郡を壊して宮を営み、有位者は寅の時に南門の外に並んで日の出に庭で再拝し、午の時に鍾を聞いて退くという礼法を定めた。工人倭漢直荒田井比羅夫が誤って溝を掘らせて民を疲れさせたと諫める者があり、天皇は自分の過ちだとして即日工事をやめた。十二月には皇太子の宮が焼けた。この年、七色十三階の冠を定め、新羅の金春秋が高向黒麻呂らを送って来て人質となり、渟足柵を造って柵戸を置いた。</p>
+      <h3>学問僧を遣わし古い冠をやめる</h3>
+      <p class="t">大化四年二月、高麗・百済・新羅に学問僧を遣わし、阿倍大臣は四天王寺に四衆を招いて仏像四体を塔内に安置した。四月に古い冠をやめたが、左右大臣はなお古い冠をかぶった。この年、磐舟柵を整えて蝦夷に備え、越と信濃の民を選んで初めて柵戸を置いた。</p>
+      <h3>蘇我倉山田石川麻呂が自ら命を絶つ</h3>
+      <p class="t">大化五年二月、冠十九階を定め、高向玄理と僧旻に八省・百官を置かせた。三月に左大臣阿倍大臣が亡くなった。蘇我日向が右大臣蘇我倉山田石川麻呂の謀反を皇太子に讒言し、天皇が兵を向けると、大臣は倭の山田寺に逃れ、長子興志の迎え撃つ案を許さず、仏殿の前で君王を恨まないと誓って自ら命を絶ち、妻子らも殉じた。その後、資財の中に皇太子のためのものと記した品が見つかって皇太子は悔やみ、日向は筑紫大宰帥とされ、世の人は隠れた流罪かと言った。</p>
+      <h3>造媛が亡くなる</h3>
+      <p class="t">大臣の娘で皇太子妃の造媛は、父が物部二田造塩に斬られたことを悲しんで亡くなり、皇太子が嘆くと野中川原史満が二首の歌を奉った。四月、巨勢徳陀古臣を左大臣、大伴長徳連を右大臣とした。この年、新羅王は金多遂を人質として送った。</p>
+      <h3>白い雉を献じ白雉と改める</h3>
+      <p class="t">白雉元年二月、穴戸国司草壁連醜経が白い雉を献じた。百済君や僧たちは、中国の故事や高麗での白鹿の例などを挙げてこれを祥瑞とし、朝廷では左右大臣と百官が並ぶ中で雉の輿が御座の前に進められた。天皇は、祥瑞は臣下が誠を尽くした結果であるとの詔を述べ、天下に大赦して年号を白雉と改めた。十月には宮地のために壊した墓や移された人に物を与え、丈六の繍像などの制作が始まった。</p>
+      <h3>繍像が完成し難波長柄豊碕宮と名づける</h3>
+      <p class="t">白雉二年三月に丈六の繍像などが完成した。十二月の晦日、味経宮に二千百余りの僧尼を招いて一切経を読ませ、天皇は大郡から新宮に移り、これを難波長柄豊碕宮と名づけた。この年、新羅の調使が唐の服を着て筑紫に着いたため追い返され、巨勢大臣は新羅を討つべきだと奏した。三年には班田が終わり、五十戸を里とする戸籍が造られ、九月に宮の造営が終わった。</p>
+      <h3>皇太子が倭京への遷都を請う</h3>
+      <p class="t">白雉四年五月、大使吉士長丹らと大使高田首根麻呂らを二つの船で大唐に遣わし、天皇は病の僧旻を見舞った。この年、皇太子が倭京への遷都を請うたが許されず、皇祖母尊・間人皇后らを連れて飛鳥河辺行宮に移り、百官も従ったので、天皇は位を捨てようと恨んで間人皇后に歌を送った。五年正月、中臣鎌足連に紫冠を授け、二月に押使高向玄理らを唐に遣わしたが玄理は唐で亡くなった。十月、天皇は正寝で亡くなり、十二月に大坂磯長陵に葬られ、皇太子は皇祖母尊を奉じて倭河辺行宮に移った。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>大化五年三月、蘇我日向が異母兄の右大臣蘇我倉山田石川麻呂に謀反の心があると皇太子に讒言し、大臣は山田寺で「君王を恨まない」と誓って自ら命を絶った。のちに資財の中に「皇太子の書」「皇太子の物」と記したものが見つかり、皇太子は大臣の心が清かったことを知って悔やんだ。</li>
         <li><span class="kind ">本文</span>白雉元年二月、穴戸国司が白い雉を献じ、百済君や僧たちに由来を問うたうえで祥瑞とされた。天皇は詔して天下に大赦し、年号を白雉と改めた。</li>
@@ -115,33 +176,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>大化三年、小郡を壊して宮を営み、有位者は寅の時に南門の外に並んで日の出に庭で再拝し、午の時に鍾を聞いて退くという礼法を定めた。工人倭漢直荒田井比羅夫が誤って溝を掘らせて民を疲れさせたと諫める者があり、天皇は自分の過ちだとして即日工事をやめた。十二月には皇太子の宮が焼けた。この年、七色十三階の冠を定め、新羅の金春秋が高向黒麻呂らを送って来て人質となり、渟足柵を造って柵戸を置いた。</p>
-      <p>大化四年二月、高麗・百済・新羅に学問僧を遣わし、阿倍大臣は四天王寺に四衆を招いて仏像四体を塔内に安置した。四月に古い冠をやめたが、左右大臣はなお古い冠をかぶった。この年、磐舟柵を整えて蝦夷に備え、越と信濃の民を選んで初めて柵戸を置いた。</p>
-      <p>大化五年二月、冠十九階を定め、高向玄理と僧旻に八省・百官を置かせた。三月に左大臣阿倍大臣が亡くなった。蘇我日向が右大臣蘇我倉山田石川麻呂の謀反を皇太子に讒言し、天皇が兵を向けると、大臣は倭の山田寺に逃れ、長子興志の迎え撃つ案を許さず、仏殿の前で君王を恨まないと誓って自ら命を絶ち、妻子らも殉じた。その後、資財の中に皇太子のためのものと記した品が見つかって皇太子は悔やみ、日向は筑紫大宰帥とされ、世の人は隠れた流罪かと言った。</p>
-      <p>大臣の娘で皇太子妃の造媛は、父が物部二田造塩に斬られたことを悲しんで亡くなり、皇太子が嘆くと野中川原史満が二首の歌を奉った。四月、巨勢徳陀古臣を左大臣、大伴長徳連を右大臣とした。この年、新羅王は金多遂を人質として送った。</p>
-      <p>白雉元年二月、穴戸国司草壁連醜経が白い雉を献じた。百済君や僧たちは、中国の故事や高麗での白鹿の例などを挙げてこれを祥瑞とし、朝廷では左右大臣と百官が並ぶ中で雉の輿が御座の前に進められた。天皇は、祥瑞は臣下が誠を尽くした結果であるとの詔を述べ、天下に大赦して年号を白雉と改めた。十月には宮地のために壊した墓や移された人に物を与え、丈六の繍像などの制作が始まった。</p>
-      <p>白雉二年三月に丈六の繍像などが完成した。十二月の晦日、味経宮に二千百余りの僧尼を招いて一切経を読ませ、天皇は大郡から新宮に移り、これを難波長柄豊碕宮と名づけた。この年、新羅の調使が唐の服を着て筑紫に着いたため追い返され、巨勢大臣は新羅を討つべきだと奏した。三年には班田が終わり、五十戸を里とする戸籍が造られ、九月に宮の造営が終わった。</p>
-      <p>白雉四年五月、大使吉士長丹らと大使高田首根麻呂らを二つの船で大唐に遣わし、天皇は病の僧旻を見舞った。この年、皇太子が倭京への遷都を請うたが許されず、皇祖母尊・間人皇后らを連れて飛鳥河辺行宮に移り、百官も従ったので、天皇は位を捨てようと恨んで間人皇后に歌を送った。五年正月、中臣鎌足連に紫冠を授け、二月に押使高向玄理らを唐に遣わしたが玄理は唐で亡くなった。十月、天皇は正寝で亡くなり、十二月に大坂磯長陵に葬られ、皇太子は皇祖母尊を奉じて倭河辺行宮に移った。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>或本</b><p>或本は、白雉五年七月に僧旻が阿曇寺で病に伏し、天皇が見舞って手を取り「法師が今日亡くなれば、朕も明日亡くなろう」と言ったと記す。本文は四年五月に天皇が旻の房を見舞ったとする。</p></div>
-      <div class="var"><b>或本</b><p>白雉四年の遣唐使の第一船について、或本は学問僧知辨・義徳と学生坂合部連磐積を加えて記す。</p></div>
-      <div class="var"><b>或本云</b><p>本文は二月に押使大錦上高向史玄理を遣わしたとするが、或本は夏五月に押使大花下高向玄理を遣わしたとし、判官書直麻呂の位も小山下とする。</p></div>
-      <div class="var"><b>或本云</b><p>或本は、この天皇の世に高麗・百済・新羅の三国が毎年使いを遣わして貢献したと記す。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">妄聽比羅夫所詐，而空穿瀆。朕之過也。</blockquote><p>比羅夫の偽りを聞き入れて無駄な溝を掘らせたのは自分の過ちだ、と天皇が述べ、その日のうちに工事をやめた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">願我生生世世，不怨君王。</blockquote><p>石川麻呂大臣が最期に仏殿の前で立てた誓い。何度生まれ変わっても君王を恨まない、という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">所以大赦天下，改元白雉。</blockquote><p>穴戸国に白い雉という祥瑞が現れたので、天下に大赦して年号を白雉と改める、という詔の言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">是隱流乎。</blockquote><p>讒言をした蘇我日向が筑紫大宰帥に任じられたのを、世の人が「これは隠れた流罪か」と言った。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全4件）。</p>
+      <details><summary>或本</summary><p>或本は、白雉五年七月に僧旻が阿曇寺で病に伏し、天皇が見舞って手を取り「法師が今日亡くなれば、朕も明日亡くなろう」と言ったと記す。本文は四年五月に天皇が旻の房を見舞ったとする。</p></details>
+      <details><summary>或本</summary><p>白雉四年の遣唐使の第一船について、或本は学問僧知辨・義徳と学生坂合部連磐積を加えて記す。</p></details>
+      <details><summary>或本云</summary><p>本文は二月に押使大錦上高向史玄理を遣わしたとするが、或本は夏五月に押使大花下高向玄理を遣わしたとし、判官書直麻呂の位も小山下とする。</p></details>
+      <details><summary>或本云</summary><p>或本は、この天皇の世に高麗・百済・新羅の三国が毎年使いを遣わして貢献したと記す。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -169,12 +210,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="kotoku-1.html"><small>← 前のページ（巻第二十五 孝徳天皇）</small>孝徳天皇の即位と大化の改新の詔</a><a class="next" href="saimei.html"><small>次のページ（巻第二十六 斉明天皇）→</small>斉明天皇の重祚・有間皇子・百済救援の西征</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿五" target="_blank" rel="noopener">日本書紀 巻第二十五</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94</a>　https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">妄聽比羅夫所詐，而空穿瀆。朕之過也。</blockquote><p>比羅夫の偽りを聞き入れて無駄な溝を掘らせたのは自分の過ちだ、と天皇が述べ、その日のうちに工事をやめた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">願我生生世世，不怨君王。</blockquote><p>石川麻呂大臣が最期に仏殿の前で立てた誓い。何度生まれ変わっても君王を恨まない、という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">所以大赦天下，改元白雉。</blockquote><p>穴戸国に白い雉という祥瑞が現れたので、天下に大赦して年号を白雉と改める、という詔の言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">是隱流乎。</blockquote><p>讒言をした蘇我日向が筑紫大宰帥に任じられたのを、世の人が「これは隠れた流罪か」と言った。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿五" target="_blank" rel="noopener">日本書紀 巻第二十五</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94</a>　https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

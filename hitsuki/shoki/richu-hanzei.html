@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十二 履中天皇・反正天皇（全50ページ中 26）</p>
-    <h1>履中天皇・反正天皇と住吉仲皇子の反乱</h1>
-    <p class="pg-lead">去來穗別天皇（履中）は即位の前に弟の住吉仲皇子に宮を焼かれて大和へ逃れ、もう一人の弟瑞齒別皇子が仲皇子を討たせて乱を収めた。即位後は磐余稚櫻宮で国史の設置や蔵職の創設などが記され、続く瑞齒別天皇（反正）は河内丹比の柴籬宮で五年間治めた。</p>
-    <div class="xlink"><a href="../kojiki/richu.html">古事記で読む：履中天皇・反正天皇と墨江中王の反乱 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十二 履中天皇・反正天皇（全50ページ中 26）</p>
+        <h1>履中天皇・反正天皇と住吉仲皇子の反乱</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">去來穗別天皇（履中）は即位の前に弟の住吉仲皇子に宮を焼かれて大和へ逃れ、もう一人の弟瑞齒別皇子が仲皇子を討たせて乱を収めた。即位後は磐余稚櫻宮で国史の設置や蔵職の創設などが記され、続く瑞齒別天皇（反正）は河内丹比の柴籬宮で五年間治めた。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/richu.html">古事記で読む：履中天皇・反正天皇と墨江中王の反乱 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>住吉仲皇子が太子の宮を囲む</h3>
+      <p class="t">去來穗別天皇は大鷦鷯天皇の太子で、母は磐之媛命である。大鷦鷯天皇三十一年に十五歳で皇太子となり、八十七年に父が崩じた。即位の前に羽田矢代宿禰の娘黒媛を妃にしようとして、弟の住吉仲皇子を使いに遣わしたところ、仲皇子は太子の名をかたって黒媛と通じ、手鈴を置き忘れて帰った。翌晩これに気づいた太子が黙って身を引くと、仲皇子は事が起こるのを恐れて兵で太子の宮を囲んだ。平群木菟宿禰・物部大前宿禰・阿知使主の三人が太子を馬に乗せて逃がし、仲皇子は太子のいない宮を焼いた。</p>
+      <h3>埴生坂から當摩の道を回る</h3>
+      <p class="t">太子は河内の埴生坂で目を覚まして難波の火を見て驚き、大坂から大和へ向かった。飛鳥山の登り口で出会った少女に、山には兵が満ちているので當摩の道を回るよう教えられ、太子はそれを歌に詠んだ。龍田山を越えたところで追ってきた淡路の野嶋の海人たちを伏兵で捕らえ、彼らは阿曇連濱子が仲皇子のために遣わした者であった。仲皇子に味方して道をふさいでいた倭直吾子篭は、太子に殺されることを恐れて妹の日之媛を献じて許され、倭直が采女を貢ぐのはこの時に始まったかと記される。太子は石上振神宮に入った。</p>
+      <h3>瑞齒別皇子が仲皇子を殺させる</h3>
+      <p class="t">後を追ってきた弟の瑞齒別皇子を、太子は疑って会わず、本当に二心がないなら難波へ戻って仲皇子を殺せと伝えた。瑞齒別皇子は、無道の者を除いて有道の者に就くのだと嘆きながら、木菟宿禰を伴って難波へ行き、仲皇子の近習の隼人刺領巾に錦の衣と褌を与えて仲皇子を殺させた。刺領巾は仲皇子が厠に入ったところを矛で刺したが、木菟宿禰は己の君を殺した者を生かせないとして刺領巾を殺した。夜半に石上に戻って報告すると、太子は弟を厚く遇して村合屯倉を与え、この日に阿曇連濱子を捕らえた。</p>
+      <h3>磐余稚櫻宮で即位する</h3>
+      <p class="t">元年二月、皇太子は磐余稚櫻宮で即位した。四月、仲皇子と謀った阿曇連濱子を死罪から減じて入れ墨の刑とし、人々はこれを阿曇目と呼んだ。七月に葦田宿禰の娘黒媛を皇妃とし、磐坂市邊押羽皇子・御馬皇子・青海皇女が生まれ、次妃幡梭皇女は中磯皇女を生んだ。二年正月に瑞齒別皇子を儲君とし、十月に磐余に都して、平群木菟宿禰・蘇賀滿智宿禰・物部の大連・圓大使主がともに国の政に当たった。三年十一月、磐余市磯池での舟遊びの際、季節外れの桜の花が天皇の盃に落ち、掖上室山で花を見つけてきたことから宮を稚櫻宮と名づけた。</p>
+      <h3>筑紫の三神を祀らず崩じる</h3>
+      <p class="t">四年八月に初めて諸国に国史を置き、十月に石上溝を掘った。五年三月、筑紫にいる三神が宮中に現れて民を奪ったと責めたが、祈るだけで祀らなかった。九月に淡路で狩りをすると、伊奘諾神が飼部の入れ墨の血の臭いに堪えないと告げたので、以後飼部に入れ墨をすることをやめた。その直後に空から風のような声が聞こえ、使いが皇妃の死を告げたので、天皇は神の祟りを治めなかったことを悔い、車持君の罪を問うて車持部を三神に奉った。六年正月に草香幡梭皇女を皇后とし、蔵職を建てたが、三月に天皇は病んで稚櫻宮で崩じ（時に七十歳）、十月に百舌鳥耳原陵に葬られた。</p>
+      <h3>瑞齒別天皇の即位</h3>
+      <p class="t">瑞齒別天皇は去來穗別天皇の同母弟で、去來穗別天皇二年に皇太子となった。淡路宮で生まれ、生まれつき歯が一本の骨のようで姿が美しく、瑞井の水で洗ったとき多遲の花が井に落ちたので、多遲比瑞齒別と称されたという。元年正月に即位し、八月に大宅臣の祖木事の娘津野媛を皇夫人として香火姫皇女・圓皇女が生まれ、その妹弟媛は財皇女と高部皇子を生んだ。十月に河内の丹比に都して柴籬宮とし、風雨が時にかなって五穀が実り、天下は太平であった。五年正月、天皇は正寝で崩じた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>大鷦鷯天皇の崩後、太子が黒媛を妃に迎えようとしたとき、使いの住吉仲皇子は太子の名をかたって黒媛と通じ、残した手鈴から露見すると、兵を起こして太子の宮を囲み焼いた。太子は平群木菟宿禰・物部大前宿禰・阿知使主に助けられて馬で逃れ、河内の埴生坂で目を覚まして難波の火を見た。</li>
         <li><span class="kind ">本文</span>石上振神宮に入った太子は弟の瑞齒別皇子をも疑い、難波へ戻って仲皇子を殺してから来るよう命じた。瑞齒別皇子は仲皇子の近習の隼人刺領巾に厠で仲皇子を刺させたが、木菟宿禰は己の君を殺した者を生かしてはおけないとして刺領巾を殺した。</li>
@@ -115,32 +174,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>去來穗別天皇は大鷦鷯天皇の太子で、母は磐之媛命である。大鷦鷯天皇三十一年に十五歳で皇太子となり、八十七年に父が崩じた。即位の前に羽田矢代宿禰の娘黒媛を妃にしようとして、弟の住吉仲皇子を使いに遣わしたところ、仲皇子は太子の名をかたって黒媛と通じ、手鈴を置き忘れて帰った。翌晩これに気づいた太子が黙って身を引くと、仲皇子は事が起こるのを恐れて兵で太子の宮を囲んだ。平群木菟宿禰・物部大前宿禰・阿知使主の三人が太子を馬に乗せて逃がし、仲皇子は太子のいない宮を焼いた。</p>
-      <p>太子は河内の埴生坂で目を覚まして難波の火を見て驚き、大坂から大和へ向かった。飛鳥山の登り口で出会った少女に、山には兵が満ちているので當摩の道を回るよう教えられ、太子はそれを歌に詠んだ。龍田山を越えたところで追ってきた淡路の野嶋の海人たちを伏兵で捕らえ、彼らは阿曇連濱子が仲皇子のために遣わした者であった。仲皇子に味方して道をふさいでいた倭直吾子篭は、太子に殺されることを恐れて妹の日之媛を献じて許され、倭直が采女を貢ぐのはこの時に始まったかと記される。太子は石上振神宮に入った。</p>
-      <p>後を追ってきた弟の瑞齒別皇子を、太子は疑って会わず、本当に二心がないなら難波へ戻って仲皇子を殺せと伝えた。瑞齒別皇子は、無道の者を除いて有道の者に就くのだと嘆きながら、木菟宿禰を伴って難波へ行き、仲皇子の近習の隼人刺領巾に錦の衣と褌を与えて仲皇子を殺させた。刺領巾は仲皇子が厠に入ったところを矛で刺したが、木菟宿禰は己の君を殺した者を生かせないとして刺領巾を殺した。夜半に石上に戻って報告すると、太子は弟を厚く遇して村合屯倉を与え、この日に阿曇連濱子を捕らえた。</p>
-      <p>元年二月、皇太子は磐余稚櫻宮で即位した。四月、仲皇子と謀った阿曇連濱子を死罪から減じて入れ墨の刑とし、人々はこれを阿曇目と呼んだ。七月に葦田宿禰の娘黒媛を皇妃とし、磐坂市邊押羽皇子・御馬皇子・青海皇女が生まれ、次妃幡梭皇女は中磯皇女を生んだ。二年正月に瑞齒別皇子を儲君とし、十月に磐余に都して、平群木菟宿禰・蘇賀滿智宿禰・物部の大連・圓大使主がともに国の政に当たった。三年十一月、磐余市磯池での舟遊びの際、季節外れの桜の花が天皇の盃に落ち、掖上室山で花を見つけてきたことから宮を稚櫻宮と名づけた。</p>
-      <p>四年八月に初めて諸国に国史を置き、十月に石上溝を掘った。五年三月、筑紫にいる三神が宮中に現れて民を奪ったと責めたが、祈るだけで祀らなかった。九月に淡路で狩りをすると、伊奘諾神が飼部の入れ墨の血の臭いに堪えないと告げたので、以後飼部に入れ墨をすることをやめた。その直後に空から風のような声が聞こえ、使いが皇妃の死を告げたので、天皇は神の祟りを治めなかったことを悔い、車持君の罪を問うて車持部を三神に奉った。六年正月に草香幡梭皇女を皇后とし、蔵職を建てたが、三月に天皇は病んで稚櫻宮で崩じ（時に七十歳）、十月に百舌鳥耳原陵に葬られた。</p>
-      <p>瑞齒別天皇は去來穗別天皇の同母弟で、去來穗別天皇二年に皇太子となった。淡路宮で生まれ、生まれつき歯が一本の骨のようで姿が美しく、瑞井の水で洗ったとき多遲の花が井に落ちたので、多遲比瑞齒別と称されたという。元年正月に即位し、八月に大宅臣の祖木事の娘津野媛を皇夫人として香火姫皇女・圓皇女が生まれ、その妹弟媛は財皇女と高部皇子を生んだ。十月に河内の丹比に都して柴籬宮とし、風雨が時にかなって五穀が実り、天下は太平であった。五年正月、天皇は正寝で崩じた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云</b><p>本文では三人の進言を太子が信じなかったとするが、この一云は、太子が酒に酔って起きなかったと伝える。</p></div>
-      <div class="var"><b>一云</b><p>本文では三人が太子を助けて馬に乗せたとするが、この一云は、物部大前宿禰が太子を抱いて馬に乗ったとする。</p></div>
-      <div class="var"><b>一云</b><p>太子を追わせた野嶋の海人の主を、本文は阿曇連濱子とするが、この一云は阿曇連黒友とする。</p></div>
-      <div class="var"><b>一日</b><p>黒媛の生んだ青海皇女について、別の名を飯豐皇女とする注である。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">始之於諸國置國史。記言事達四方志。</blockquote><p>初めて諸国に国史を置き、言葉と出来事を記録して四方の様子を伝えさせた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">然亡無道就有道。其誰疑我。</blockquote><p>無道の者を滅ぼして道理のある方に就くのだから、だれが私を疑うだろうか、という瑞齒別皇子の言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">因此時人曰阿曇目。</blockquote><p>（濱子に入れ墨をしたので）当時の人はこれを阿曇目と呼んだ。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">風雨順時五穀成熟。人民富饒。天下太平。</blockquote><p>反正天皇の世は、風雨が時にかない、五穀が実り、民は豊かで、天下は太平であった。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全4件）。</p>
+      <details><summary>一云</summary><p>本文では三人の進言を太子が信じなかったとするが、この一云は、太子が酒に酔って起きなかったと伝える。</p></details>
+      <details><summary>一云</summary><p>本文では三人が太子を助けて馬に乗せたとするが、この一云は、物部大前宿禰が太子を抱いて馬に乗ったとする。</p></details>
+      <details><summary>一云</summary><p>太子を追わせた野嶋の海人の主を、本文は阿曇連濱子とするが、この一云は阿曇連黒友とする。</p></details>
+      <details><summary>一日</summary><p>黒媛の生んだ青海皇女について、別の名を飯豐皇女とする注である。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -164,7 +204,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 履中天皇の段の冒頭（G50）</span><p>古事記では、難波宮で大嘗の豊明の宴のあと酒に酔って寝ていたときに、弟の墨江中王が大殿に火をつけたとされ、黒媛をめぐるいきさつは見えない。天皇を連れ出したのは阿知直で、目を覚ましたのは多遲比野とされる。</p><blockquote lang="zh-Hant">爾其弟墨江中王。欲取天皇以。火著大殿。</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 履中天皇の段、水齒別命と隼人曾婆訶理（G56）</span><p>古事記では仲皇子にあたる墨江中王を殺した隼人を曾婆訶理とし、水齒別命はその功に報いて大臣の位を与える宴を開き、同じ盃で酒を飲ませて顔が隠れたところで首を斬る。書紀では隼人刺領巾を殺したのは木菟宿禰で、宴の話は確認できなかった。</p><blockquote lang="zh-Hant">今日與大臣。飮同盞酒。</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 反正天皇の段（G57）</span><p>古事記は反正天皇の身の丈を九尺二寸半とし、歯の長さと幅を記して珠を貫いたようだったとする。書紀は歯が一本の骨のようだったとし、瑞井と多遲の花による名の由来を記すが、身の丈は書かない。</p><blockquote lang="zh-Hant">御齒長一寸廣二分。上下等齊。既如貫珠。</blockquote></div>
@@ -172,12 +212,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="nintoku.html"><small>← 前のページ（巻第十一 仁徳天皇）</small>仁徳天皇と民のかまど・磐之媛皇后</a><a class="next" href="ingyo-anko.html"><small>次のページ（巻第十三 允恭天皇・安康天皇）→</small>允恭天皇の盟神探湯と衣通郎姫・安康天皇の最期</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十二" target="_blank" rel="noopener">日本書紀 巻第十二</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十二" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十二</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十二</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">始之於諸國置國史。記言事達四方志。</blockquote><p>初めて諸国に国史を置き、言葉と出来事を記録して四方の様子を伝えさせた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">然亡無道就有道。其誰疑我。</blockquote><p>無道の者を滅ぼして道理のある方に就くのだから、だれが私を疑うだろうか、という瑞齒別皇子の言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">因此時人曰阿曇目。</blockquote><p>（濱子に入れ墨をしたので）当時の人はこれを阿曇目と呼んだ。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">風雨順時五穀成熟。人民富饒。天下太平。</blockquote><p>反正天皇の世は、風雨が時にかない、五穀が実り、民は豊かで、天下は太平であった。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十二" target="_blank" rel="noopener">日本書紀 巻第十二</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十二" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十二</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十二</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

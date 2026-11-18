@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十六 武烈天皇（全50ページ中 31）</p>
-    <h1>武烈天皇と平群氏の滅亡</h1>
-    <p class="pg-lead">億計天皇（仁賢天皇）の崩御後、皇太子の小泊瀬稚鷦鷯尊は、国政をほしいままにした大臣平群眞鳥とその子の鮪を、大伴金村連の兵で滅ぼして泊瀬列城で即位した。即位後は年ごとに残酷な行いが記され、子のないまま八年十二月に列城宮で崩じた。</p>
-    <div class="xlink"><a href="../kojiki/oke-woke.html">古事記で読む：清寧天皇と意祁命・袁祁命（志毘臣との歌垣） ›</a><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十六 武烈天皇（全50ページ中 31）</p>
+        <h1>武烈天皇と平群氏の滅亡</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">億計天皇（仁賢天皇）の崩御後、皇太子の小泊瀬稚鷦鷯尊は、国政をほしいままにした大臣平群眞鳥とその子の鮪を、大伴金村連の兵で滅ぼして泊瀬列城で即位した。即位後は年ごとに残酷な行いが記され、子のないまま八年十二月に列城宮で崩じた。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/oke-woke.html">古事記で読む：清寧天皇と意祁命・袁祁命（志毘臣との歌垣） ›</a><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>太子の刑理と残酷な刑</h3>
+      <p class="t">小泊瀬稚鷦鷯天皇は億計天皇の太子で、母は春日大娘皇后である。億計天皇七年に皇太子となった。成長すると刑理を好み、法令を明らかにし、日が暮れるまで朝廷に座って隠れた冤罪を必ず明らかにし、裁判では実情をつかんだ。その一方でしきりに悪事をなして善いことは一つもせず、あらゆる残酷な刑を自ら見たので、国中の人が震えおそれたという。</p>
+      <h3>平群眞鳥臣が国政を独占する</h3>
+      <p class="t">十一年八月に億計天皇が崩じると、大臣の平群眞鳥臣が国政を独占して日本の王になろうとし、太子のためと言って宮を造らせて自分が住んだ。太子は物部麁鹿火大連の娘の影媛を妻にしようとして使いを送ったが、影媛はすでに眞鳥の子の鮪と通じていたので、海柘榴市で会おうと答えた。太子が平群大臣の家に官馬を求めると、大臣はからかうように返事をしたまま馬を出さなかった。約束の場所の歌場で太子が影媛の袖を取っていると、鮪が二人の間に割って入り、太子と鮪は何首も歌を掛け合った。</p>
+      <h3>影媛をめぐり鮪と歌を掛け合う</h3>
+      <p class="t">太子は鮪がすでに影媛を得ていたことを知り、眞鳥父子の無礼を悟って大いに怒った。その夜、大伴金村連の家に行って兵を集める相談をし、金村は数千の兵で鮪を乃樂山で殺した。影媛はその場まで追って行って殺されるのを見届け、歌を詠んで嘆き悲しんだ。鮪を葬って家に帰ろうとするときにも「今日、愛する夫を失った」と言って涙を流し、もう一首の歌を詠んだ。</p>
+      <h3>眞鳥を討ち泊瀬列城で即位する</h3>
+      <p class="t">十一月、大伴金村連は眞鳥を討つよう太子に願い出て、兵を率いて大臣の家を囲み、火を放った。眞鳥は事が成らないのを恨み、塩を指して呪いながら子弟とともに殺されたが、角鹿の海の塩だけは呪うのを忘れたため、角鹿の塩は天皇の食用となり、ほかの海の塩は天皇が忌むものとなったという。十二月、金村は政を太子に返して尊号を奉り、太子は泊瀬列城に壇を設けて即位し、金村を大連とした。元年三月、春日娘子を皇后としたが、その父の名は分からないと記される。</p>
+      <h3>妊婦の腹を割き人の爪をはぐ</h3>
+      <p class="t">二年九月には妊婦の腹を割いて胎児を見た。三年十月には人の爪をはいで芋を掘らせ、十一月には大伴室屋大連に命じて言濃國の男丁を出させ、水派邑に城の形を造らせて城上と呼んだ。四年四月には人の髪を抜いて木の上に登らせ、木を切り倒して落ちて死ぬのを楽しんだ。この年、百濟では末多王が民に暴虐をはたらいたため国人に除かれ、嶋王が立って武寧王となった。</p>
+      <h3>人を池の樋に入らせ矛で刺す</h3>
+      <p class="t">五年六月には人を池の樋に入らせ、流れ出てくるところを三刃の矛で刺し殺して楽しんだ。六年九月、天皇は自分に跡継ぎがないので小泊瀬舍人を置いて名を伝えさせることにし、十月には貢ぎ物を何年も納めなかったとして百濟の使者麻那君を帰さなかった。七年二月には人を木に登らせて弓で射落として笑い、四月には百濟王が改めて斯我君を遣わした。八年三月には女性を辱める残酷な遊びをし、また池や苑を造って鳥獣を集め、狩りを好み、宮人と酒にふけって民の寒さや飢えを忘れたと記される。十二月、天皇は列城宮で崩じた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>日本書紀はこの天皇を、刑や裁判に通じて法令を明らかにした一方で、「しきりに悪事をなし、一つも善いことをしなかった」と描き、残酷な刑を自ら見たので国中の人が震えおそれたと書く。</li>
         <li><span class="kind ">本文</span>仁賢十一年に億計天皇が崩じると、大臣平群眞鳥が国政を独占し、日本の王になろうとした。太子は物部麁鹿火大連の娘影媛を妻にしようとしたが、影媛はすでに眞鳥の子の鮪と通じており、海柘榴市の歌場で太子と鮪が歌を掛け合った。</li>
@@ -115,32 +174,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>小泊瀬稚鷦鷯天皇は億計天皇の太子で、母は春日大娘皇后である。億計天皇七年に皇太子となった。成長すると刑理を好み、法令を明らかにし、日が暮れるまで朝廷に座って隠れた冤罪を必ず明らかにし、裁判では実情をつかんだ。その一方でしきりに悪事をなして善いことは一つもせず、あらゆる残酷な刑を自ら見たので、国中の人が震えおそれたという。</p>
-      <p>十一年八月に億計天皇が崩じると、大臣の平群眞鳥臣が国政を独占して日本の王になろうとし、太子のためと言って宮を造らせて自分が住んだ。太子は物部麁鹿火大連の娘の影媛を妻にしようとして使いを送ったが、影媛はすでに眞鳥の子の鮪と通じていたので、海柘榴市で会おうと答えた。太子が平群大臣の家に官馬を求めると、大臣はからかうように返事をしたまま馬を出さなかった。約束の場所の歌場で太子が影媛の袖を取っていると、鮪が二人の間に割って入り、太子と鮪は何首も歌を掛け合った。</p>
-      <p>太子は鮪がすでに影媛を得ていたことを知り、眞鳥父子の無礼を悟って大いに怒った。その夜、大伴金村連の家に行って兵を集める相談をし、金村は数千の兵で鮪を乃樂山で殺した。影媛はその場まで追って行って殺されるのを見届け、歌を詠んで嘆き悲しんだ。鮪を葬って家に帰ろうとするときにも「今日、愛する夫を失った」と言って涙を流し、もう一首の歌を詠んだ。</p>
-      <p>十一月、大伴金村連は眞鳥を討つよう太子に願い出て、兵を率いて大臣の家を囲み、火を放った。眞鳥は事が成らないのを恨み、塩を指して呪いながら子弟とともに殺されたが、角鹿の海の塩だけは呪うのを忘れたため、角鹿の塩は天皇の食用となり、ほかの海の塩は天皇が忌むものとなったという。十二月、金村は政を太子に返して尊号を奉り、太子は泊瀬列城に壇を設けて即位し、金村を大連とした。元年三月、春日娘子を皇后としたが、その父の名は分からないと記される。</p>
-      <p>二年九月には妊婦の腹を割いて胎児を見た。三年十月には人の爪をはいで芋を掘らせ、十一月には大伴室屋大連に命じて言濃國の男丁を出させ、水派邑に城の形を造らせて城上と呼んだ。四年四月には人の髪を抜いて木の上に登らせ、木を切り倒して落ちて死ぬのを楽しんだ。この年、百濟では末多王が民に暴虐をはたらいたため国人に除かれ、嶋王が立って武寧王となった。</p>
-      <p>五年六月には人を池の樋に入らせ、流れ出てくるところを三刃の矛で刺し殺して楽しんだ。六年九月、天皇は自分に跡継ぎがないので小泊瀬舍人を置いて名を伝えさせることにし、十月には貢ぎ物を何年も納めなかったとして百濟の使者麻那君を帰さなかった。七年二月には人を木に登らせて弓で射落として笑い、四月には百濟王が改めて斯我君を遣わした。八年三月には女性を辱める残酷な遊びをし、また池や苑を造って鳥獣を集め、狩りを好み、宮人と酒にふけって民の寒さや飢えを忘れたと記される。十二月、天皇は列城宮で崩じた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一本云</b><p>鮪は影媛の家に泊まり、その夜のうちに殺されたとする。本文では大伴金村連が数千の兵で鮪を乃樂山で殺す。</p></div>
-      <div class="var"><b>百濟新撰云</b><p>末多王が無道で民に暴虐をはたらいたので国人が除き、武寧王が立ったとする。武寧王の諱は斯麻王で、混支王子の子であり末多王の異母兄とし、混支が倭に向かう途中筑紫の嶋で生まれたので名づけたとする。書紀の編者は注で、嶋王は蓋鹵王の子、末多王は混支王の子であるから「異母兄」というのはよく分からないとする。</p></div>
-      <div class="var"><b>一本</b><p>太子の最初の歌の初句「之裒世」を「彌儺斗」とする。</p></div>
-      <div class="var"><b>一本</b><p>太子の歌の「耶賦能之魔柯枳」を「耶陛哿羅哿枳」とする。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">又頻造諸惡。不修一善</blockquote><p>「またしきりに多くの悪事をなし、一つの善いこともしなかった」という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">戮鮪臣於乃樂山</blockquote><p>大伴金村連の兵が鮪臣を乃樂山で殺したという記事。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">唯忘角鹿海鹽、不以爲詛</blockquote><p>眞鳥が死に際に塩を呪ったとき、角鹿の海の塩だけは忘れて呪わなかったという記事。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">傳國之機、立子爲貴。朕無繼嗣</blockquote><p>六年九月の詔。「国を伝える要は子を立てることにあるが、わたしには跡継ぎがない」という意味。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全4件）。</p>
+      <details><summary>一本云</summary><p>鮪は影媛の家に泊まり、その夜のうちに殺されたとする。本文では大伴金村連が数千の兵で鮪を乃樂山で殺す。</p></details>
+      <details><summary>百濟新撰云</summary><p>末多王が無道で民に暴虐をはたらいたので国人が除き、武寧王が立ったとする。武寧王の諱は斯麻王で、混支王子の子であり末多王の異母兄とし、混支が倭に向かう途中筑紫の嶋で生まれたので名づけたとする。書紀の編者は注で、嶋王は蓋鹵王の子、末多王は混支王の子であるから「異母兄」というのはよく分からないとする。</p></details>
+      <details><summary>一本</summary><p>太子の最初の歌の初句「之裒世」を「彌儺斗」とする。</p></details>
+      <details><summary>一本</summary><p>太子の歌の「耶賦能之魔柯枳」を「耶陛哿羅哿枳」とする。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -161,7 +201,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 武烈天皇の段</span><p>古事記の武烈天皇の段は、長谷の列木宮で八年天下を治めたこと、太子がないので小長谷部を定めたこと、御陵が片岡の石坏岡にあることだけを記し、日本書紀に見える残酷な行いの記事は確認できなかった。</p><blockquote lang="zh-Hant">坐長谷之列木宮。治天下捌歲也</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 武烈天皇の段</span><p>古事記も跡継ぎがないために名代を定めたとするが、その名は小長谷部である。日本書紀は六年九月の詔で小泊瀬舍人を置いたとする。</p><blockquote lang="zh-Hant">无太子。故爲御子代。定小長谷部也</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 清寧天皇の段（志毘臣との歌垣）</span><p>歌垣で女性をめぐって平群氏の志毘臣と歌を掛け合い、その後に志毘臣を殺す話は、古事記では清寧天皇の段にあり、相手は袁祁命（顕宗天皇）、女性は菟田首らの娘の大魚である。日本書紀ではこの巻で、太子（武烈天皇）と眞鳥の子の鮪が物部麁鹿火大連の娘の影媛をめぐって争う。</p><blockquote lang="zh-Hant">平群臣之祖。名志毘臣。立于歌垣</blockquote></div>
@@ -169,12 +209,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="seinei-kenzo.html"><small>← 前のページ（巻第十五 清寧天皇・顕宗天皇・仁賢天皇）</small>清寧・顕宗・仁賢天皇と億計・弘計の兄弟</a><a class="next" href="keitai.html"><small>次のページ（巻第十七 継体天皇）→</small>継体天皇の擁立と筑紫国造磐井の反乱</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十六" target="_blank" rel="noopener">日本書紀 巻第十六</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十六" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十六</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十六</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">又頻造諸惡。不修一善</blockquote><p>「またしきりに多くの悪事をなし、一つの善いこともしなかった」という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">戮鮪臣於乃樂山</blockquote><p>大伴金村連の兵が鮪臣を乃樂山で殺したという記事。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">唯忘角鹿海鹽、不以爲詛</blockquote><p>眞鳥が死に際に塩を呪ったとき、角鹿の海の塩だけは忘れて呪わなかったという記事。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">傳國之機、立子爲貴。朕無繼嗣</blockquote><p>六年九月の詔。「国を伝える要は子を立てることにあるが、わたしには跡継ぎがない」という意味。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十六" target="_blank" rel="noopener">日本書紀 巻第十六</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十六" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十六</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十六</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

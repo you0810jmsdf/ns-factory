@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十四 雄略天皇（全50ページ中 28）</p>
-    <h1>雄略天皇の即位と葛城山の一事主神</h1>
-    <p class="pg-lead">穴穗天皇（安康天皇）が眉輪王に殺されると、大泊瀬皇子は兄の皇子たちや眉輪王・圓大臣、市邊押磐皇子らを次々に討ち、泊瀬朝倉で即位した。即位後の元年から七年までには、后妃の擁立、狩りの場での怒りと「太惡天皇」という非難、葛城山での一事主神との出会い、吉備氏の処罰と田狹臣の妻稚媛の話などが記される。</p>
-    <div class="xlink"><a href="../kojiki/anko.html">古事記で読む：安康天皇と目弱王の変 ›</a><a href="../kojiki/yuryaku-akaiko.html">古事記で読む：雄略天皇と若日下部王・赤猪子・吉野の童女 ›</a><a href="../kojiki/yuryaku-hitokoto.html">古事記で読む：葛城の一言主大神と雄略天皇の歌 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十四 雄略天皇（全50ページ中 28）</p>
+        <h1>雄略天皇の即位と葛城山の一事主神</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">穴穗天皇（安康天皇）が眉輪王に殺されると、大泊瀬皇子は兄の皇子たちや眉輪王・圓大臣、市邊押磐皇子らを次々に討ち、泊瀬朝倉で即位した。即位後の元年から七年までには、后妃の擁立、狩りの場での怒りと「太惡天皇」という非難、葛城山での一事主神との出会い、吉備氏の処罰と田狹臣の妻稚媛の話などが記される。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/anko.html">古事記で読む：安康天皇と目弱王の変 ›</a><a href="../kojiki/yuryaku-akaiko.html">古事記で読む：雄略天皇と若日下部王・赤猪子・吉野の童女 ›</a><a href="../kojiki/yuryaku-hitokoto.html">古事記で読む：葛城の一言主大神と雄略天皇の歌 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>眉輪王が穴穗天皇を刺し殺す</h3>
+      <p class="t">大泊瀬幼武天皇は雄朝津間稚子宿禰天皇の第五子で、生まれたとき不思議な光が御殿に満ちたという。安康三年八月、穴穗天皇は山宮で酒宴を開き、皇后に「眉輪王が恐ろしい」と語ったが、楼の下で遊んでいた幼い眉輪王がそれを聞いており、天皇が皇后の膝を枕に眠ったところを刺し殺した。知らせを受けた大泊瀬皇子は兄たちを疑い、黙って答えない八釣白彦皇子を斬った。坂合黒彦皇子と眉輪王は圓大臣の家に逃げこみ、大臣は娘の韓媛と葛城の宅七区を差し出して許しを求めたが、皇子は聞き入れず家を焼き、三人はともに焼け死んだ。</p>
+      <h3>市邊押磐皇子を射殺し泊瀬朝倉で即位</h3>
+      <p class="t">同じ年の十月、大泊瀬皇子は、穴穗天皇がかつて市邊押磐皇子に国を伝えようとしていたことを恨み、近江の來田綿蛟屋野での狩りに誘い出した。皇子は「猪がいる」と偽って叫び、市邊押磐皇子を射殺し、遺体を抱いて泣き叫んだ帳内の佐伯部賣輪も殺した。この月、御馬皇子も三輪の磐井のそばで捕らえられ、処刑の前にその井戸を呪った。十一月、天皇は泊瀬朝倉に壇を設けて即位し、平群臣眞鳥を大臣、大伴連室屋と物部連目を大連とした。</p>
+      <h3>草香幡梭姫皇女を皇后とし妃を立てる</h3>
+      <p class="t">元年三月、草香幡梭姫皇女を皇后とし、この月に三人の妃を立てた。葛城圓大臣の娘の韓媛は白髪皇子と稚足姫皇女を生み、この皇女は伊勢大神の祠に仕えた。吉備上道臣の娘の稚媛は磐城皇子と星川稚宮皇子を生んだ。采女だった童女君は一夜で女子を生んだため天皇は疑って育てなかったが、物部目大連が女子の姿が天皇に似ていると言って天皇を説き、その子は皇女、母は妃とされた。</p>
+      <h3>池津媛を焼き殺し大津馬飼を斬る</h3>
+      <p class="t">二年七月、天皇が召そうとしていた百濟の池津媛が石河楯と通じたため、天皇は二人を木に縛って焼き殺させた。十月、吉野の御馬瀬で狩りをしたとき、鮮肉の扱いについて群臣が答えられないことに怒り、御者の大津馬飼を斬った。皇太后と皇后は采女の日媛に酒を勧めさせて天皇をなだめ、皇太后が膳臣長野らを差し出したことから宍人部が置かれた。天皇は自分の心だけを師として多くの人を誤って殺したので、天下の人は「太惡天皇」と非難し、天皇が寵愛したのは史部の身狹村主青と桧隈民使博徳らだけであったという。</p>
+      <h3>栲幡皇女が神鏡を埋め自ら命を絶つ</h3>
+      <p class="t">三年四月、阿閇臣國見が、伊勢大神に仕える栲幡皇女と廬城部連武彦の仲を中傷した。武彦は父に殺され、皇女は神鏡を持って五十鈴河のほとりに埋め、自ら命を絶った。天皇が探させると、河上に蛇のような虹が立ち、そこを掘ると神鏡が見つかり、近くで皇女の遺体も見つかった。腹を割いて見ると水と石があるだけで、武彦の疑いは晴れ、國見は石上神宮に逃げこんだ。</p>
+      <h3>葛城山で一事主神と狩りをする</h3>
+      <p class="t">四年二月、天皇は葛城山で一事主神と出会い、ともに狩りをした。八月、吉野の河上小野で狩りをしたとき、天皇の腕にかみついた虻を蜻蛉がくわえて去ったので、天皇はこれをほめる歌を詠み、その地を蜻蛉野と名づけた。五年二月には葛城山で怒った猪に襲われ、舍人が木に登って逃げたのを斬ろうとしたが、皇后の諫めを受けて思いとどまり、「人は皆禽獣を狩るが、自分は善い言葉を得て帰る」と喜んだ。同じ年、百濟の加須利君（蓋鹵王）は弟の軍君を日本に遣わし、同行した身重の妻が筑紫の各羅嶋で嶋君を生んだ。これが武寧王であるという。</p>
+      <h3>少子部連の姓と三諸岳の大蛇</h3>
+      <p class="t">六年、天皇は泊瀬の小野をほめる歌を詠み、蚕を集めるよう命じられた■■（すがる）が誤って赤子を集めてきたことから少子部連の姓を与えた。七年七月、天皇はこの少子部連に三諸岳の神の姿を見たいと言い、彼が捕らえてきた大蛇が雷のように鳴って目を輝かせたので、天皇は恐れて山に放させ、彼に雷という名を与えた。八月、吉備下道臣前津屋が少女や鶏を「天皇のもの」「自分のもの」に分けて戦わせ、天皇側が勝つと殺していたと聞き、天皇は一族七十人を殺させた。この年、吉備上道臣田狹の妻稚媛を召し入れた件から、田狹の子の弟君が新羅征討の途中で百濟にとどまり、妻の樟媛に殺される事件が起き、百濟から来た新しい技術者たちは東漢直掬に命じて上桃原・下桃原・眞神原に移し住まわせた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>安康三年八月、眉輪王が父の仇として穴穗天皇を刺し殺した。大泊瀬皇子は八釣白彦皇子を斬り、坂合黒彦皇子と眉輪王をかくまった圓大臣の家を焼いて三人を死なせ、十月には市邊押磐皇子を狩りに誘って射殺したうえで、十一月に泊瀬朝倉で即位した。</li>
         <li><span class="kind ">本文</span>四年二月、天皇は葛城山で自分によく似た背の高い人に出会い、その人は「一事主神」と名乗った。二人は並んで鹿を追って狩りをし、神は天皇を來目水まで送った。人々はこれを見て「有徳天皇」と言った。</li>
@@ -115,40 +176,20 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>大泊瀬幼武天皇は雄朝津間稚子宿禰天皇の第五子で、生まれたとき不思議な光が御殿に満ちたという。安康三年八月、穴穗天皇は山宮で酒宴を開き、皇后に「眉輪王が恐ろしい」と語ったが、楼の下で遊んでいた幼い眉輪王がそれを聞いており、天皇が皇后の膝を枕に眠ったところを刺し殺した。知らせを受けた大泊瀬皇子は兄たちを疑い、黙って答えない八釣白彦皇子を斬った。坂合黒彦皇子と眉輪王は圓大臣の家に逃げこみ、大臣は娘の韓媛と葛城の宅七区を差し出して許しを求めたが、皇子は聞き入れず家を焼き、三人はともに焼け死んだ。</p>
-      <p>同じ年の十月、大泊瀬皇子は、穴穗天皇がかつて市邊押磐皇子に国を伝えようとしていたことを恨み、近江の來田綿蛟屋野での狩りに誘い出した。皇子は「猪がいる」と偽って叫び、市邊押磐皇子を射殺し、遺体を抱いて泣き叫んだ帳内の佐伯部賣輪も殺した。この月、御馬皇子も三輪の磐井のそばで捕らえられ、処刑の前にその井戸を呪った。十一月、天皇は泊瀬朝倉に壇を設けて即位し、平群臣眞鳥を大臣、大伴連室屋と物部連目を大連とした。</p>
-      <p>元年三月、草香幡梭姫皇女を皇后とし、この月に三人の妃を立てた。葛城圓大臣の娘の韓媛は白髪皇子と稚足姫皇女を生み、この皇女は伊勢大神の祠に仕えた。吉備上道臣の娘の稚媛は磐城皇子と星川稚宮皇子を生んだ。采女だった童女君は一夜で女子を生んだため天皇は疑って育てなかったが、物部目大連が女子の姿が天皇に似ていると言って天皇を説き、その子は皇女、母は妃とされた。</p>
-      <p>二年七月、天皇が召そうとしていた百濟の池津媛が石河楯と通じたため、天皇は二人を木に縛って焼き殺させた。十月、吉野の御馬瀬で狩りをしたとき、鮮肉の扱いについて群臣が答えられないことに怒り、御者の大津馬飼を斬った。皇太后と皇后は采女の日媛に酒を勧めさせて天皇をなだめ、皇太后が膳臣長野らを差し出したことから宍人部が置かれた。天皇は自分の心だけを師として多くの人を誤って殺したので、天下の人は「太惡天皇」と非難し、天皇が寵愛したのは史部の身狹村主青と桧隈民使博徳らだけであったという。</p>
-      <p>三年四月、阿閇臣國見が、伊勢大神に仕える栲幡皇女と廬城部連武彦の仲を中傷した。武彦は父に殺され、皇女は神鏡を持って五十鈴河のほとりに埋め、自ら命を絶った。天皇が探させると、河上に蛇のような虹が立ち、そこを掘ると神鏡が見つかり、近くで皇女の遺体も見つかった。腹を割いて見ると水と石があるだけで、武彦の疑いは晴れ、國見は石上神宮に逃げこんだ。</p>
-      <p>四年二月、天皇は葛城山で一事主神と出会い、ともに狩りをした。八月、吉野の河上小野で狩りをしたとき、天皇の腕にかみついた虻を蜻蛉がくわえて去ったので、天皇はこれをほめる歌を詠み、その地を蜻蛉野と名づけた。五年二月には葛城山で怒った猪に襲われ、舍人が木に登って逃げたのを斬ろうとしたが、皇后の諫めを受けて思いとどまり、「人は皆禽獣を狩るが、自分は善い言葉を得て帰る」と喜んだ。同じ年、百濟の加須利君（蓋鹵王）は弟の軍君を日本に遣わし、同行した身重の妻が筑紫の各羅嶋で嶋君を生んだ。これが武寧王であるという。</p>
-      <p>六年、天皇は泊瀬の小野をほめる歌を詠み、蚕を集めるよう命じられた■■（すがる）が誤って赤子を集めてきたことから少子部連の姓を与えた。七年七月、天皇はこの少子部連に三諸岳の神の姿を見たいと言い、彼が捕らえてきた大蛇が雷のように鳴って目を輝かせたので、天皇は恐れて山に放させ、彼に雷という名を与えた。八月、吉備下道臣前津屋が少女や鶏を「天皇のもの」「自分のもの」に分けて戦わせ、天皇側が勝つと殺していたと聞き、天皇は一族七十人を殺させた。この年、吉備上道臣田狹の妻稚媛を召し入れた件から、田狹の子の弟君が新羅征討の途中で百濟にとどまり、妻の樟媛に殺される事件が起き、百濟から来た新しい技術者たちは東漢直掬に命じて上桃原・下桃原・眞神原に移し住まわせた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>別本云</b><p>田狹臣の妻の名を毛媛とし、葛城襲津彦の子の玉田宿禰の娘とする。天皇はその美しさを聞いて夫を殺し、自分のものにしたとする。本文では田狹は任那國司に任じられて遠ざけられる。</p></div>
-      <div class="var"><b>或本云</b><p>吉備臣弟君は百濟から帰ってきて、漢手人部・衣縫部・宍人部を献上したとする。本文では弟君は百濟にとどまり、妻の樟媛に殺される。</p></div>
-      <div class="var"><b>或云</b><p>三諸岳の神について、大物代主神であるという説と、菟田の墨坂神であるという説を挙げる。本文は神の名を記さない。</p></div>
-      <div class="var"><b>或本云</b><p>天皇に殺された吉備下道臣前津屋を、「國造吉備臣山」とする。</p></div>
-      <div class="var"><b>百濟新撰云</b><p>己巳年に蓋鹵王が立ち、天皇が阿禮奴跪を遣わして女性を求めたので、百濟は慕尼夫人の娘の適稽女郎を飾り立てて貢上したとする。本文の池津媛のことで、五年四月条の注でも池津媛を適稽女郎とする。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">臣元不求天位。唯報父仇而已</blockquote><p>眉輪王の言葉。「わたしはもともと天皇の位を求めたのではない。ただ父の仇を討っただけだ」という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">天下誹謗言。太惡天皇也</blockquote><p>天皇が多くの人を誤って殺したので、世の人が「ひどく悪い天皇だ」と非難したという記事。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">朕是幼武尊也。長人次稱曰。僕是一事主神也</blockquote><p>葛城山で天皇がまず名乗り、続いて背の高い人が「わたしは一事主神だ」と名乗った場面。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">人皆獵禽獸。朕獵得善言而歸</blockquote><p>皇后の諫めを受け入れた天皇の言葉。「人はみな鳥獣を狩るが、わたしは善い言葉を狩って帰る」という意味。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全5件）。</p>
+      <details><summary>別本云</summary><p>田狹臣の妻の名を毛媛とし、葛城襲津彦の子の玉田宿禰の娘とする。天皇はその美しさを聞いて夫を殺し、自分のものにしたとする。本文では田狹は任那國司に任じられて遠ざけられる。</p></details>
+      <details><summary>或本云</summary><p>吉備臣弟君は百濟から帰ってきて、漢手人部・衣縫部・宍人部を献上したとする。本文では弟君は百濟にとどまり、妻の樟媛に殺される。</p></details>
+      <details><summary>或云</summary><p>三諸岳の神について、大物代主神であるという説と、菟田の墨坂神であるという説を挙げる。本文は神の名を記さない。</p></details>
+      <details><summary>或本云</summary><p>天皇に殺された吉備下道臣前津屋を、「國造吉備臣山」とする。</p></details>
+      <details><summary>百濟新撰云</summary><p>己巳年に蓋鹵王が立ち、天皇が阿禮奴跪を遣わして女性を求めたので、百濟は慕尼夫人の娘の適稽女郎を飾り立てて貢上したとする。本文の池津媛のことで、五年四月条の注でも池津媛を適稽女郎とする。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
-        <li><b><a href="../../shrine-note/map/?d=hitokotonushi">一言主神</a></b><small>ひとことぬしのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=tosa">土佐神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=hitokotonushi">一言主神</a></b><small>ひとことぬしのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=tosa">土佐神社</a>、<a href="../../shrine-note/map/?s=hitokotonushi_katsuragi">葛城一言主神社</a></span></li>
         <li><b>大泊瀬幼武天皇</b><span class="sh">雄朝津間稚子宿禰天皇の第五子。兄の穴穗天皇が殺されたあと対立する皇族らを討ち、泊瀬朝倉で即位した。</span></li>
         <li><b>眉輪王</b><span class="sh">大草香皇子と中蒂姫皇女の子。父の仇として穴穗天皇を刺し殺し、圓大臣の家で焼け死んだ。</span></li>
         <li><b>圓大臣</b><span class="sh">葛城の大臣。逃げこんだ坂合黒彦皇子と眉輪王を引き渡さず、娘の韓媛と宅七区を差し出したが許されず、焼き殺された。</span></li>
@@ -166,7 +207,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 安康天皇の段（目弱王の変と大長谷王の報復）</span><p>古事記では目弱王（眉輪王）が七歳で、天皇のそばの大刀で首を斬ったとし、大長谷王は兄の黑日子王を斬り、白日子王を小治田で生き埋めにする。日本書紀では斬られるのは八釣白彦皇子で、坂合黒彦皇子は眉輪王・圓大臣とともに焼け死ぬ。また古事記では都夫良意美が目弱王を刺してから自害する。</p><blockquote lang="zh-Hant">掘穴而隨立埋者</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 雄略天皇の段（葛城山の一言主大神）</span><p>古事記では一言主大神の一行が天皇の行列と同じ装いで現れ、互いに矢をつがえて名を問う場面があり、天皇は恐れて大刀・弓矢や百官の衣服を献上する。日本書紀では天皇と神は言葉をつつしんで並んで狩りをし、献上の話はない。神が天皇を送る先も、古事記は長谷の山口、日本書紀は來目水とする。</p><blockquote lang="zh-Hant">言離之神。葛城之一言主大神者也</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 雄略天皇の段（葛城山の大猪）</span><p>古事記では葛城山で猪に追われた天皇自身が恐れて榛の木に登り歌を詠む。日本書紀では木に登ったのは舍人で、天皇は猪を踏み殺し、歌を詠むのは処刑されそうになった舍人である。</p><blockquote lang="zh-Hant">故天皇。畏其宇多岐。登坐榛上</blockquote></div>
@@ -174,12 +215,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="ingyo-anko.html"><small>← 前のページ（巻第十三 允恭天皇・安康天皇）</small>允恭天皇の盟神探湯と衣通郎姫・安康天皇の最期</a><a class="next" href="yuryaku-2.html"><small>次のページ（巻第十四 雄略天皇）→</small>雄略天皇の新羅出兵・呉の工人と遺詔</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">日本書紀 巻第十四</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十四</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十四</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kazurakinohitokotonushinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kazurakinohitokotonushinookami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">臣元不求天位。唯報父仇而已</blockquote><p>眉輪王の言葉。「わたしはもともと天皇の位を求めたのではない。ただ父の仇を討っただけだ」という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">天下誹謗言。太惡天皇也</blockquote><p>天皇が多くの人を誤って殺したので、世の人が「ひどく悪い天皇だ」と非難したという記事。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">朕是幼武尊也。長人次稱曰。僕是一事主神也</blockquote><p>葛城山で天皇がまず名乗り、続いて背の高い人が「わたしは一事主神だ」と名乗った場面。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">人皆獵禽獸。朕獵得善言而歸</blockquote><p>皇后の諫めを受け入れた天皇の言葉。「人はみな鳥獣を狩るが、わたしは善い言葉を狩って帰る」という意味。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">日本書紀 巻第十四</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十四</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十四</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kazurakinohitokotonushinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kazurakinohitokotonushinookami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

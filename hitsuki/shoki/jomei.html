@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第二十三 舒明天皇（全50ページ中 40）</p>
-    <h1>舒明天皇 ― 皇位をめぐる群臣の議と百済大宮・大寺</h1>
-    <p class="pg-lead">推古天皇が後継を定めずに亡くなり、蘇我蝦夷と群臣は田村皇子と山背大兄王のどちらを立てるかで議論し、田村皇子が即位した。在位中は唐・百済・高麗との使者の往来、蝦夷の討伐、百済川のほとりでの大宮と大寺の造営などが記され、十三年に百済宮で亡くなる。</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第二十三 舒明天皇（全50ページ中 40）</p>
+        <h1>舒明天皇 ― 皇位をめぐる群臣の議と百済大宮・大寺</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">推古天皇が後継を定めずに亡くなり、蘇我蝦夷と群臣は田村皇子と山背大兄王のどちらを立てるかで議論し、田村皇子が即位した。在位中は唐・百済・高麗との使者の往来、蝦夷の討伐、百済川のほとりでの大宮と大寺の造営などが記され、十三年に百済宮で亡くなる。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>息長足日廣額天皇と後継が決まらない</h3>
+      <p class="t">息長足日廣額天皇（舒明天皇）は渟中倉太珠敷天皇（敏達天皇）の孫で、彦人大兄皇子の子、母は糠手姫皇女である。豊御食炊屋姫天皇（推古天皇）の二十九年に皇太子豊聡耳尊が亡くなってからは皇太子が立てられず、三十六年三月に天皇が亡くなり、九月に葬礼が終わっても後継は決まっていなかった。</p>
+      <h3>田村皇子と山背大兄王を推す群臣</h3>
+      <p class="t">大臣の蘇我蝦夷は、一人で決めれば群臣が従わないことを恐れ、阿倍麻呂臣と相談して群臣を自宅に招いた。阿倍臣が、天皇が病床で田村皇子と山背大兄王にそれぞれ言葉をかけたという遺言を示して誰を天皇とするかを問うと、大伴鯨連らは田村皇子を、許勢臣大摩呂らは山背大兄王を推し、蘇我倉摩呂臣は答えを保留した。群臣がまとまらないため、蝦夷は事を決められずに退いた。</p>
+      <h3>山背大兄王が遺詔を尋ねる</h3>
+      <p class="t">斑鳩宮にいた山背大兄王はこの議を聞き、叔父である蝦夷の考えを使者を通じて尋ねた。蝦夷は、遺詔を群臣に告げただけで自分の私意ではないと答えさせた。山背大兄王は、病床の天皇に呼ばれて国家の大事について直接言葉を受けたこと、天皇から蝦夷が自分のことを心配していると伝えられたことを述べ、遺詔の正しい内容を知りたいと繰り返し申し入れた。</p>
+      <h3>境部摩理勢が絞め殺される</h3>
+      <p class="t">境部摩理勢は山背大兄王を推して譲らず、嶋大臣の墓を造る場の小屋を壊して蘇我の田家に退き、さらに斑鳩の泊瀬王の宮に移った。山背大兄王は摩理勢に、群臣に従うよう諭した。泊瀬王が病で亡くなると摩理勢は頼る先を失い、蝦夷が向けた兵によって子の阿椰とともに絞め殺された。毛津も尼寺に隠れたのち畝傍山に逃げ込み、山中で自ら命を絶った。</p>
+      <h3>璽印を献じ即位する</h3>
+      <p class="t">元年正月、大臣と群卿は天皇の璽印を田村皇子に献じ、皇子は辞退したが群臣が強く請うたため即日即位した。二年正月に宝皇女を皇后とし、蘇我嶋大臣の娘法提郎媛は古人皇子を生んだ。この年には高麗・百済の使者が来て、八月に犬上君三田耜と薬師恵日が大唐に遣わされ、十月に天皇は飛鳥の岡のほとりの岡本宮に遷った。</p>
+      <h3>上毛野君形名が蝦夷を破る</h3>
+      <p class="t">三年には掖玖の人が帰化し、百済王義慈が王子豊章を人質として送った。四年に唐の使者高表仁が三田耜を送って来て、学問僧の霊雲・僧旻らもともに帰った。八年には采女を犯した者がみな罪に問われ、六月に岡本宮が焼けて天皇は田中宮に移った。九年には反乱した蝦夷の討伐で将軍上毛野君形名が囲まれたが、妻が酒を飲ませて励まし、女たちに弓弦を鳴らさせたことで兵が立ち直り、蝦夷を破った。</p>
+      <h3>百済川のほとりに大宮と大寺を造る</h3>
+      <p class="t">十一年七月、天皇は百済川のほとりに大宮と大寺を造ることを命じ、十二月には九重塔を建て、伊予の温湯宮に行幸した。十二年には恵隠に無量寿経を説かせ、唐から帰った清安と高向漢人玄理を迎え、十月に百済宮に移った。十三年十月、天皇は百済宮で亡くなり、宮の北で殯が行われ、東宮の開別皇子が十六歳で誄を述べた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>推古天皇三十六年に天皇が亡くなったが後継は決まっておらず、蘇我蝦夷は群臣を家に集めて遺言を示し、田村皇子と山背大兄王のどちらを立てるかを問うた。群臣の意見は田村皇子を推す者と山背大兄王を推す者に分かれた。</li>
         <li><span class="kind ">本文</span>山背大兄王は、自分が病床の天皇から直接聞いた言葉を詳しく述べて、群臣の伝える遺言と違うと申し入れた。山背大兄王を推した境部摩理勢は蝦夷に従わず、兵を向けられて子とともに殺された。</li>
@@ -113,26 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">本文</span>十一年七月、百済川のほとりに大宮と大寺を造るよう詔し、西の民に宮を、東の民に寺を造らせ、十二月には百済川のほとりに九重塔を建てた。天皇は十二年十月に百済宮に移り、十三年十月にそこで亡くなった。</li>
         <li><span class="kind ">本文</span>殯（もがり）の場は宮の北で「百済大殯」と呼ばれ、このとき東宮の開別皇子が十六歳で誄（しのびごと）を述べたと記す。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>息長足日廣額天皇（舒明天皇）は渟中倉太珠敷天皇（敏達天皇）の孫で、彦人大兄皇子の子、母は糠手姫皇女である。豊御食炊屋姫天皇（推古天皇）の二十九年に皇太子豊聡耳尊が亡くなってからは皇太子が立てられず、三十六年三月に天皇が亡くなり、九月に葬礼が終わっても後継は決まっていなかった。</p>
-      <p>大臣の蘇我蝦夷は、一人で決めれば群臣が従わないことを恐れ、阿倍麻呂臣と相談して群臣を自宅に招いた。阿倍臣が、天皇が病床で田村皇子と山背大兄王にそれぞれ言葉をかけたという遺言を示して誰を天皇とするかを問うと、大伴鯨連らは田村皇子を、許勢臣大摩呂らは山背大兄王を推し、蘇我倉摩呂臣は答えを保留した。群臣がまとまらないため、蝦夷は事を決められずに退いた。</p>
-      <p>斑鳩宮にいた山背大兄王はこの議を聞き、叔父である蝦夷の考えを使者を通じて尋ねた。蝦夷は、遺詔を群臣に告げただけで自分の私意ではないと答えさせた。山背大兄王は、病床の天皇に呼ばれて国家の大事について直接言葉を受けたこと、天皇から蝦夷が自分のことを心配していると伝えられたことを述べ、遺詔の正しい内容を知りたいと繰り返し申し入れた。</p>
-      <p>境部摩理勢は山背大兄王を推して譲らず、嶋大臣の墓を造る場の小屋を壊して蘇我の田家に退き、さらに斑鳩の泊瀬王の宮に移った。山背大兄王は摩理勢に、群臣に従うよう諭した。泊瀬王が病で亡くなると摩理勢は頼る先を失い、蝦夷が向けた兵によって子の阿椰とともに絞め殺された。毛津も尼寺に隠れたのち畝傍山に逃げ込み、山中で自ら命を絶った。</p>
-      <p>元年正月、大臣と群卿は天皇の璽印を田村皇子に献じ、皇子は辞退したが群臣が強く請うたため即日即位した。二年正月に宝皇女を皇后とし、蘇我嶋大臣の娘法提郎媛は古人皇子を生んだ。この年には高麗・百済の使者が来て、八月に犬上君三田耜と薬師恵日が大唐に遣わされ、十月に天皇は飛鳥の岡のほとりの岡本宮に遷った。</p>
-      <p>三年には掖玖の人が帰化し、百済王義慈が王子豊章を人質として送った。四年に唐の使者高表仁が三田耜を送って来て、学問僧の霊雲・僧旻らもともに帰った。八年には采女を犯した者がみな罪に問われ、六月に岡本宮が焼けて天皇は田中宮に移った。九年には反乱した蝦夷の討伐で将軍上毛野君形名が囲まれたが、妻が酒を飲ませて励まし、女たちに弓弦を鳴らさせたことで兵が立ち直り、蝦夷を破った。</p>
-      <p>十一年七月、天皇は百済川のほとりに大宮と大寺を造ることを命じ、十二月には九重塔を建て、伊予の温湯宮に行幸した。十二年には恵隠に無量寿経を説かせ、唐から帰った清安と高向漢人玄理を迎え、十月に百済宮に移った。十三年十月、天皇は百済宮で亡くなり、宮の北で殯が行われ、東宮の開別皇子が十六歳で誄を述べた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">宗廟，重事矣。寡人不賢，何敢當乎？</blockquote><p>璽印を献じられた田村皇子が、国の大事を担う力は自分にはないと一度辞退した言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">諸惡莫作，諸善奉行。</blockquote><p>山背大兄王が、先王が亡くなる前に子らに言い残した戒めとして引く言葉。悪いことをせず、良いことを行え、という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">非流星，是天狗也。其吠聲似雷耳。</blockquote><p>九年に大きな星が音を立てて流れたとき、僧旻が「流れ星ではなく天狗で、その吠える声が雷のようなのだ」と言った。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">是以西民造宮，東民作寺。</blockquote><p>百済川のほとりに大宮と大寺を造るにあたり、西の民に宮を、東の民に寺を造らせたという記事。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -158,12 +199,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="suiko-2.html"><small>← 前のページ（巻第二十二 推古天皇）</small>推古天皇と大唐への使い・上宮太子の死</a><a class="next" href="kogyoku.html"><small>次のページ（巻第二十四 皇極天皇）→</small>皇極天皇 ― 上宮王家の滅亡と蘇我入鹿の誅殺</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿三" target="_blank" rel="noopener">日本書紀 巻第二十三</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%89" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%89</a>　https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%89</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">宗廟，重事矣。寡人不賢，何敢當乎？</blockquote><p>璽印を献じられた田村皇子が、国の大事を担う力は自分にはないと一度辞退した言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">諸惡莫作，諸善奉行。</blockquote><p>山背大兄王が、先王が亡くなる前に子らに言い残した戒めとして引く言葉。悪いことをせず、良いことを行え、という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">非流星，是天狗也。其吠聲似雷耳。</blockquote><p>九年に大きな星が音を立てて流れたとき、僧旻が「流れ星ではなく天狗で、その吠える声が雷のようなのだ」と言った。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">是以西民造宮，東民作寺。</blockquote><p>百済川のほとりに大宮と大寺を造るにあたり、西の民に宮を、東の民に寺を造らせたという記事。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿三" target="_blank" rel="noopener">日本書紀 巻第二十三</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%89" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%89</a>　https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%B8%89</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

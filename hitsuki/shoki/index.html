@@ -16,12 +16,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   gtag('js', new Date());
   gtag('config', 'G-ND1T7H067Y');
 </script>
-  <meta name="description" content="日本書紀の全三十巻（神代と、神武天皇から持統天皇まで）を50ページに分け、「覚えておくポイント」「本文の話」「一書（別の伝え）」「原文」「古事記との違い」をまとめた研究ノート。">
+  <meta name="description" content="日本書紀の全三十巻（神代と、神武天皇から持統天皇まで）を50ページに分け、場面ごとの本文の話・要点・一書（別の伝え）・古事記との違い・原文をまとめた読みもの。">
   <link rel="canonical" href="https://you0810jmsdf.github.io/ns-factory/hitsuki/shoki/">
   <link rel="alternate" hreflang="ja" href="https://you0810jmsdf.github.io/ns-factory/hitsuki/shoki/">
   <link rel="alternate" hreflang="en" href="https://you0810jmsdf.github.io/ns-factory/hitsuki/shoki/en/">
   <meta property="og:title" content="日本書紀アーカイブ｜神代から持統天皇まで全三十巻｜教育幕僚室｜N&#x27;s factory">
-  <meta property="og:description" content="日本書紀の全三十巻（神代と、神武天皇から持統天皇まで）を50ページに分け、「覚えておくポイント」「本文の話」「一書（別の伝え）」「原文」「古事記との違い」をまとめた研究ノート。">
+  <meta property="og:description" content="日本書紀の全三十巻（神代と、神武天皇から持統天皇まで）を50ページに分け、場面ごとの本文の話・要点・一書（別の伝え）・古事記との違い・原文をまとめた読みもの。">
   <meta property="og:type" content="article">
   <link rel="stylesheet" href="../styles.css">
   <style>
@@ -76,6 +76,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
@@ -101,7 +103,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <p class="eyebrow">Nihon Shoki Archive</p>
     <h1>日本書紀アーカイブ</h1>
     <p class="pg-lead">日本書紀の全三十巻を、50ページに分けてまとめました。神代（巻第一・第二）は「段」ごとに、本文と一書（別の伝え）を並べています。巻第三からは、神武天皇から持統天皇までを天皇ごとに読めます。推古天皇までは古事記アーカイブと同じ場面どうしでつながり、舒明天皇から後は日本書紀だけが記す時代です。</p>
-    <div class="jump"><a href="#era-1">神代</a><a href="#era-2">神武〜応神</a><a href="#era-3">仁徳〜推古</a><a href="#era-4">舒明〜持統</a><a href="#review">ポイントの復習</a><a href="../kojiki/">古事記アーカイブ ›</a></div>
+    <div class="jump"><a href="#era-1">神代</a><a href="#era-2">神武〜応神</a><a href="#era-3">仁徳〜推古</a><a href="#era-4">舒明〜持統</a><a href="#review">要点の復習</a><a href="../kojiki/">古事記アーカイブ ›</a></div>
 
     <section class="pg-card" aria-labelledby="how-title">
       <h2 id="how-title">このアーカイブの決まり</h2>
@@ -261,8 +263,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" id="review" aria-labelledby="all-title">
-      <h2 id="all-title">全ページの「覚えておくポイント」</h2>
-      <p class="pg-note">復習用に、各ページのポイントを上から2つずつ並べました。</p>
+      <h2 id="all-title">全ページの要点（復習用）</h2>
+      <p class="pg-note">復習用に、各ページの要点を上から2つずつ並べました。</p>
       <h3><a href="dan01.html">巻第一 神代上　天地開闢と神世七代（第一段〜第三段）</a></h3><ul style="margin:0;padding-left:1.2em;line-height:1.85;"><li>第一段の本文は、卵のような混沌から清く軽いものが天に、重く濁ったものが地になったと述べ、天地の中に生じた葦の芽のようなものが神となって国常立尊が生まれたとする。続いて国狭槌尊・豊斟渟尊が生まれ、この三神は男だけの神（純男）とされる。</li><li>第二段の本文では男女一対の神が四組（埿土煑尊・沙土煑尊、大戸之道尊・大苫辺尊、面足尊・惶根尊、伊弉諾尊・伊弉冉尊）現れ、第三段の本文はこれを「八神」とまとめる。国常立尊から伊弉諾尊・伊弉冉尊までを神世七代と呼ぶ。</li></ul>
       <h3><a href="dan04.html">巻第一 神代上　国生み（第四段）</a></h3><ul style="margin:0;padding-left:1.2em;line-height:1.85;"><li>本文では、伊弉諾尊・伊弉冉尊が天浮橋に立って「下に国が無いだろうか」と相談し、天之瓊矛で探ると、矛先からしたたった潮が固まって磤馭慮島になった。本文には天神の命令は書かれていない。</li><li>島を国の中の柱として二神が反対向きに巡ったとき、陰神が先に声をかけたので、陽神は男が先に言うべきだとして巡り直させ、二度目は陽神が先に声をかけて夫婦となった。</li></ul>
       <h3><a href="dan05.html">巻第一 神代上　三貴子の誕生と神生み・黄泉（第五段）</a></h3><ul style="margin:0;padding-left:1.2em;line-height:1.85;"><li>本文では二神がともに海・川・山・木の祖・草の祖を生んだのち、天下の主を生もうとして日神（大日孁貴）を生み、天上に送った。続いて月神も天に送り、三歳でも足が立たない蛭児は船で流し、素戔嗚尊は無道のため根国へ追いやった。</li><li>第五段の本文には火の神の誕生も伊弉冉尊の死も書かれていない。火の神（軻遇突智・火産霊）を生んで伊弉冉尊が亡くなる話は一書第二・第三・第五・第六に少しずつ違う形で伝えられ、一書第四は火の神を生む苦しみから金山彦などが生まれたことを伝える。</li></ul>

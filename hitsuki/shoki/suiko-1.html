@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第二十二 推古天皇（全50ページ中 38）</p>
-    <h1>推古天皇の即位と冠位十二階・憲法十七条</h1>
-    <p class="pg-lead">推古天皇は崇峻天皇が殺された後、百官に三度勧められて豊浦宮で即位し、厩戸豊聡耳皇子を皇太子として政をすべて委ねた。元年から十二年までに、三宝興隆の詔と法興寺の完成、新羅との戦いと来目皇子の死、冠位十二階の制定、皇太子による憲法十七条の作成が記される。</p>
-    <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第二十二 推古天皇（全50ページ中 38）</p>
+        <h1>推古天皇の即位と冠位十二階・憲法十七条</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">推古天皇は崇峻天皇が殺された後、百官に三度勧められて豊浦宮で即位し、厩戸豊聡耳皇子を皇太子として政をすべて委ねた。元年から十二年までに、三宝興隆の詔と法興寺の完成、新羅との戦いと来目皇子の死、冠位十二階の制定、皇太子による憲法十七条の作成が記される。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/keifu-suiko.html">古事記で読む：武烈天皇から推古天皇まで ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>豊御食炊屋姫が豊浦宮で即位</h3>
+      <p class="t">推古天皇（豊御食炊屋姫天皇）は天國排開廣庭天皇の中女で、橘豊日天皇の同母妹であり、幼いころは額田部皇女といった。十八歳で渟中倉太玉敷天皇の皇后となり、三十四歳の時に天皇が崩じた。三十九歳の時、泊瀬部天皇が五年十一月に大臣馬子宿禰に殺されて位が空くと、群臣は皇后に即位を請うた。皇后は辞退したが、百官が三度上表して勧めたのでこれに従い、天皇の璽印が奉られた。十二月、皇后は豊浦宮で即位した。</p>
+      <h3>厩戸豊聡耳皇子を皇太子とし摂政とする</h3>
+      <p class="t">元年正月、仏舎利を法興寺の刹柱の礎の中に置き、翌日刹柱を立てた。四月、厩戸豊聡耳皇子を皇太子として摂政とし、万機を委ねた。皇子は橘豊日天皇の第二子で、母は穴穂部間人皇女であり、生まれてすぐにものを言い、成長すると一度に十人の訴えを聞いて誤らず、高麗僧慧慈に内教を、博士覚哿に外典を学んだと記される。九月に橘豊日天皇を河内の磯長陵に改葬し、この年、難波の荒陵に四天王寺が造り始められた。</p>
+      <h3>三宝の興隆と法興寺の完成</h3>
+      <p class="t">二年二月、天皇は皇太子と大臣に三宝の興隆を命じ、臣・連らは君や親の恩のために競って仏舎を造り、これを寺と言った。三年四月、淡路嶋に沈水が流れ着き、島人が知らずに薪とともに焼くと香りが遠くまで広がったので献上した。同じ年、高麗僧慧慈が帰化して皇太子の師となり、百済僧慧聡も来て、二人は仏教を広めて三宝の棟梁となった。四年十一月に法興寺が完成し、大臣の子善徳臣が寺司となり、慧慈・慧聡が住み始めた。五年には百済王が王子阿佐を遣わし、六年に新羅が孔雀を、七年に百済が駱駝などを献じ、七年四月には地震で家屋が壊れ、地震の神を祭らせた。</p>
+      <h3>新羅の五つの城を攻め落とす</h3>
+      <p class="t">八年二月、新羅と任那が攻め合ったので、天皇は任那を救おうとした。この年、境部臣を大将軍、穂積臣を副将軍として一万余の兵を出し、新羅の五つの城を攻め落とすと、新羅王は白旗を挙げて六つの城を割いて降伏を請うた。新羅と任那は使いを送って調を貢ぎ、今後は攻め合わず毎年朝貢すると上表したが、将軍を呼び戻すと新羅はまた任那を侵した。九年二月、皇太子は斑鳩に初めて宮室を建てた。三月には大伴連囓を高麗に、坂本臣糠手を百済に遣わして任那を急ぎ救うよう命じ、九月には対馬で捕らえた新羅の間諜迦摩多を上野に流した。</p>
+      <h3>来目皇子を撃新羅将軍とする</h3>
+      <p class="t">十年二月、来目皇子を撃新羅将軍とし、神部・国造・伴造らと二万五千人の軍を授け、四月に皇子は筑紫の嶋郡に陣を構えて船と兵糧を集めた。しかし六月、皇子が病に臥したため征討は果たせなかった。十月には百済僧観勒が暦本や天文地理書・遁甲方術の書を献じ、選ばれた書生たちがそれを学んで業を成した。十一年二月、来目皇子が筑紫で亡くなり、天皇は大事を前に果たせなかったことを悲しんだ。四月に兄の当麻皇子を代わりの将軍としたが、七月、従っていた妻の舎人姫王が赤石で亡くなったため当麻皇子は引き返し、征討は行われなかった。</p>
+      <h3>冠位を行い十二階とする</h3>
+      <p class="t">十一年十月、天皇は小墾田宮に移った。十一月、皇太子が持っていた尊い仏像を秦造河勝が受けて拝み、蜂岡寺を造った。十二月、初めて冠位を行い、大徳・小徳・大仁・小仁・大礼・小礼・大信・小信・大義・小義・大智・小智の十二階とし、それぞれの色の絁で縫った冠を用いることとした。十二年正月、初めて諸臣に冠位が授けられた。</p>
+      <h3>憲法十七条を作る</h3>
+      <p class="t">十二年四月、皇太子は自ら憲法十七条を作った。第一条で和を貴ぶことを説き、第二条で三宝を篤く敬うこと、第三条で詔を承けたら必ず謹むことを求める。以下、礼を本とすること、訴訟を公正に裁くこと、朝早く出仕して遅く退くこと、信を義の本とすること、私に背いて公に向かうこと、民を使うには時を選ぶことなどが続き、第十七条は大事を一人で決めず多くの人と論じるよう説く。九月には朝礼を改め、宮門を出入りするときは両手を地につけ両足でひざまずき、敷居を越えたら立って歩くよう定めた。同じ月、黄書画師と山背画師を定めた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>元年四月、厩戸豊聡耳皇子を皇太子とし、摂政として万機をすべて委ねた。皇子は馬官の厩の戸に当たったところで生まれ、一度に十人の訴えを聞いても誤らなかったと書かれる。</li>
         <li><span class="kind ">本文</span>十二年四月、皇太子は自ら憲法十七条を作った。第一条は和を貴ぶこと、第二条は三宝（仏・法・僧）を篤く敬うこと、第三条は詔を承けたら必ず謹むことを説く。</li>
@@ -113,26 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">本文</span>十年、来目皇子を撃新羅将軍として二万五千人を筑紫に集めたが、皇子は病み、十一年二月に筑紫で亡くなった。代わった当麻皇子も妻の死で引き返し、征討は行われなかった。</li>
         <li><span class="kind k-cmp">古事記と比較</span>古事記は推古天皇の宮を「小治田宮」とだけ記すが、書紀は豊浦宮での即位と、十一年十月の小墾田宮への移りを書き分ける。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>推古天皇（豊御食炊屋姫天皇）は天國排開廣庭天皇の中女で、橘豊日天皇の同母妹であり、幼いころは額田部皇女といった。十八歳で渟中倉太玉敷天皇の皇后となり、三十四歳の時に天皇が崩じた。三十九歳の時、泊瀬部天皇が五年十一月に大臣馬子宿禰に殺されて位が空くと、群臣は皇后に即位を請うた。皇后は辞退したが、百官が三度上表して勧めたのでこれに従い、天皇の璽印が奉られた。十二月、皇后は豊浦宮で即位した。</p>
-      <p>元年正月、仏舎利を法興寺の刹柱の礎の中に置き、翌日刹柱を立てた。四月、厩戸豊聡耳皇子を皇太子として摂政とし、万機を委ねた。皇子は橘豊日天皇の第二子で、母は穴穂部間人皇女であり、生まれてすぐにものを言い、成長すると一度に十人の訴えを聞いて誤らず、高麗僧慧慈に内教を、博士覚哿に外典を学んだと記される。九月に橘豊日天皇を河内の磯長陵に改葬し、この年、難波の荒陵に四天王寺が造り始められた。</p>
-      <p>二年二月、天皇は皇太子と大臣に三宝の興隆を命じ、臣・連らは君や親の恩のために競って仏舎を造り、これを寺と言った。三年四月、淡路嶋に沈水が流れ着き、島人が知らずに薪とともに焼くと香りが遠くまで広がったので献上した。同じ年、高麗僧慧慈が帰化して皇太子の師となり、百済僧慧聡も来て、二人は仏教を広めて三宝の棟梁となった。四年十一月に法興寺が完成し、大臣の子善徳臣が寺司となり、慧慈・慧聡が住み始めた。五年には百済王が王子阿佐を遣わし、六年に新羅が孔雀を、七年に百済が駱駝などを献じ、七年四月には地震で家屋が壊れ、地震の神を祭らせた。</p>
-      <p>八年二月、新羅と任那が攻め合ったので、天皇は任那を救おうとした。この年、境部臣を大将軍、穂積臣を副将軍として一万余の兵を出し、新羅の五つの城を攻め落とすと、新羅王は白旗を挙げて六つの城を割いて降伏を請うた。新羅と任那は使いを送って調を貢ぎ、今後は攻め合わず毎年朝貢すると上表したが、将軍を呼び戻すと新羅はまた任那を侵した。九年二月、皇太子は斑鳩に初めて宮室を建てた。三月には大伴連囓を高麗に、坂本臣糠手を百済に遣わして任那を急ぎ救うよう命じ、九月には対馬で捕らえた新羅の間諜迦摩多を上野に流した。</p>
-      <p>十年二月、来目皇子を撃新羅将軍とし、神部・国造・伴造らと二万五千人の軍を授け、四月に皇子は筑紫の嶋郡に陣を構えて船と兵糧を集めた。しかし六月、皇子が病に臥したため征討は果たせなかった。十月には百済僧観勒が暦本や天文地理書・遁甲方術の書を献じ、選ばれた書生たちがそれを学んで業を成した。十一年二月、来目皇子が筑紫で亡くなり、天皇は大事を前に果たせなかったことを悲しんだ。四月に兄の当麻皇子を代わりの将軍としたが、七月、従っていた妻の舎人姫王が赤石で亡くなったため当麻皇子は引き返し、征討は行われなかった。</p>
-      <p>十一年十月、天皇は小墾田宮に移った。十一月、皇太子が持っていた尊い仏像を秦造河勝が受けて拝み、蜂岡寺を造った。十二月、初めて冠位を行い、大徳・小徳・大仁・小仁・大礼・小礼・大信・小信・大義・小義・大智・小智の十二階とし、それぞれの色の絁で縫った冠を用いることとした。十二年正月、初めて諸臣に冠位が授けられた。</p>
-      <p>十二年四月、皇太子は自ら憲法十七条を作った。第一条で和を貴ぶことを説き、第二条で三宝を篤く敬うこと、第三条で詔を承けたら必ず謹むことを求める。以下、礼を本とすること、訴訟を公正に裁くこと、朝早く出仕して遅く退くこと、信を義の本とすること、私に背いて公に向かうこと、民を使うには時を選ぶことなどが続き、第十七条は大事を一人で決めず多くの人と論じるよう説く。九月には朝礼を改め、宮門を出入りするときは両手を地につけ両足でひざまずき、敷居を越えたら立って歩くよう定めた。同じ月、黄書画師と山背画師を定めた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">以和爲貴，無忤爲宗</blockquote><p>和を何より大切にし、人に逆らわないことを第一とせよ（憲法十七条の第一条）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">篤敬三寶。三寶者，佛法僧也</blockquote><p>三宝を篤く敬え。三宝とは仏・法・僧である（第二条）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">一聞十人訴，以勿失能辨</blockquote><p>一度に十人の訴えを聞いても、誤ることなく聞き分けることができた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">天上有神，地有天皇</blockquote><p>天上には神がおり、地上には天皇がいる（新羅・任那の上表の言葉）。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -153,7 +194,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻の最後、推古天皇（豐御食炊屋比賣命）の段</span><p>古事記は推古天皇の宮を小治田宮とだけ記す。書紀は豊浦宮で即位し、十一年十月に小墾田宮へ移ったとする。</p><blockquote lang="zh-Hant">豐御食炊屋比賣命。坐小治田宮</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 欽明天皇の段の后妃・御子の記事</span><p>古事記では、欽明天皇が稲目宿禰大臣の娘岐多斯比賣を娶って生んだ子のなかに「豐御氣炊屋比賣命」が挙がる。書紀は天國排開廣庭天皇の中女で橘豊日天皇の同母妹とし、幼名を額田部皇女と記すが、この幼名は古事記には確認できなかった。</p><blockquote lang="zh-Hant">次豐御氣炊屋比賣命</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 用明天皇の段の后妃・御子の記事</span><p>古事記は用明天皇の段で御子として「上宮之厩戶豐聰耳命」の名を挙げるだけで、皇太子・摂政となったことや冠位十二階・憲法十七条の記事は、古事記には対応する記事を確認できなかった。</p><blockquote lang="zh-Hant">上宮之厩戶豐聰耳命</blockquote></div>
@@ -161,12 +202,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="yomei-sushun.html"><small>← 前のページ（巻第二十一 用明天皇・崇峻天皇）</small>用明天皇・崇峻天皇と物部守屋の滅亡</a><a class="next" href="suiko-2.html"><small>次のページ（巻第二十二 推古天皇）→</small>推古天皇と大唐への使い・上宮太子の死</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿二" target="_blank" rel="noopener">日本書紀 巻第二十二</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%8C" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%8C</a>　https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%8C</li><li><a href="https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7</a>　https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">以和爲貴，無忤爲宗</blockquote><p>和を何より大切にし、人に逆らわないことを第一とせよ（憲法十七条の第一条）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">篤敬三寶。三寶者，佛法僧也</blockquote><p>三宝を篤く敬え。三宝とは仏・法・僧である（第二条）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">一聞十人訴，以勿失能辨</blockquote><p>一度に十人の訴えを聞いても、誤ることなく聞き分けることができた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">天上有神，地有天皇</blockquote><p>天上には神がおり、地上には天皇がいる（新羅・任那の上表の言葉）。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿二" target="_blank" rel="noopener">日本書紀 巻第二十二</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%8C" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%8C</a>　https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%8C</li><li><a href="https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7</a>　https://zh.wikisource.org/wiki/%E5%8F%A4%E4%BA%8B%E8%A8%98/%E4%B8%8B%E5%8D%B7</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

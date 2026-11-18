@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第五 崇神天皇（全50ページ中 13）</p>
-    <h1>崇神天皇と三輪の神（大田田根子）</h1>
-    <p class="pg-lead">御間城入彦五十瓊殖天皇（崇神天皇）の即位から、疫病と民の離反をきっかけに神々の祭りを改める九年までを扱う。天照大神と倭大國魂神を宮殿の外で祭らせ、大物主神の求めに従ってその子の大田田根子に祭らせると、疫病がやみ国が治まったと記す。</p>
-    <div class="xlink"><a href="../kojiki/sujin-miwa.html">古事記で読む：崇神天皇と三輪の大物主大神 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第五 崇神天皇（全50ページ中 13）</p>
+        <h1>崇神天皇と三輪の神（大田田根子）</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">御間城入彦五十瓊殖天皇（崇神天皇）の即位から、疫病と民の離反をきっかけに神々の祭りを改める九年までを扱う。天照大神と倭大國魂神を宮殿の外で祭らせ、大物主神の求めに従ってその子の大田田根子に祭らせると、疫病がやみ国が治まったと記す。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/sujin-miwa.html">古事記で読む：崇神天皇と三輪の大物主大神 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>御間城入彦五十瓊殖天皇の即位</h3>
+      <p class="t">御間城入彦五十瓊殖天皇は稚日本根子彦大日日天皇の第二子で、母は物部氏の遠祖大綜麻杵の娘の伊香色謎命である。十九歳で皇太子となり、生まれつき聡明で、若いころから雄々しい計略を好み、成長すると心が広く慎み深く、神祇をあつく敬って、天下を治める志をもっていた。父が六十年四月に崩じると、元年正月に即位し、二月に御間城姫を皇后とした。皇后からは活目入彦五十狹茅天皇らが、妃の遠津年魚眼眼妙媛からは豐城入彦命・豐鍬入姫命が、妃の尾張大海媛からは八坂入彦命・渟名城入姫命・十市瓊入姫命が生まれた。この年は太歳甲申である。三年九月に磯城に遷都して瑞籬宮とし、四年十月には、皇祖の跡に従って天下を安んじるため群卿百僚に忠誠を尽くすよう詔した。</p>
+      <h3>天照大神を笠縫邑で祭る</h3>
+      <p class="t">五年、国内に疫病が多く、民の大半が死んだ。六年には百姓が流浪し、背く者もあって、徳で治めるのが難しくなったので、天皇は朝早くから夜まで神祇に罪をわびた。それより先、天照大神と倭大國魂の二神は天皇の大殿の中で祭られていたが、神の勢いを畏れて共に住むのは不安であった。そこで天照大神を豐鍬入姫命に託して倭の笠縫邑で祭らせ、磯堅城の神籬を立てた。日本大國魂神は渟名城入姫命に託して祭らせたが、渟名城入姫命は髪が抜け体がやせて祭ることができなかった。</p>
+      <h3>大物主神が夢で告げる</h3>
+      <p class="t">七年二月、天皇は、自分の代になって災害が続くのは政が悪く神祇のとがめを受けたためかと詔し、神淺茅原に出かけて八十萬神を集めて占った。すると神が倭迹迹日百襲姫命に憑き、自分を敬い祭れば国は自然に平らぐと告げ、倭国の内にいる大物主神だと名乗った。教えのとおり祭っても効き目がなかったので、天皇は沐浴斎戒して殿内を清め、夢で教えてほしいと祈った。その夜、夢に一人の貴人が殿の戸に向かって立ち、大物主神と名乗って、国が治まらないのは自分の意思であり、わが子の大田田根子に祭らせればすぐに平らぎ、海外の国も自ら従うと告げた。</p>
+      <h3>茅渟縣陶邑で大田田根子を見つける</h3>
+      <p class="t">八月、倭迹速神淺茅原目妙姫・大水口宿禰（穗積臣の遠祖）・伊勢麻績君の三人が同じ夢を見て、貴人から、大田田根子命を大物主大神を祭る主とし、市磯長尾市を倭大國魂神を祭る主とせよと教えられたと奏上した。天皇は天下に布告して大田田根子を探させ、茅渟縣陶邑で見つけた。天皇が神淺茅原で誰の子かと問うと、大田田根子は、父は大物主大神、母は陶津耳の娘の活玉依媛だと答えた。物部連の祖の伊香色雄を神に供える物を分ける役とすることは占いで吉と出たが、ついでに他の神を祭ることは不吉と出た。</p>
+      <h3>大田田根子が大物主大神を祭り疫病がやむ</h3>
+      <p class="t">十一月、伊香色雄に命じて物部の八十手が作った祭りの物を用い、大田田根子を大物主大神を祭る主、長尾市を倭大國魂神を祭る主とした。そのあとで他の神を祭ることを占うと吉と出たので、八十萬の神々を別に祭り、天社・國社と神地・神戸を定めた。こうして疫病は初めてやみ、国内はしだいに静まり、五穀が実って百姓はにぎわった。</p>
+      <h3>活日が神酒を献じ墨坂神を祭る</h3>
+      <p class="t">八年四月、高橋邑の人の活日を大神の掌酒とした。十二月、天皇が大田田根子に大神を祭らせた日、活日は自ら神酒を天皇に献じて歌を詠んだ。神宮で宴が行われ、宴の終わりに諸大夫が「瀰和能等能」の句を含む歌を歌い、天皇も同じ句を含む歌で答え、神宮の門を開いて出て行った。大田田根子は今の三輪君らの始祖とされる。九年三月、天皇は夢で神人から、赤盾八枚・赤矛八竿で墨坂神を、黒盾八枚・黒矛八竿で大坂神を祭れと教えられ、四月にそのとおりに祭った。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>五年に疫病で民の大半が死に、六年には百姓が流浪して背く者も出た。天皇は大殿の中に並べて祭っていた天照大神と倭大國魂の二神を、その神威を畏れて外に移し、天照大神は豐鍬入姫命に託して倭の笠縫邑で、日本大國魂神は渟名城入姫命に託して祭らせたが、渟名城入姫命は髪が抜け体がやせて祭ることができなかった。</li>
         <li><span class="kind ">本文</span>七年二月、神淺茅原で八十萬神を集めて占うと、大物主神が倭迹迹日百襲姫命に憑いて自分を祭れと告げた。それでも効き目がなかったので天皇が身を清めて祈ると、夢に大物主神が現れ、子の大田田根子に祭らせれば国はすぐに平らぎ、海外の国も自ら従うと告げた。</li>
@@ -115,37 +174,18 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>御間城入彦五十瓊殖天皇は稚日本根子彦大日日天皇の第二子で、母は物部氏の遠祖大綜麻杵の娘の伊香色謎命である。十九歳で皇太子となり、生まれつき聡明で、若いころから雄々しい計略を好み、成長すると心が広く慎み深く、神祇をあつく敬って、天下を治める志をもっていた。父が六十年四月に崩じると、元年正月に即位し、二月に御間城姫を皇后とした。皇后からは活目入彦五十狹茅天皇らが、妃の遠津年魚眼眼妙媛からは豐城入彦命・豐鍬入姫命が、妃の尾張大海媛からは八坂入彦命・渟名城入姫命・十市瓊入姫命が生まれた。この年は太歳甲申である。三年九月に磯城に遷都して瑞籬宮とし、四年十月には、皇祖の跡に従って天下を安んじるため群卿百僚に忠誠を尽くすよう詔した。</p>
-      <p>五年、国内に疫病が多く、民の大半が死んだ。六年には百姓が流浪し、背く者もあって、徳で治めるのが難しくなったので、天皇は朝早くから夜まで神祇に罪をわびた。それより先、天照大神と倭大國魂の二神は天皇の大殿の中で祭られていたが、神の勢いを畏れて共に住むのは不安であった。そこで天照大神を豐鍬入姫命に託して倭の笠縫邑で祭らせ、磯堅城の神籬を立てた。日本大國魂神は渟名城入姫命に託して祭らせたが、渟名城入姫命は髪が抜け体がやせて祭ることができなかった。</p>
-      <p>七年二月、天皇は、自分の代になって災害が続くのは政が悪く神祇のとがめを受けたためかと詔し、神淺茅原に出かけて八十萬神を集めて占った。すると神が倭迹迹日百襲姫命に憑き、自分を敬い祭れば国は自然に平らぐと告げ、倭国の内にいる大物主神だと名乗った。教えのとおり祭っても効き目がなかったので、天皇は沐浴斎戒して殿内を清め、夢で教えてほしいと祈った。その夜、夢に一人の貴人が殿の戸に向かって立ち、大物主神と名乗って、国が治まらないのは自分の意思であり、わが子の大田田根子に祭らせればすぐに平らぎ、海外の国も自ら従うと告げた。</p>
-      <p>八月、倭迹速神淺茅原目妙姫・大水口宿禰（穗積臣の遠祖）・伊勢麻績君の三人が同じ夢を見て、貴人から、大田田根子命を大物主大神を祭る主とし、市磯長尾市を倭大國魂神を祭る主とせよと教えられたと奏上した。天皇は天下に布告して大田田根子を探させ、茅渟縣陶邑で見つけた。天皇が神淺茅原で誰の子かと問うと、大田田根子は、父は大物主大神、母は陶津耳の娘の活玉依媛だと答えた。物部連の祖の伊香色雄を神に供える物を分ける役とすることは占いで吉と出たが、ついでに他の神を祭ることは不吉と出た。</p>
-      <p>十一月、伊香色雄に命じて物部の八十手が作った祭りの物を用い、大田田根子を大物主大神を祭る主、長尾市を倭大國魂神を祭る主とした。そのあとで他の神を祭ることを占うと吉と出たので、八十萬の神々を別に祭り、天社・國社と神地・神戸を定めた。こうして疫病は初めてやみ、国内はしだいに静まり、五穀が実って百姓はにぎわった。</p>
-      <p>八年四月、高橋邑の人の活日を大神の掌酒とした。十二月、天皇が大田田根子に大神を祭らせた日、活日は自ら神酒を天皇に献じて歌を詠んだ。神宮で宴が行われ、宴の終わりに諸大夫が「瀰和能等能」の句を含む歌を歌い、天皇も同じ句を含む歌で答え、神宮の門を開いて出て行った。大田田根子は今の三輪君らの始祖とされる。九年三月、天皇は夢で神人から、赤盾八枚・赤矛八竿で墨坂神を、黒盾八枚・黒矛八竿で大坂神を祭れと教えられ、四月にそのとおりに祭った。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云（妃の尾張大海媛）</b><p>妃を尾張大海媛とする本文に対し、小注の一云では大海宿禰の娘の八坂振天某邊とする。</p></div>
-      <div class="var"><b>亦云（大田田根子の母）</b><p>大田田根子の母の活玉依媛を陶津耳の娘とするほか、「亦云」として奇日方天日方武茅渟祇の娘とする伝えを記す。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">我是倭國城内所居神。名爲大物主神</blockquote><p>私は倭国の内にいる神で、名を大物主神という、と倭迹迹日百襲姫命に憑いた神が名乗る。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">若以吾兒大田田根子。令祭吾者則立平矣</blockquote><p>わが子の大田田根子に私を祭らせれば、国はすぐに平らぐ、という夢の告げ。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">父曰大物主大神。母曰活玉依媛</blockquote><p>大田田根子が天皇に答えた自分の父母の名。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">於是疫病始息</blockquote><p>こうして疫病がはじめておさまった。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全2件）。</p>
+      <details><summary>一云（妃の尾張大海媛）</summary><p>妃を尾張大海媛とする本文に対し、小注の一云では大海宿禰の娘の八坂振天某邊とする。</p></details>
+      <details><summary>亦云（大田田根子の母）</summary><p>大田田根子の母の活玉依媛を陶津耳の娘とするほか、「亦云」として奇日方天日方武茅渟祇の娘とする伝えを記す。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
         <li><b><a href="../../shrine-note/map/?d=omonushi">大物主神</a></b><small>おおものぬしのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=omiwa">大神神社</a>、<a href="../../shrine-note/map/?s=kotohira">金刀比羅宮</a>、<a href="../../shrine-note/map/?s=utsunomiyafutaarayama">宇都宮二荒山神社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=yamatookunitama">日本大国魂大神</a></b><small>やまとおおくにたまのおおかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ooyamato">大和神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=yamatototohimomoso">倭迹迹日百襲姫命</a></b><small>やまとととひももそひめのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=tamura">田村神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=toyokiirihiko">豊城入彦命</a></b><small>とよきいりひこのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=utsunomiyafutaarayama">宇都宮二荒山神社</a></span></li>
@@ -166,7 +206,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 中巻 崇神天皇条（神々の祭祀と三輪山の話）</span><p>古事記でも疫病のさなか大物主大神が天皇の夢に現れ、意富多多泥古に祭らせよと告げるが、意富多多泥古が見つかったのは河内の美努村で、大物主大神から数代下った子孫と名乗る。古事記はさらに、活玉依毘賣のもとに通う男の衣に麻糸を通した針を刺し、糸をたどって美和山の神と知る話を記すが、書紀のこの部分には確認できなかった。</p><blockquote lang="zh-Hant">於河内之美努村。見得其人貢進</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 崇神天皇条（神々の祭祀）</span><p>古事記では墨坂神に赤色の楯矛、大坂神に黒色の楯矛を祭ることは、意富多多泥古の祭りと同じ一連の疫病鎮めの祭りとして記される。書紀では九年三月の別の夢の教えにより、赤盾・赤矛各八と黒盾・黒矛各八で祭ったとする。</p><blockquote lang="zh-Hant">於宇陀墨坂神。祭赤色楯矛</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 崇神天皇条（后妃と御子の系譜）</span><p>古事記では豐鉏比賣命について系譜の小注に伊勢大神の宮を拝み祭ったとあるだけで、天照大神と倭大國魂神を大殿から出して祭らせる話は確認できなかった。書紀では豐鍬入姫命が倭の笠縫邑で天照大神を祭る。</p><blockquote lang="zh-Hant">拜祭伊勢大神之宮也</blockquote></div>
@@ -174,12 +214,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="kesshi.html"><small>← 前のページ（巻第四 綏靖天皇〜開化天皇）</small>綏靖天皇から開化天皇まで（手研耳命の反逆を含む）</a><a class="next" href="sujin-shido.html"><small>次のページ（巻第五 崇神天皇）→</small>四道将軍と武埴安彦の反乱（箸墓・出雲の神宝まで）</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第五" target="_blank" rel="noopener">日本書紀 巻第五</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">我是倭國城内所居神。名爲大物主神</blockquote><p>私は倭国の内にいる神で、名を大物主神という、と倭迹迹日百襲姫命に憑いた神が名乗る。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">若以吾兒大田田根子。令祭吾者則立平矣</blockquote><p>わが子の大田田根子に私を祭らせれば、国はすぐに平らぐ、という夢の告げ。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">父曰大物主大神。母曰活玉依媛</blockquote><p>大田田根子が天皇に答えた自分の父母の名。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">於是疫病始息</blockquote><p>こうして疫病がはじめておさまった。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第五" target="_blank" rel="noopener">日本書紀 巻第五</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

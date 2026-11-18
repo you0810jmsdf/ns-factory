@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十五 清寧天皇・顕宗天皇・仁賢天皇（全50ページ中 30）</p>
-    <h1>清寧・顕宗・仁賢天皇と億計・弘計の兄弟</h1>
-    <p class="pg-lead">子のない白髪天皇（清寧天皇）の時代に、播磨に隠れていた市邊押磐皇子の子の億計王・弘計王が見いだされて宮に迎えられた。兄弟は皇位を譲り合い、弟の弘計天皇（顕宗天皇）が先に即位して父の遺骨を葬り、そのあと兄の億計天皇（仁賢天皇）が即位して国が安らかに治まったと記される。</p>
-    <div class="xlink"><a href="../kojiki/oke-woke.html">古事記で読む：清寧天皇と意祁命・袁祁命（志毘臣との歌垣） ›</a><a href="../kojiki/kenzo.html">古事記で読む：顕宗天皇・仁賢天皇（置目老媼と父の御陵） ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十五 清寧天皇・顕宗天皇・仁賢天皇（全50ページ中 30）</p>
+        <h1>清寧・顕宗・仁賢天皇と億計・弘計の兄弟</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">子のない白髪天皇（清寧天皇）の時代に、播磨に隠れていた市邊押磐皇子の子の億計王・弘計王が見いだされて宮に迎えられた。兄弟は皇位を譲り合い、弟の弘計天皇（顕宗天皇）が先に即位して父の遺骨を葬り、そのあと兄の億計天皇（仁賢天皇）が即位して国が安らかに治まったと記される。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/oke-woke.html">古事記で読む：清寧天皇と意祁命・袁祁命（志毘臣との歌垣） ›</a><a href="../kojiki/kenzo.html">古事記で読む：顕宗天皇・仁賢天皇（置目老媼と父の御陵） ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>星川皇子が大藏に拠り焼け死ぬ</h3>
+      <p class="t">白髪武廣國押稚日本根子天皇は大泊瀬天皇の第三子で、生まれながら白髪であった。雄略二十三年八月に父が崩じると、吉備稚媛は幼い子の星川皇子に大藏の官を取らせ、星川皇子は大藏の門を閉ざして官物を勝手に使った。大伴室屋大連は遺詔に従って兵で大藏を囲んで火をつけ、星川皇子と稚媛、磐城皇子の異父兄の兄君らは焼け死んだ。星川皇子を救おうと船四十艘で来た吉備上道臣らは引き返したが、天皇は彼らを責めて山部を取り上げた。十月、大伴室屋大連らが皇太子に璽を奉った。</p>
+      <h3>磐余甕栗で即位し億計・弘計を迎える</h3>
+      <p class="t">元年正月、天皇は磐余甕栗で即位し、母の葛城韓媛を皇太夫人とした。十月に大泊瀬天皇を丹比高鷲原陵に葬ると、隼人が陵のそばで昼も夜も泣き続け、七日目に死んだ。二年二月、天皇は子がないことを恨み、白髪部の舎人・膳夫・靭負を置いた。十一月、播磨國司の來目部小楯が赤石郡で億計・弘計の兄弟を見いだして知らせると、天皇は天が二人の子を授けたと喜び、三年正月に二人を宮に迎え、四月に億計王を皇太子、弘計王を皇子とした。天皇は四年までに諸蕃の使者や蝦夷・隼人を迎え、五年正月に宮で崩じ、河内坂門原陵に葬られた。</p>
+      <h3>弘計王が播磨で名乗り出る</h3>
+      <p class="t">弘計天皇の即位前紀は、兄弟の身の上をさかのぼって記す。安康三年十月に父の市邊押磐皇子が大泊瀬天皇に射殺されると、帳内の日下部連使主と子の吾田彦が兄弟を連れて丹波國余社郡に逃れた。使主はなお殺されることを恐れて播磨の縮見山の石室に入り、自ら命を絶った。兄弟はその行方を知らないまま播磨國赤石郡に移り、丹波小子と名を変えて縮見屯倉首に仕え、牛馬を飼って暮らした。白髪天皇二年十一月、新室の宴で兄弟は舞の順番を譲り合い、弘計王は室壽の詞と歌を述べたあと、自分が押磐尊の子孫であると名乗ったので、小楯は驚いて再拝し、都に知らせた。</p>
+      <h3>弘計天皇が近飛鳥八釣宮で即位</h3>
+      <p class="t">白髪天皇の崩御ののち、兄の億計王と弟の弘計王は互いに皇位を譲って長く決まらず、その間、姉の飯豐青皇女が忍海角刺宮で政を執ったが、十一月に崩じた。十二月、億計王は天皇の璽を弟の座に置き、名乗り出て迎えられたのは弟の謀による功だと述べて譲った。弘計王は兄を立てるべきだと固く辞退したが、兄の意志が変わらないことを知って受け入れ、ただしすぐには位に就かなかった。元年正月、大臣・大連らの奏上を受けて、弘計天皇は近飛鳥八釣宮で即位し、難波小野王を皇后とした。</p>
+      <h3>置目の案内で父の遺骨を掘り出す</h3>
+      <p class="t">元年二月、天皇は父の遺骨を探し、近江の老女置目の案内で蚊屋野の埋めた場所を掘り出した。父の骨は佐伯部仲子の骨と交じっていたが、磐坂皇子の乳母が仲子は上の歯が抜けていたと言ったので頭骨を分け、同じ形の陵を二つ造って葬った。天皇は置目を宮の近くに住まわせ、縄に鈴を付けて出入りのしるしとした。四月には二人を見いだした小楯の功をたたえて山官とし山部連の姓を与え、五月には父の殺害に加わった狹狹城山君韓■宿禰の死罪を許して陵守とした。</p>
+      <h3>陵を壊したいと語り億計が諫める</h3>
+      <p class="t">二年八月、天皇は父の仇として大泊瀬天皇の陵を壊し、骨をまき散らしたいと皇太子億計に語った。億計は、大泊瀬天皇は天下を治めた天皇であること、また自分たちを厚く遇した白髪天皇の父であることの二つを挙げて諫め、天皇はこれを聞き入れて工事をやめさせた。九月に置目は老いて故郷に帰り、十月には天下が平らかで稲一斛が銀銭一文であったと記される。三年二月と四月には月神と日神が人に憑いて田を求め、それぞれ壹伎と對馬の者が祠に仕えた。四月、天皇は八釣宮で崩じた。この年、紀生磐宿禰が任那で自ら神聖と称して百濟と戦ったが、力尽きて帰国した。</p>
+      <h3>億計天皇が即位し春日大娘皇女を皇后とする</h3>
+      <p class="t">億計天皇（諱は大脚、字は嶋郎）は弘計天皇の同母兄で、弟の崩御ののち石上廣高宮で即位した。二月に春日大娘皇女を皇后とし、皇后は一男六女を生んだ。十月に弘計天皇を傍丘磐杯丘陵に葬った。二年、難波小野皇后は、かつて宴で皇太子億計に不敬をはたらいたことを恐れて自ら命を絶った。五年には散り散りになった佐伯部を集め、仲子の子孫を佐伯造とした。六年に日鷹吉士を高麗に遣わして工人を求めると、それに従って行った麁寸の妻の飽田女が難波の御津で嘆き悲しみ、その複雑な家族関係が注で説明される。是歳、日鷹吉士は工匠の須流枳・奴流枳らを連れて帰った。七年に小泊瀬稚鷦鷯尊を皇太子とし、八年には国中が安らかで五穀が実ったと記される。十一年八月、天皇は正寝で崩じ、十月に埴生坂本陵に葬られた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>清寧二年十一月、播磨國司の來目部小楯が赤石郡の縮見屯倉首の新室の宴で、市邊押磐皇子の子の億計・弘計の兄弟を見いだした。子のいない白髪天皇はこれを喜び、三年に二人を宮に迎えて、億計王を皇太子、弘計王を皇子とした。</li>
         <li><span class="kind ">本文</span>新室の宴で、弟の弘計王は室壽の詞と歌を述べたあと、自分が市邊宮で天下を治めた押磐尊の子孫であると名乗った。小楯は驚いて席を離れて再拝し、郡の民を集めて仮の宮を造った。</li>
@@ -115,34 +176,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>白髪武廣國押稚日本根子天皇は大泊瀬天皇の第三子で、生まれながら白髪であった。雄略二十三年八月に父が崩じると、吉備稚媛は幼い子の星川皇子に大藏の官を取らせ、星川皇子は大藏の門を閉ざして官物を勝手に使った。大伴室屋大連は遺詔に従って兵で大藏を囲んで火をつけ、星川皇子と稚媛、磐城皇子の異父兄の兄君らは焼け死んだ。星川皇子を救おうと船四十艘で来た吉備上道臣らは引き返したが、天皇は彼らを責めて山部を取り上げた。十月、大伴室屋大連らが皇太子に璽を奉った。</p>
-      <p>元年正月、天皇は磐余甕栗で即位し、母の葛城韓媛を皇太夫人とした。十月に大泊瀬天皇を丹比高鷲原陵に葬ると、隼人が陵のそばで昼も夜も泣き続け、七日目に死んだ。二年二月、天皇は子がないことを恨み、白髪部の舎人・膳夫・靭負を置いた。十一月、播磨國司の來目部小楯が赤石郡で億計・弘計の兄弟を見いだして知らせると、天皇は天が二人の子を授けたと喜び、三年正月に二人を宮に迎え、四月に億計王を皇太子、弘計王を皇子とした。天皇は四年までに諸蕃の使者や蝦夷・隼人を迎え、五年正月に宮で崩じ、河内坂門原陵に葬られた。</p>
-      <p>弘計天皇の即位前紀は、兄弟の身の上をさかのぼって記す。安康三年十月に父の市邊押磐皇子が大泊瀬天皇に射殺されると、帳内の日下部連使主と子の吾田彦が兄弟を連れて丹波國余社郡に逃れた。使主はなお殺されることを恐れて播磨の縮見山の石室に入り、自ら命を絶った。兄弟はその行方を知らないまま播磨國赤石郡に移り、丹波小子と名を変えて縮見屯倉首に仕え、牛馬を飼って暮らした。白髪天皇二年十一月、新室の宴で兄弟は舞の順番を譲り合い、弘計王は室壽の詞と歌を述べたあと、自分が押磐尊の子孫であると名乗ったので、小楯は驚いて再拝し、都に知らせた。</p>
-      <p>白髪天皇の崩御ののち、兄の億計王と弟の弘計王は互いに皇位を譲って長く決まらず、その間、姉の飯豐青皇女が忍海角刺宮で政を執ったが、十一月に崩じた。十二月、億計王は天皇の璽を弟の座に置き、名乗り出て迎えられたのは弟の謀による功だと述べて譲った。弘計王は兄を立てるべきだと固く辞退したが、兄の意志が変わらないことを知って受け入れ、ただしすぐには位に就かなかった。元年正月、大臣・大連らの奏上を受けて、弘計天皇は近飛鳥八釣宮で即位し、難波小野王を皇后とした。</p>
-      <p>元年二月、天皇は父の遺骨を探し、近江の老女置目の案内で蚊屋野の埋めた場所を掘り出した。父の骨は佐伯部仲子の骨と交じっていたが、磐坂皇子の乳母が仲子は上の歯が抜けていたと言ったので頭骨を分け、同じ形の陵を二つ造って葬った。天皇は置目を宮の近くに住まわせ、縄に鈴を付けて出入りのしるしとした。四月には二人を見いだした小楯の功をたたえて山官とし山部連の姓を与え、五月には父の殺害に加わった狹狹城山君韓■宿禰の死罪を許して陵守とした。</p>
-      <p>二年八月、天皇は父の仇として大泊瀬天皇の陵を壊し、骨をまき散らしたいと皇太子億計に語った。億計は、大泊瀬天皇は天下を治めた天皇であること、また自分たちを厚く遇した白髪天皇の父であることの二つを挙げて諫め、天皇はこれを聞き入れて工事をやめさせた。九月に置目は老いて故郷に帰り、十月には天下が平らかで稲一斛が銀銭一文であったと記される。三年二月と四月には月神と日神が人に憑いて田を求め、それぞれ壹伎と對馬の者が祠に仕えた。四月、天皇は八釣宮で崩じた。この年、紀生磐宿禰が任那で自ら神聖と称して百濟と戦ったが、力尽きて帰国した。</p>
-      <p>億計天皇（諱は大脚、字は嶋郎）は弘計天皇の同母兄で、弟の崩御ののち石上廣高宮で即位した。二月に春日大娘皇女を皇后とし、皇后は一男六女を生んだ。十月に弘計天皇を傍丘磐杯丘陵に葬った。二年、難波小野皇后は、かつて宴で皇太子億計に不敬をはたらいたことを恐れて自ら命を絶った。五年には散り散りになった佐伯部を集め、仲子の子孫を佐伯造とした。六年に日鷹吉士を高麗に遣わして工人を求めると、それに従って行った麁寸の妻の飽田女が難波の御津で嘆き悲しみ、その複雑な家族関係が注で説明される。是歳、日鷹吉士は工匠の須流枳・奴流枳らを連れて帰った。七年に小泊瀬稚鷦鷯尊を皇太子とし、八年には国中が安らかで五穀が実ったと記される。十一年八月、天皇は正寝で崩じ、十月に埴生坂本陵に葬られた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云</b><p>小楯が赤石郡に来ていた理由を、新嘗の供物を自ら整えるためではなく、郡や県を巡って田租を集めるためであったとする。</p></div>
-      <div class="var"><b>一本</b><p>市邊押磐皇子の子を挙げる譜第で、飯豐女王を億計王より前に並べる。本文の譜第では、飯豐女王は億計王・弘計王の後の四番目に置かれる。</p></div>
-      <div class="var"><b>或本云</b><p>弘計天皇の宮は少郊と池野の二か所にあったとし、また別の或本は甕栗に宮があったとする。本文は近飛鳥八釣宮で即位したとする。</p></div>
-      <div class="var"><b>或本云</b><p>億計天皇の宮は川村と縮見高野の二か所にあり、その御殿の柱は今も朽ちていないとする。本文は石上廣高宮で即位したとする。</p></div>
-      <div class="var"><b>一本云</b><p>和珥臣日觸の娘の大糠娘が生んだ娘を山田大娘皇女（またの名は赤見皇女）とする。本文は和珥臣日爪の娘の糠君娘が春日山田皇女を生んだとし、注で名は少し違うが同じ人物だとする。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">於市邊宮治天下天萬國萬押磐尊御裔僕是也</blockquote><p>新室の宴で弘計王が名乗った言葉。「わたしは市邊宮で天下を治めた押磐尊の子孫である」という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">仲子者上齒堕落。以斯可別</blockquote><p>磐坂皇子の乳母の言葉。「仲子は上の歯が抜けていたので、それで見分けられる」という意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">稻斛銀錢一文。牛馬被野</blockquote><p>顕宗二年十月の記事。稲一斛が銀銭一文で、牛馬が野にあふれるほど豊かだったという意味。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">我祖高皇産靈有預鎔造天地之功</blockquote><p>人に憑いた月神の言葉。「わが祖の高皇産靈には天地を造り上げた功がある」という意味。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全5件）。</p>
+      <details><summary>一云</summary><p>小楯が赤石郡に来ていた理由を、新嘗の供物を自ら整えるためではなく、郡や県を巡って田租を集めるためであったとする。</p></details>
+      <details><summary>一本</summary><p>市邊押磐皇子の子を挙げる譜第で、飯豐女王を億計王より前に並べる。本文の譜第では、飯豐女王は億計王・弘計王の後の四番目に置かれる。</p></details>
+      <details><summary>或本云</summary><p>弘計天皇の宮は少郊と池野の二か所にあったとし、また別の或本は甕栗に宮があったとする。本文は近飛鳥八釣宮で即位したとする。</p></details>
+      <details><summary>或本云</summary><p>億計天皇の宮は川村と縮見高野の二か所にあり、その御殿の柱は今も朽ちていないとする。本文は石上廣高宮で即位したとする。</p></details>
+      <details><summary>一本云</summary><p>和珥臣日觸の娘の大糠娘が生んだ娘を山田大娘皇女（またの名は赤見皇女）とする。本文は和珥臣日爪の娘の糠君娘が春日山田皇女を生んだとし、注で名は少し違うが同じ人物だとする。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -165,7 +206,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 下巻 清寧天皇の段（二王子の発見）</span><p>古事記では清寧天皇が崩じて後継ぎがいなくなったあとで二王子が見いだされ、名乗りを聞いた小楯は床から転げ落ち、市邊忍齒別王の妹とされる飯豐王が喜んで二人を宮に上らせる。日本書紀では清寧天皇の在位中に見いだされ、天皇自身が喜んで迎え、億計王を皇太子とする。また日本書紀は飯豐青皇女を弘計天皇の姉とする。</p><blockquote lang="zh-Hant">自床墮轉而</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 顕宗天皇の段（置目老媼と父王の御骨）</span><p>古事記では置目老媼が、市邊王の骨は歯で見分けられると申し出て、蚊屋野の東の山に御陵を造る。日本書紀では見分ける手がかりになったのは佐伯部仲子の抜けた上の歯で、それを知らせたのは磐坂皇子の乳母であり、陵も二つ造られる。</p><blockquote lang="zh-Hant">亦以其御齒可知</blockquote></div>
       <div class="ns"><span class="where">古事記 下巻 顕宗天皇の段（大長谷天皇の御陵）</span><p>古事記では兄の意祁命が自ら出向いて大長谷天皇の陵のそばを少しだけ掘り、それで恥を示したと説明する。日本書紀では兄の億計が二つの理由を挙げて諫め、天皇は工事そのものをやめさせる。</p><blockquote lang="zh-Hant">少掘其御陵之傍</blockquote></div>
@@ -173,12 +214,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="yuryaku-2.html"><small>← 前のページ（巻第十四 雄略天皇）</small>雄略天皇の新羅出兵・呉の工人と遺詔</a><a class="next" href="buretsu.html"><small>次のページ（巻第十六 武烈天皇）→</small>武烈天皇と平群氏の滅亡</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十五" target="_blank" rel="noopener">日本書紀 巻第十五</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十五" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十五</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十五</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takamimusuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/takamimusuhinokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">於市邊宮治天下天萬國萬押磐尊御裔僕是也</blockquote><p>新室の宴で弘計王が名乗った言葉。「わたしは市邊宮で天下を治めた押磐尊の子孫である」という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">仲子者上齒堕落。以斯可別</blockquote><p>磐坂皇子の乳母の言葉。「仲子は上の歯が抜けていたので、それで見分けられる」という意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">稻斛銀錢一文。牛馬被野</blockquote><p>顕宗二年十月の記事。稲一斛が銀銭一文で、牛馬が野にあふれるほど豊かだったという意味。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">我祖高皇産靈有預鎔造天地之功</blockquote><p>人に憑いた月神の言葉。「わが祖の高皇産靈には天地を造り上げた功がある」という意味。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十五" target="_blank" rel="noopener">日本書紀 巻第十五</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十五" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十五</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十五</li><li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/古事記/下卷</a>　https://zh.wikisource.org/wiki/古事記/下卷</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takamimusuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/takamimusuhinokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

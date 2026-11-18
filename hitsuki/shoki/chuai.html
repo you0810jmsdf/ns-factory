@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第八 仲哀天皇（全50ページ中 20）</p>
-    <h1>仲哀天皇（白鳥・熊襲征討と神託・崩御）</h1>
-    <p class="pg-lead">足仲彦天皇（仲哀天皇）の即位から、熊襲を討とうとして筑紫に入り、皇后に乗り移った神の言葉を信じないまま崩御するまでを記す巻。天皇の死は皇后と武内宿禰によって隠され、新羅への出兵のためにその年は葬られなかったと結ばれる。</p>
-    <div class="xlink"><a href="../kojiki/chuai-jingu.html">古事記で読む：仲哀天皇の死と息長帯日売命の新羅遠征 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第八 仲哀天皇（全50ページ中 20）</p>
+        <h1>仲哀天皇（白鳥・熊襲征討と神託・崩御）</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">足仲彦天皇（仲哀天皇）の即位から、熊襲を討とうとして筑紫に入り、皇后に乗り移った神の言葉を信じないまま崩御するまでを記す巻。天皇の死は皇后と武内宿禰によって隠され、新羅への出兵のためにその年は葬られなかったと結ばれる。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/chuai-jingu.html">古事記で読む：仲哀天皇の死と息長帯日売命の新羅遠征 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>足仲彦天皇の即位</h3>
+      <p class="t">足仲彦天皇は日本武尊の第二子で、母は活目入彦五十狹茅天皇の娘の両道入姫命である。容姿が整い、身長は十尺あったという。稚足彦天皇に男子がいなかったため、その四十八年に後継ぎの太子とされた。稚足彦天皇が六十年に崩じると、翌年九月に倭国の狭城盾列陵に葬られた。元年正月に太子が即位し、九月に母を皇太后とした。</p>
+      <h3>白鳥を献上させ蒲見別王を誅する</h3>
+      <p class="t">元年十一月、天皇は群臣に、父王の霊が白鳥となって天に上ったことを慕う思いがやまないので、白鳥を陵の池で飼って心を慰めたいと語り、諸国に白鳥を献上させた。閏十一月、越国が白鳥四羽を献じたが、使いが菟道河のほとりに泊まったとき、蘆髮蒲見別王が「白鳥でも焼けば黒い鳥になる」と言って白鳥を奪い去った。天皇は先王への無礼を憎んで兵を遣わし、異母弟である蒲見別王を誅した。</p>
+      <h3>気長足姫尊を皇后とし笥飯宮を建てる</h3>
+      <p class="t">二年正月、気長足姫尊を皇后とした。これより先、叔父の彦人大兄の娘の大中姫を妃として■坂皇子（一字が欠けている。巻第九では麛坂王）・忍熊皇子を、大酒主の娘の弟媛を妃として誉屋別皇子をもうけていた。二月に角鹿へ行って行宮を建て、これを笥飯宮といい、同じ月に淡路の屯倉を定めた。三月、皇后と百官を残して南の国を巡り、紀伊国の徳勒津宮にいたとき、熊襲が背いて朝貢しなくなったので、海路で穴門へ向かい、皇后には角鹿から出て穴門で落ち合うよう命じた。</p>
+      <h3>皇后が海中で如意珠を得る</h3>
+      <p class="t">六月、天皇は豊浦津に泊まった。皇后は角鹿を発って渟田門に至り、船の上で食事をしたとき、船のそばに集まった魚（原文「海鰤魚」）に酒を注ぐと魚が酔って浮き、海人たちが多く獲って喜んだ。その地の魚が六月になると酔ったように浮くのはこのためだという。七月、皇后も豊浦津に泊まり、この日に海中で如意珠を得た。九月、穴門に宮室を建てて住み、これを穴門豊浦宮という。</p>
+      <h3>熊鰐と五十迹手が天皇を迎える</h3>
+      <p class="t">八年正月、天皇は筑紫へ向かった。岡県主の祖の熊鰐は、賢木に鏡・剣・玉を掛けて周芳の沙麼の浦で出迎え、魚や塩をとる地を献じて海路を案内した。岡浦の水門で船が進まなくなると、熊鰐は浦口にいる男神の大倉主と女神の菟夫羅媛の心だろうと答え、天皇が祈って菟田の人伊賀彦を祝として祭らせると船は進んだ。別の船で洞海から入った皇后の船は潮が引いて進めず、熊鰐が魚の沼と鳥の池を作って魚や鳥を集めると、それを見た皇后の怒りは少しおさまった。伊覩県主の祖の五十迹手も同じように賢木に玉・鏡・剣を掛けて穴門の引嶋で迎え、天皇はその人をほめた。その後、天皇は儺県に着いて橿日宮に住んだ。</p>
+      <h3>神が皇后に乗り移り新羅国を教える</h3>
+      <p class="t">九月、熊襲征討を議したとき、神が皇后に乗り移り、熊襲よりも、海の向こうにある金銀や彩色の多い新羅国を、自分を祭ることで得よと教え、天皇の船と穴門直踐立が献じた水田（大田）を幣とするよう求めた。天皇は高い岳から見渡しても国が見えないとして、どの神がだますのかと言い返した。神は重ねて、信じないならあなたはその国を得られず、皇后が今はじめて身ごもった子が得るだろうと告げたが、天皇はなお信じず、熊襲を攻めて勝てずに帰った。</p>
+      <h3>天皇が崩じ喪を隠す</h3>
+      <p class="t">九年二月、天皇は急に体を痛め、翌日崩じた。五十二歳であった。皇后と大臣の武内宿禰は、天下の人々が知って怠ることを恐れて喪を隠し、中臣烏賊津連・大三輪大友主君・物部膽咋連・大伴武以連の四人の大夫に百官を率いて宮中を守らせた。天皇の遺体はひそかに武内宿禰に託して海路で穴門へ移し、豊浦宮で火をたかない殯（无火殯斂）を行った。甲子の日、武内宿禰は穴門から戻って皇后に報告した。この年は新羅への出兵のために天皇を葬ることができなかった。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>八年九月、筑紫の橿日宮で熊襲征討を議したとき、神が皇后に乗り移り「熊襲は討つほどの国ではない。海の向こうの金銀の多い新羅国を、自分を祭れば戦わずに服させる」と教えた。天皇は高い岳に登っても海しか見えないとして、この言葉を信じなかった。</li>
         <li><span class="kind ">本文</span>天皇はなお信じずに熊襲を攻めて勝てず、九年二月に急に体が痛んで翌日崩じた（五十二歳）。本文は「神の言葉を用いなかったので早く崩じた」と記し、小注の一云は、自ら熊襲を討って賊の矢に当たって崩じたとする。</li>
@@ -115,30 +176,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>足仲彦天皇は日本武尊の第二子で、母は活目入彦五十狹茅天皇の娘の両道入姫命である。容姿が整い、身長は十尺あったという。稚足彦天皇に男子がいなかったため、その四十八年に後継ぎの太子とされた。稚足彦天皇が六十年に崩じると、翌年九月に倭国の狭城盾列陵に葬られた。元年正月に太子が即位し、九月に母を皇太后とした。</p>
-      <p>元年十一月、天皇は群臣に、父王の霊が白鳥となって天に上ったことを慕う思いがやまないので、白鳥を陵の池で飼って心を慰めたいと語り、諸国に白鳥を献上させた。閏十一月、越国が白鳥四羽を献じたが、使いが菟道河のほとりに泊まったとき、蘆髮蒲見別王が「白鳥でも焼けば黒い鳥になる」と言って白鳥を奪い去った。天皇は先王への無礼を憎んで兵を遣わし、異母弟である蒲見別王を誅した。</p>
-      <p>二年正月、気長足姫尊を皇后とした。これより先、叔父の彦人大兄の娘の大中姫を妃として■坂皇子（一字が欠けている。巻第九では麛坂王）・忍熊皇子を、大酒主の娘の弟媛を妃として誉屋別皇子をもうけていた。二月に角鹿へ行って行宮を建て、これを笥飯宮といい、同じ月に淡路の屯倉を定めた。三月、皇后と百官を残して南の国を巡り、紀伊国の徳勒津宮にいたとき、熊襲が背いて朝貢しなくなったので、海路で穴門へ向かい、皇后には角鹿から出て穴門で落ち合うよう命じた。</p>
-      <p>六月、天皇は豊浦津に泊まった。皇后は角鹿を発って渟田門に至り、船の上で食事をしたとき、船のそばに集まった魚（原文「海鰤魚」）に酒を注ぐと魚が酔って浮き、海人たちが多く獲って喜んだ。その地の魚が六月になると酔ったように浮くのはこのためだという。七月、皇后も豊浦津に泊まり、この日に海中で如意珠を得た。九月、穴門に宮室を建てて住み、これを穴門豊浦宮という。</p>
-      <p>八年正月、天皇は筑紫へ向かった。岡県主の祖の熊鰐は、賢木に鏡・剣・玉を掛けて周芳の沙麼の浦で出迎え、魚や塩をとる地を献じて海路を案内した。岡浦の水門で船が進まなくなると、熊鰐は浦口にいる男神の大倉主と女神の菟夫羅媛の心だろうと答え、天皇が祈って菟田の人伊賀彦を祝として祭らせると船は進んだ。別の船で洞海から入った皇后の船は潮が引いて進めず、熊鰐が魚の沼と鳥の池を作って魚や鳥を集めると、それを見た皇后の怒りは少しおさまった。伊覩県主の祖の五十迹手も同じように賢木に玉・鏡・剣を掛けて穴門の引嶋で迎え、天皇はその人をほめた。その後、天皇は儺県に着いて橿日宮に住んだ。</p>
-      <p>九月、熊襲征討を議したとき、神が皇后に乗り移り、熊襲よりも、海の向こうにある金銀や彩色の多い新羅国を、自分を祭ることで得よと教え、天皇の船と穴門直踐立が献じた水田（大田）を幣とするよう求めた。天皇は高い岳から見渡しても国が見えないとして、どの神がだますのかと言い返した。神は重ねて、信じないならあなたはその国を得られず、皇后が今はじめて身ごもった子が得るだろうと告げたが、天皇はなお信じず、熊襲を攻めて勝てずに帰った。</p>
-      <p>九年二月、天皇は急に体を痛め、翌日崩じた。五十二歳であった。皇后と大臣の武内宿禰は、天下の人々が知って怠ることを恐れて喪を隠し、中臣烏賊津連・大三輪大友主君・物部膽咋連・大伴武以連の四人の大夫に百官を率いて宮中を守らせた。天皇の遺体はひそかに武内宿禰に託して海路で穴門へ移し、豊浦宮で火をたかない殯（无火殯斂）を行った。甲子の日、武内宿禰は穴門から戻って皇后に報告した。この年は新羅への出兵のために天皇を葬ることができなかった。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云（崩御のしかた）</b><p>本文は、神の言葉を用いなかったために急病で早く崩じたとするが、小注の一云は、天皇が自ら熊襲を討ちに行き、賊の矢に当たって崩じたと伝える。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">雖白鳥而燒之則爲黒鳥</blockquote><p>白鳥であっても焼いてしまえば黒い鳥になる、と言って、蒲見別王が献上の白鳥を奪った言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">是謂栲衾新羅國焉</blockquote><p>神が教えた「宝の国」の名として、新羅国を示した言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">即知。不用神言而早崩。</blockquote><p>神の言葉を用いなかったので早く崩じたのだとわかった、という本文の説明。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">天皇即美五十迹手曰伊蘇志</blockquote><p>天皇が五十迹手をほめて「伊蘇志」と言い、これが伊蘇国という地名の由来とされる。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全1件）。</p>
+      <details><summary>一云（崩御のしかた）</summary><p>本文は、神の言葉を用いなかったために急病で早く崩じたとするが、小注の一云は、天皇が自ら熊襲を討ちに行き、賊の矢に当たって崩じたと伝える。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -161,19 +202,29 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 中巻 仲哀天皇の段（神がかりと天皇の崩御）</span><p>古事記では、天皇は神の言葉を偽りと思って琴を押しやり、建内宿禰に促されてしぶしぶ弾くうちに音が絶え、火をともすとすでに崩じていた。書紀本文は翌日の急死、一云は矢傷による死とする。</p><blockquote lang="zh-Hant">不聞御琴之音。即擧火見者。既崩訖。</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 仲哀天皇の段（宮と后妃・御子）</span><p>淡路の屯倉を定めたことは古事記にも「この御世」のこととして見え、書紀は二年二月のこととする。白鳥と蒲見別王の話、熊鰐・五十迹手の出迎えの話は、古事記には対応する記事を確認できなかった。</p><blockquote lang="zh-Hant">此之御世。定淡道之屯家也。</blockquote></div>
     </section>
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="yamatotakeru-saigo.html"><small>← 前のページ（巻第七 景行天皇・成務天皇）</small>日本武尊の東征と最期、景行天皇の晩年と成務天皇</a><a class="next" href="jingu-shiragi.html"><small>次のページ（巻第九 神功皇后）→</small>神功皇后の神託と新羅遠征</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第八" target="_blank" rel="noopener">日本書紀 巻第八</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kehinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kehinookami/</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第八" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第八</a>　https://zh.wikisource.org/wiki/日本書紀/卷第八</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">雖白鳥而燒之則爲黒鳥</blockquote><p>白鳥であっても焼いてしまえば黒い鳥になる、と言って、蒲見別王が献上の白鳥を奪った言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">是謂栲衾新羅國焉</blockquote><p>神が教えた「宝の国」の名として、新羅国を示した言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">即知。不用神言而早崩。</blockquote><p>神の言葉を用いなかったので早く崩じたのだとわかった、という本文の説明。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">天皇即美五十迹手曰伊蘇志</blockquote><p>天皇が五十迹手をほめて「伊蘇志」と言い、これが伊蘇国という地名の由来とされる。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第八" target="_blank" rel="noopener">日本書紀 巻第八</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kehinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kehinookami/</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第八" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第八</a>　https://zh.wikisource.org/wiki/日本書紀/卷第八</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

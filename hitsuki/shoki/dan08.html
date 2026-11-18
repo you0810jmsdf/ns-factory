@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,37 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第一 神代上（全50ページ中 6）</p>
-    <h1>八岐大蛇と大己貴神（第八段）</h1>
-    <p class="pg-lead">天から追われた素戔嗚尊は出雲の簸の川上で八岐大蛇を退治して奇稲田姫を救い、大蛇の尾から出た草薙剣を天神に献上し、清地に宮を建てて大己貴神をもうける。六つの一書は、舞台や剣の名、子孫の数え方、五十猛神の植樹、大己貴命と少彦名命の国造りなどを別に伝える。</p>
-    <div class="xlink"><a href="../kojiki/orochi.html">古事記で読む：須佐之男命の追放と八俣遠呂智 ›</a><a href="../kojiki/kunitsukuri.html">古事記で読む：八千矛神の歌と大国主神の国作り ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第一 神代上（全50ページ中 6）</p>
+        <h1>八岐大蛇と大己貴神（第八段）</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">天から追われた素戔嗚尊は出雲の簸の川上で八岐大蛇を退治して奇稲田姫を救い、大蛇の尾から出た草薙剣を天神に献上し、清地に宮を建てて大己貴神をもうける。六つの一書は、舞台や剣の名、子孫の数え方、五十猛神の植樹、大己貴命と少彦名命の国造りなどを別に伝える。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/orochi.html">古事記で読む：須佐之男命の追放と八俣遠呂智 ›</a><a href="../kojiki/kunitsukuri.html">古事記で読む：八千矛神の歌と大国主神の国作り ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>簸の川上で脚摩乳と手摩乳に会う</h3>
+      <p class="t">素戔嗚尊は天から降って出雲国の簸の川上に着いた。川上から泣き声が聞こえたので訪ねて行くと、老人と老婆が一人の少女を間において、なでながら泣いていた。素戔嗚尊が誰かとたずねると、老人は自分は国神の脚摩乳、妻は手摩乳、この娘は奇稲田姫だと答えた。</p>
+      <h3>奇稲田姫を湯津爪櫛に変える</h3>
+      <p class="t">泣いているわけは、もとは八人の娘がいたが、毎年八岐大蛇に呑まれ、今この娘も呑まれようとしていて逃れるすべがないからだという。素戔嗚尊が娘を自分に差し出すかと問うと、二人は仰せのとおり差し上げますと答えた。素戔嗚尊は奇稲田姫を湯津爪櫛に変えて自分の髻に挿し、脚摩乳・手摩乳に八醞酒を造らせ、仮の棚（さずき）を八つ作って、それぞれに酒を盛った槽を一つずつ置いて待った。</p>
+      <h3>大蛇を十握剣で斬る</h3>
+      <p class="t">時が来ると、はたして大蛇が現れた。頭と尾がそれぞれ八つに分かれ、目は赤酸醤（あかかがち）のようで、背には松や柏が生え、八つの丘と八つの谷にわたって延びていた。大蛇はそれぞれの頭を一つずつの槽に入れて酒を飲み、酔って眠った。素戔嗚尊は帯びていた十握剣を抜いて大蛇をずたずたに斬った。</p>
+      <h3>草薙剣を天神に献上する</h3>
+      <p class="t">尾を斬ったところで剣の刃が少し欠けたので、尾を裂いて見ると中に一振りの剣があった。これがいわゆる草薙剣（くさなぎのつるぎ）である。小注の一書は、もとの名を天叢雲剣といい、大蛇のいる上に常に雲気があったからだろうとし、日本武皇子のときに草薙剣と改めたと記す。素戔嗚尊はこれは神剣であり、自分のものにはできないと言って天神に献上した。</p>
+      <h3>出雲の清地に宮を建てる</h3>
+      <p class="t">そのあと素戔嗚尊は結婚する場所を探して、出雲の清地（すが）に着き、「わが心は清々しい」と言ってそこに宮を建てた。小注には、そのとき素戔嗚尊が歌をよんだとして「夜句茂多菟」で始まる歌が記される。素戔嗚尊は奇稲田姫と結ばれて大己貴神を生み、脚摩乳・手摩乳を宮の首として稲田宮主神の名を与えた。そののち素戔嗚尊は根国へ去った。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>本文では、素戔嗚尊は出雲国の簸の川上で、国神の脚摩乳・手摩乳と娘の奇稲田姫に会う。娘たちは毎年八岐大蛇に呑まれていたので、素戔嗚尊は姫を湯津爪櫛に変えて髻に挿し、八醞酒を八つの槽に盛って大蛇を酔わせ、十握剣で斬った。</li>
         <li><span class="kind ">本文</span>大蛇の尾を斬ると剣の刃が少し欠け、尾を裂くと一振りの剣があった。これが草薙剣で、小注の一書は、もとの名は天叢雲剣で、日本武皇子のときに草薙剣と改めたと記す。素戔嗚尊は「私のものにはできない」と言って天神に献上した。</li>
@@ -115,44 +172,26 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>素戔嗚尊は天から降って出雲国の簸の川上に着いた。川上から泣き声が聞こえたので訪ねて行くと、老人と老婆が一人の少女を間において、なでながら泣いていた。素戔嗚尊が誰かとたずねると、老人は自分は国神の脚摩乳、妻は手摩乳、この娘は奇稲田姫だと答えた。</p>
-      <p>泣いているわけは、もとは八人の娘がいたが、毎年八岐大蛇に呑まれ、今この娘も呑まれようとしていて逃れるすべがないからだという。素戔嗚尊が娘を自分に差し出すかと問うと、二人は仰せのとおり差し上げますと答えた。素戔嗚尊は奇稲田姫を湯津爪櫛に変えて自分の髻に挿し、脚摩乳・手摩乳に八醞酒を造らせ、仮の棚（さずき）を八つ作って、それぞれに酒を盛った槽を一つずつ置いて待った。</p>
-      <p>時が来ると、はたして大蛇が現れた。頭と尾がそれぞれ八つに分かれ、目は赤酸醤（あかかがち）のようで、背には松や柏が生え、八つの丘と八つの谷にわたって延びていた。大蛇はそれぞれの頭を一つずつの槽に入れて酒を飲み、酔って眠った。素戔嗚尊は帯びていた十握剣を抜いて大蛇をずたずたに斬った。</p>
-      <p>尾を斬ったところで剣の刃が少し欠けたので、尾を裂いて見ると中に一振りの剣があった。これがいわゆる草薙剣（くさなぎのつるぎ）である。小注の一書は、もとの名を天叢雲剣といい、大蛇のいる上に常に雲気があったからだろうとし、日本武皇子のときに草薙剣と改めたと記す。素戔嗚尊はこれは神剣であり、自分のものにはできないと言って天神に献上した。</p>
-      <p>そのあと素戔嗚尊は結婚する場所を探して、出雲の清地（すが）に着き、「わが心は清々しい」と言ってそこに宮を建てた。小注には、そのとき素戔嗚尊が歌をよんだとして「夜句茂多菟」で始まる歌が記される。素戔嗚尊は奇稲田姫と結ばれて大己貴神を生み、脚摩乳・手摩乳を宮の首として稲田宮主神の名を与えた。そののち素戔嗚尊は根国へ去った。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一書第一</b><p>大蛇退治は語られない。素戔嗚尊は簸の川上で稲田宮主簀狭之八箇耳の娘の稲田媛に会って結ばれ、清之湯山主三名狭漏彦八嶋篠（ほかに二つの名を挙げる）を生む。この神の五世の孫が大国主神だとする。</p></div>
-      <div class="var"><b>一書第二</b><p>舞台は安芸国の可愛の川上で、脚摩手摩の妻の稲田宮主簀狭之八箇耳は身ごもっており、生まれる子をまた大蛇に呑まれることを恐れている。素戔嗚尊は果物で八甕の酒を造らせ、大蛇に「畏るべき神よ」と呼びかけて飲ませ、斬る。草薙剣は今は尾張国吾湯市村にあり熱田の祝部が掌り、斬った剣「蛇之麁正」は石上にあるとする。生まれた真髪触奇稲田媛を出雲の簸の川上で育てて妃とし、その六世の孫を大己貴命（おほあなむち）とする。</p></div>
-      <div class="var"><b>一書第三</b><p>脚摩乳・手摩乳が、娘を娶るならまず大蛇を殺してほしいと求める。大蛇は頭ごとに石松があり、両脇に山がある恐ろしいものだった。素戔嗚尊は毒酒を飲ませ、「蛇韓鋤之剣」で頭と腹を斬る。尾から出た草薙剣は今は尾張国に、斬った剣は今は吉備の神部のもとにあるとし、場所を出雲の簸の川上の山とする。</p></div>
-      <div class="var"><b>一書第四</b><p>追放された素戔嗚尊は子の五十猛神を連れて新羅国の曾尸茂梨に降るが、住みたくないと言って埴土の舟で東へ渡り、出雲の簸の川上の鳥上の峯に着く。「天蝿斫之剣」で人を呑む大蛇を斬り、尾から出た剣を五世の孫の天之葺根神に天へ献上させた。五十猛神は多くの木の種を持って降り、韓の地には植えずに筑紫から大八洲国じゅうに植えて青山にしたので、功のある神とされ、紀伊国にいる大神だとする。</p></div>
-      <div class="var"><b>一書第五</b><p>素戔嗚尊は、韓郷の嶋には金銀があるが、わが子の治める国に浮宝が無いのはよくないと言い、ひげを抜いて杉、胸毛を桧、尻の毛を柀、眉毛を櫲樟に変えて、それぞれの用途（浮宝・宮の材・人の臥す具）を定めた。五十猛命と妹の大屋津姫命・採津姫命が木の種を広め、紀伊国に渡った。素戔嗚尊は熊成峯にいて、のちに根国に入った。</p></div>
-      <div class="var"><b>一書第六</b><p>大国主神の多くの別名（大物主神・国作大己貴命・葦原醜男・八千戈神・大国玉神・顕国玉神）と、子が百八十一柱あることを記す。大己貴命と少彦名命は力を合わせて国を造り、人と家畜のために病の治療法を、鳥獣や虫の災いを払うまじないの法を定めた。少彦名命は熊野の御碕から（また淡嶋の粟の茎にはじかれて）常世郷へ去り、大己貴神は残りを一人で造り終えた。海を照らして現れた大己貴神の幸魂・奇魂は日本国の三諸山に住むことを望み、これが大三輪の神で、その子に姫蹈鞴五十鈴姫命があり、神日本磐余彦火火出見天皇の后となったとする（事代主神が八尋熊鰐となって通い生んだとする伝えも併記）。最後に、白蘞の皮の舟で現れた小さな男が高皇産霊尊の子の少彦名命だとわかった由来を語る。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">頭尾各有八岐。眼如赤酸醤。</blockquote><p>頭と尾がそれぞれ八つに分かれ、目は赤いほおずき（赤酸醤）のようだった、という大蛇の姿。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">是神劒也。吾何敢私以安乎。乃上獻於天神也。</blockquote><p>これは神の剣だ。どうして自分のものにできようか、と言って天神に献上した。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">乃言曰。吾心清清之。</blockquote><p>清地に着いて「わが心は清々しい」と言った。地名「清（すが）」のいわれとされる。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">吾是汝之幸魂奇魂也。</blockquote><p>私はあなたの幸魂・奇魂（さきみたま・くしみたま）である、と海から現れた神が大己貴神に答えた言葉（一書第六）。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全6件）。</p>
+      <details><summary>一書第一</summary><p>大蛇退治は語られない。素戔嗚尊は簸の川上で稲田宮主簀狭之八箇耳の娘の稲田媛に会って結ばれ、清之湯山主三名狭漏彦八嶋篠（ほかに二つの名を挙げる）を生む。この神の五世の孫が大国主神だとする。</p></details>
+      <details><summary>一書第二</summary><p>舞台は安芸国の可愛の川上で、脚摩手摩の妻の稲田宮主簀狭之八箇耳は身ごもっており、生まれる子をまた大蛇に呑まれることを恐れている。素戔嗚尊は果物で八甕の酒を造らせ、大蛇に「畏るべき神よ」と呼びかけて飲ませ、斬る。草薙剣は今は尾張国吾湯市村にあり熱田の祝部が掌り、斬った剣「蛇之麁正」は石上にあるとする。生まれた真髪触奇稲田媛を出雲の簸の川上で育てて妃とし、その六世の孫を大己貴命（おほあなむち）とする。</p></details>
+      <details><summary>一書第三</summary><p>脚摩乳・手摩乳が、娘を娶るならまず大蛇を殺してほしいと求める。大蛇は頭ごとに石松があり、両脇に山がある恐ろしいものだった。素戔嗚尊は毒酒を飲ませ、「蛇韓鋤之剣」で頭と腹を斬る。尾から出た草薙剣は今は尾張国に、斬った剣は今は吉備の神部のもとにあるとし、場所を出雲の簸の川上の山とする。</p></details>
+      <details><summary>一書第四</summary><p>追放された素戔嗚尊は子の五十猛神を連れて新羅国の曾尸茂梨に降るが、住みたくないと言って埴土の舟で東へ渡り、出雲の簸の川上の鳥上の峯に着く。「天蝿斫之剣」で人を呑む大蛇を斬り、尾から出た剣を五世の孫の天之葺根神に天へ献上させた。五十猛神は多くの木の種を持って降り、韓の地には植えずに筑紫から大八洲国じゅうに植えて青山にしたので、功のある神とされ、紀伊国にいる大神だとする。</p></details>
+      <details><summary>一書第五</summary><p>素戔嗚尊は、韓郷の嶋には金銀があるが、わが子の治める国に浮宝が無いのはよくないと言い、ひげを抜いて杉、胸毛を桧、尻の毛を柀、眉毛を櫲樟に変えて、それぞれの用途（浮宝・宮の材・人の臥す具）を定めた。五十猛命と妹の大屋津姫命・採津姫命が木の種を広め、紀伊国に渡った。素戔嗚尊は熊成峯にいて、のちに根国に入った。</p></details>
+      <details><summary>一書第六</summary><p>大国主神の多くの別名（大物主神・国作大己貴命・葦原醜男・八千戈神・大国玉神・顕国玉神）と、子が百八十一柱あることを記す。大己貴命と少彦名命は力を合わせて国を造り、人と家畜のために病の治療法を、鳥獣や虫の災いを払うまじないの法を定めた。少彦名命は熊野の御碕から（また淡嶋の粟の茎にはじかれて）常世郷へ去り、大己貴神は残りを一人で造り終えた。海を照らして現れた大己貴神の幸魂・奇魂は日本国の三諸山に住むことを望み、これが大三輪の神で、その子に姫蹈鞴五十鈴姫命があり、神日本磐余彦火火出見天皇の后となったとする（事代主神が八尋熊鰐となって通い生んだとする伝えも併記）。最後に、白蘞の皮の舟で現れた小さな男が高皇産霊尊の子の少彦名命だとわかった由来を語る。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
-        <li><b><a href="../../shrine-note/map/?d=susanoo">須佐之男命</a></b><small>すさのおのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=tsurugijinja">劔神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=inadahime">稲田姫命</a></b><small>いなだひめのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=susanoo">須佐之男命</a></b><small>すさのおのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=tsurugijinja">劔神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a>、<a href="../../shrine-note/map/?s=susa">須佐神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=inadahime">稲田姫命</a></b><small>いなだひめのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a>、<a href="../../shrine-note/map/?s=susa">須佐神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=ookuninushi">大国主大神</a></b><small>おおくにぬしのおおかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=izumo">出雲大社</a>、<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=hokkaido">北海道神宮</a>、<a href="../../shrine-note/map/?s=dewa">出羽三山神社</a>、<a href="../../shrine-note/map/?s=keta">氣多大社</a>、<a href="../../shrine-note/map/?s=futarasan">日光二荒山神社</a>、<a href="../../shrine-note/map/?s=hiyoshi">日吉大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=toga">砥鹿神社</a>、<a href="../../shrine-note/map/?s=takebe">建部大社</a>、<a href="../../shrine-note/map/?s=kanda">神田神社（神田明神）</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=ooyamato">大和神社</a>、<a href="../../shrine-note/map/?s=taiheizanmiyoshi">太平山三吉神社</a>、<a href="../../shrine-note/map/?s=tsuno">都農神社</a>、<a href="../../shrine-note/map/?s=takase">高瀬神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=okunitamajinja">大國魂神社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=oarai">大洗磯前神社</a>、<a href="../../shrine-note/map/?s=okuni">小國神社</a>、<a href="../../shrine-note/map/?s=izumodaijingu">出雲大神宮</a>、<a href="../../shrine-note/map/?s=sakatsura">酒列磯前神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=mihojinja">御穂神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=omonushi">大物主神</a></b><small>おおものぬしのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=omiwa">大神神社</a>、<a href="../../shrine-note/map/?s=kotohira">金刀比羅宮</a>、<a href="../../shrine-note/map/?s=utsunomiyafutaarayama">宇都宮二荒山神社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=sukunahikona">少彦名神</a></b><small>すくなひこなのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hokkaido">北海道神宮</a>、<a href="../../shrine-note/map/?s=dewa">出羽三山神社</a>、<a href="../../shrine-note/map/?s=naminoue">波上宮</a>、<a href="../../shrine-note/map/?s=kanda">神田神社（神田明神）</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=taiheizanmiyoshi">太平山三吉神社</a>、<a href="../../shrine-note/map/?s=shitoriyurihama">倭文神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=oarai">大洗磯前神社</a>、<a href="../../shrine-note/map/?s=aekuni">敢國神社</a>、<a href="../../shrine-note/map/?s=sakatsura">酒列磯前神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=kotoshironushi">事代主神</a></b><small>ことしろぬしのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=miho">美保神社</a>、<a href="../../shrine-note/map/?s=mishima">三嶋大社</a>、<a href="../../shrine-note/map/?s=suwashimosha">諏訪大社 下社（春宮・秋宮）</a>、<a href="../../shrine-note/map/?s=utsunomiyafutaarayama">宇都宮二荒山神社</a>、<a href="../../shrine-note/map/?s=shitoriyurihama">倭文神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=kotoshironushi">事代主神</a></b><small>ことしろぬしのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=miho">美保神社</a>、<a href="../../shrine-note/map/?s=mishima">三嶋大社</a>、<a href="../../shrine-note/map/?s=suwashimosha">諏訪大社 下社（春宮・秋宮）</a>、<a href="../../shrine-note/map/?s=utsunomiyafutaarayama">宇都宮二荒山神社</a>、<a href="../../shrine-note/map/?s=shitoriyurihama">倭文神社</a>、<a href="../../shrine-note/map/?s=takakamo">高鴨神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=himetatara">媛蹈鞴五十鈴媛命</a></b><small>ひめたたらいすずひめのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kashihara">橿原神宮</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=takamimusubi">高御産巣日神</a></b><small>たかみむすひのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hirota">廣田神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=utsushikunitama">顕國魂神</a></b><small>うつしくにたまのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=iwakiyama">岩木山神社</a></span></li>
@@ -177,7 +216,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 上巻・八俣の大蛇退治</span><p>古事記では、須佐之男命は大蛇の尾から得た大刀を「天照大御神」に献上するが、日本書紀本文では献上先を「天神」とだけ記す。また古事記では足名椎を大山津見神の子とし、舞台を肥の河上の鳥髪とする。</p><blockquote lang="zh-Hant">思異物而白上於天照大御神也</blockquote></div>
       <div class="ns"><span class="where">古事記 上巻・須賀の宮と須佐之男命の系譜</span><p>古事記では、須佐之男命と櫛名田比売の子は八嶋士奴美神で、大国主神はその系譜の後の代に生まれる。日本書紀本文では二神の子が直接に大己貴神であり、一書第一は五世の孫、一書第二は六世の孫とする。</p><blockquote lang="zh-Hant">久美度迩起而所生（神）名，謂八嶋士奴美神</blockquote></div>
       <div class="ns"><span class="where">古事記 上巻・少名毗古那神と御諸山の神</span><p>古事記では、少名毗古那神は神産巣日神が自分の手の指の間からこぼれた子だと言い、海を照らして来た神は倭の青垣の東の山の上に祭れと告げる。日本書紀一書第六では少彦名命の親は高皇産霊尊で、海から来た神は大己貴神自身の幸魂・奇魂として三諸山に住む。</p><blockquote lang="zh-Hant">自我手俣久岐斯子也</blockquote></div>
@@ -185,12 +224,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="dan07.html"><small>← 前のページ（巻第一 神代上）</small>天の石窟（第七段）</a><a class="next" href="dan09.html"><small>次のページ（巻第二 神代下）→</small>葦原中国の平定と天孫降臨（第九段）</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ashinazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ashinazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tenazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tenazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kushinadahime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kushinadahime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/mimoronoyamanoueniimasukami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/mimoronoyamanoueniimasukami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kotoshironushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kotoshironushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yashimajinuminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yashimajinuminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/inadanomiyanushisuganoyatsumiminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/inadanomiyanushisuganoyatsumiminokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">頭尾各有八岐。眼如赤酸醤。</blockquote><p>頭と尾がそれぞれ八つに分かれ、目は赤いほおずき（赤酸醤）のようだった、という大蛇の姿。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">是神劒也。吾何敢私以安乎。乃上獻於天神也。</blockquote><p>これは神の剣だ。どうして自分のものにできようか、と言って天神に献上した。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">乃言曰。吾心清清之。</blockquote><p>清地に着いて「わが心は清々しい」と言った。地名「清（すが）」のいわれとされる。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">吾是汝之幸魂奇魂也。</blockquote><p>私はあなたの幸魂・奇魂（さきみたま・くしみたま）である、と海から現れた神が大己貴神に答えた言葉（一書第六）。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ashinazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ashinazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tenazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tenazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kushinadahime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kushinadahime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/mimoronoyamanoueniimasukami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/mimoronoyamanoueniimasukami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kotoshironushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kotoshironushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yashimajinuminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yashimajinuminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/inadanomiyanushisuganoyatsumiminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/inadanomiyanushisuganoyatsumiminokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

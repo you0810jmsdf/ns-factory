@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第十 応神天皇（全50ページ中 23）</p>
-    <h1>応神天皇の誕生・即位と前半の治世</h1>
-    <p class="pg-lead">誉田天皇（応神天皇）の誕生と名の由来、即位と后妃・皇子女を記し、三年から十三年までの出来事を年ごとに述べる。百済の辰斯王の交替、枯野の船、武内宿禰と甘美内宿禰の探湯、髪長媛をめぐる天皇と大鷦鷯尊の歌などが含まれる。</p>
-    <div class="xlink"><a href="../kojiki/ojin-tsumadoi.html">古事記で読む：応神天皇の妻問いと髪長比売 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第十 応神天皇（全50ページ中 23）</p>
+        <h1>応神天皇の誕生・即位と前半の治世</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">誉田天皇（応神天皇）の誕生と名の由来、即位と后妃・皇子女を記し、三年から十三年までの出来事を年ごとに述べる。百済の辰斯王の交替、枯野の船、武内宿禰と甘美内宿禰の探湯、髪長媛をめぐる天皇と大鷦鷯尊の歌などが含まれる。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/ojin-tsumadoi.html">古事記で読む：応神天皇の妻問いと髪長比売 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>誉田天皇と名づけられる</h3>
+      <p class="t">誉田天皇は足仲彦天皇の第四子で、母は気長足姫尊である。皇后が新羅を討った年、庚辰の冬十二月に筑紫の蚊田で生まれ、幼いころから聡く、ふるまいに優れたところがあった。皇太后の摂政三年に三歳で皇太子となった。母の胎内にいたときに天神地祇が三韓を授けたとされ、生まれると腕に鞆のような肉があり、皇太后が男装して負った鞆に似ていたので、誉田天皇と名づけられた。摂政六十九年四月に皇太后が崩じた（小注に百歳）。</p>
+      <h3>皇太子が即位し仲姫を皇后とする</h3>
+      <p class="t">元年正月、皇太子が即位した。この年は太歳庚寅である。二年三月、仲姫を皇后とし、皇后は荒田皇女・大鷦鷯天皇・根鳥皇子を生んだ。それより先、皇后の姉の高城入姫が額田大中彦皇子・大山守皇子・去来真稚皇子らを生み、ほかの妃たちから菟道稚郎子皇子・稚野毛二派皇子・隼総別皇子などが生まれ、天皇の子は男女合わせて二十人であった。根鳥皇子は大田君の、大山守皇子は土形君・榛原君の、去来真稚皇子は深河別の始祖とされる。</p>
+      <h3>蝦夷の朝貢と枯野の船</h3>
+      <p class="t">三年十月、東の蝦夷がみな朝貢したので、蝦夷を使って廐坂道を作らせた。十一月、各地の海人が騒いで命に従わなかったので、阿曇連の祖の大浜宿禰を遣わして鎮め、海人の宰とした。この年、百済の辰斯王が礼を失したので紀角宿禰・羽田矢代宿禰・石川宿禰・木菟宿禰を遣わして責めると、百済は辰斯王を殺して謝し、紀角宿禰らは阿菟を王に立てて帰った。五年八月、諸国に海人と山守部を定めさせた。十月、伊豆国に長さ十丈の船を造らせ、軽く速く走ったので枯野と名づけた（小注は「軽野」の訛りかとする）。</p>
+      <h3>韓人池を造り百済記を引く</h3>
+      <p class="t">六年二月、天皇は近江国へ行き、菟道野上で歌を詠んだ。七年九月、高麗・百済・任那・新羅の人々が来朝し、武内宿禰に諸韓人を率いさせて池を造り、韓人池と名づけた。八年三月、百済の人が来朝した。小注に引く百済記は、阿花王が礼を失したため枕彌多禮などの地を奪われ、王子直支を天朝に遣わして先王の好みを修めたと記す。</p>
+      <h3>武内宿禰と甘美内宿禰の探湯</h3>
+      <p class="t">九年四月、武内宿禰を筑紫に遣わして民を監察させた。弟の甘美内宿禰は兄を退けようとして、武内宿禰が筑紫を割いて三韓を従え天下を取ろうとしていると讒言し、天皇は武内宿禰を殺す使いを出した。武内宿禰に姿がよく似た壱伎直の祖の真根子は、身代わりになって大臣の真心を明らかにすると言って剣に伏して死んだ。武内宿禰はひそかに筑紫を離れ、南の海を回って紀水門に着き、朝廷で無実を訴えた。二人の言い分が決まらないので、天皇は神祇に請うて探湯をさせ、磯城川のほとりで武内宿禰が勝った。武内宿禰は甘美内宿禰を打ち倒して殺そうとしたが、天皇は許させ、紀伊直らの祖に与えた。</p>
+      <h3>髪長媛と大鷦鷯尊</h3>
+      <p class="t">十一年十月、剣池・軽池・鹿垣池・廐坂池を作った。この年、日向国に諸県君牛諸井の娘で髪長媛という美しい娘がいると聞き、天皇は召そうと思った。十三年三月に使いを遣わし、九月に髪長媛が日向から来て桑津邑に置かれた。皇子の大鷦鷯尊は媛を見てその美しさに心を寄せ、これを知った天皇は後宮での宴の日に髪長媛を席に上げ、大鷦鷯尊を招いて媛を指し示しながら歌った。大鷦鷯尊は媛を賜ると知って喜び、歌を返し、媛と親しくなってからさらに二首の歌を詠んだ。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>天皇は皇后が新羅を討った年（庚辰）の十二月に筑紫の蚊田で生まれ、腕に鞆のような肉があったので、鞆を「褒武多」と呼んだ昔の習わしから誉田天皇と称されたという。</li>
         <li><span class="kind ">本文</span>九年、弟の甘美内宿禰が「武内宿禰は筑紫を割いて天下を取ろうとしている」と讒言した。武内宿禰に似た壱伎直の祖の真根子が身代わりに自害し、武内宿禰は朝廷で無実を訴え、天皇の命で磯城川のほとりで二人が探湯をして武内宿禰が勝った。</li>
@@ -115,30 +174,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>誉田天皇は足仲彦天皇の第四子で、母は気長足姫尊である。皇后が新羅を討った年、庚辰の冬十二月に筑紫の蚊田で生まれ、幼いころから聡く、ふるまいに優れたところがあった。皇太后の摂政三年に三歳で皇太子となった。母の胎内にいたときに天神地祇が三韓を授けたとされ、生まれると腕に鞆のような肉があり、皇太后が男装して負った鞆に似ていたので、誉田天皇と名づけられた。摂政六十九年四月に皇太后が崩じた（小注に百歳）。</p>
-      <p>元年正月、皇太子が即位した。この年は太歳庚寅である。二年三月、仲姫を皇后とし、皇后は荒田皇女・大鷦鷯天皇・根鳥皇子を生んだ。それより先、皇后の姉の高城入姫が額田大中彦皇子・大山守皇子・去来真稚皇子らを生み、ほかの妃たちから菟道稚郎子皇子・稚野毛二派皇子・隼総別皇子などが生まれ、天皇の子は男女合わせて二十人であった。根鳥皇子は大田君の、大山守皇子は土形君・榛原君の、去来真稚皇子は深河別の始祖とされる。</p>
-      <p>三年十月、東の蝦夷がみな朝貢したので、蝦夷を使って廐坂道を作らせた。十一月、各地の海人が騒いで命に従わなかったので、阿曇連の祖の大浜宿禰を遣わして鎮め、海人の宰とした。この年、百済の辰斯王が礼を失したので紀角宿禰・羽田矢代宿禰・石川宿禰・木菟宿禰を遣わして責めると、百済は辰斯王を殺して謝し、紀角宿禰らは阿菟を王に立てて帰った。五年八月、諸国に海人と山守部を定めさせた。十月、伊豆国に長さ十丈の船を造らせ、軽く速く走ったので枯野と名づけた（小注は「軽野」の訛りかとする）。</p>
-      <p>六年二月、天皇は近江国へ行き、菟道野上で歌を詠んだ。七年九月、高麗・百済・任那・新羅の人々が来朝し、武内宿禰に諸韓人を率いさせて池を造り、韓人池と名づけた。八年三月、百済の人が来朝した。小注に引く百済記は、阿花王が礼を失したため枕彌多禮などの地を奪われ、王子直支を天朝に遣わして先王の好みを修めたと記す。</p>
-      <p>九年四月、武内宿禰を筑紫に遣わして民を監察させた。弟の甘美内宿禰は兄を退けようとして、武内宿禰が筑紫を割いて三韓を従え天下を取ろうとしていると讒言し、天皇は武内宿禰を殺す使いを出した。武内宿禰に姿がよく似た壱伎直の祖の真根子は、身代わりになって大臣の真心を明らかにすると言って剣に伏して死んだ。武内宿禰はひそかに筑紫を離れ、南の海を回って紀水門に着き、朝廷で無実を訴えた。二人の言い分が決まらないので、天皇は神祇に請うて探湯をさせ、磯城川のほとりで武内宿禰が勝った。武内宿禰は甘美内宿禰を打ち倒して殺そうとしたが、天皇は許させ、紀伊直らの祖に与えた。</p>
-      <p>十一年十月、剣池・軽池・鹿垣池・廐坂池を作った。この年、日向国に諸県君牛諸井の娘で髪長媛という美しい娘がいると聞き、天皇は召そうと思った。十三年三月に使いを遣わし、九月に髪長媛が日向から来て桑津邑に置かれた。皇子の大鷦鷯尊は媛を見てその美しさに心を寄せ、これを知った天皇は後宮での宴の日に髪長媛を席に上げ、大鷦鷯尊を招いて媛を指し示しながら歌った。大鷦鷯尊は媛を賜ると知って喜び、歌を返し、媛と親しくなってからさらに二首の歌を詠んだ。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一云（誉田の名の由来）</b><p>小注の一云は、天皇が太子のとき越国に行って角鹿の笥飯大神を拝し、大神と名を易えたので、大神を去来紗別神、太子を誉田別尊というとする。そうであれば大神のもとの名が誉田別神、太子のもとの名が去来紗別尊ということになるが、記録が無いので未詳だと記す。</p></div>
-      <div class="var"><b>一云（髪長媛の献上）</b><p>諸県君牛が年老いて朝廷に仕えるのを辞めるとき、娘の髪長媛を献じたという。天皇が淡路島で狩りをしていると、海を渡って来る数十の鹿の群れが見えたが、実は角のついた鹿の皮を着た人々であった。その着いた所を鹿子水門と呼び、水手を鹿子と呼ぶのはこのときに始まると記す。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">上古時俗，號鞆謂褒武多焉</blockquote><p>昔の習わしでは鞆を「褒武多」と呼んだ、という名の由来の説明。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故名其舩曰枯野</blockquote><p>軽く速く走る船だったので、その船を枯野と名づけた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">天皇勅之，令請神祇探湯</blockquote><p>どちらが正しいか決まらないので、天皇は神祇に請うて探湯をさせた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">感其形之美麗，常有戀情</blockquote><p>大鷦鷯尊が髪長媛の美しさに心を動かされ、いつも恋い慕っていた。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全2件）。</p>
+      <details><summary>一云（誉田の名の由来）</summary><p>小注の一云は、天皇が太子のとき越国に行って角鹿の笥飯大神を拝し、大神と名を易えたので、大神を去来紗別神、太子を誉田別尊というとする。そうであれば大神のもとの名が誉田別神、太子のもとの名が去来紗別尊ということになるが、記録が無いので未詳だと記す。</p></details>
+      <details><summary>一云（髪長媛の献上）</summary><p>諸県君牛が年老いて朝廷に仕えるのを辞めるとき、娘の髪長媛を献じたという。天皇が淡路島で狩りをしていると、海を渡って来る数十の鹿の群れが見えたが、実は角のついた鹿の皮を着た人々であった。その着いた所を鹿子水門と呼び、水手を鹿子と呼ぶのはこのときに始まると記す。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -165,7 +205,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 中巻 応神天皇の段（宇遅野上の国見歌）</span><p>葛野を望む国見の歌は古事記にもほぼ同じ言葉で見え、古事記ではこのあと木幡村で矢河枝比売に会い、宇遅能和紀郎子が生まれる話に続く。</p><blockquote lang="zh-Hant">御立宇遲野上。望葛野。歌曰。</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 応神天皇の段（髪長比売）</span><p>古事記では、大雀命が建内宿禰に頼んで天皇に願い出させ、天皇は豊明の日に髪長比売に大御酒柏を持たせて太子に与えた。書紀本文では、天皇が大鷦鷯尊の思いに自ら気づいて宴の席で与える。</p><blockquote lang="zh-Hant">即誂告。建内宿禰大臣</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 応神天皇の段（この御世の事績）</span><p>海部・山守部を定めたことや剣池を作ったことは、古事記では「この御世」の事としてまとめて記される。武内宿禰と甘美内宿禰の探湯の話は、古事記中巻には対応する記事を確認できなかった。</p><blockquote lang="zh-Hant">定賜。海部。山部。山守部。伊勢部也。亦作劍池。</blockquote></div>
@@ -173,12 +213,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="jingu-oshikuma.html"><small>← 前のページ（巻第九 神功皇后）</small>忍熊王の反乱と摂政の時代</a><a class="next" href="ojin-uji.html"><small>次のページ（巻第十 応神天皇）→</small>渡来の人々と菟道稚郎子の立太子</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">日本書紀 巻第十</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">上古時俗，號鞆謂褒武多焉</blockquote><p>昔の習わしでは鞆を「褒武多」と呼んだ、という名の由来の説明。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故名其舩曰枯野</blockquote><p>軽く速く走る船だったので、その船を枯野と名づけた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">天皇勅之，令請神祇探湯</blockquote><p>どちらが正しいか決まらないので、天皇は神祇に請うて探湯をさせた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">感其形之美麗，常有戀情</blockquote><p>大鷦鷯尊が髪長媛の美しさに心を動かされ、いつも恋い慕っていた。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">日本書紀 巻第十</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第十</a>　https://zh.wikisource.org/wiki/日本書紀/卷第十</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

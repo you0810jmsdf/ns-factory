@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第二 神代下（全50ページ中 8）</p>
-    <h1>海幸山幸（第十段）</h1>
-    <p class="pg-lead">兄の火闌降命の釣鉤をなくした弟の火火出見尊が、鹽土老翁の助けで海神の宮へ行き、鉤と潮滿瓊・潮涸瓊を得て帰り、兄を従わせる。海神の娘の豐玉姫は出産の姿を見られて海へ去り、残された子が波瀲武鸕鷀草葺不合尊と名づけられるまでを、本文と四つの一書で伝える。</p>
-    <div class="xlink"><a href="../kojiki/umisachi.html">古事記で読む：海幸山幸 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第二 神代下（全50ページ中 8）</p>
+        <h1>海幸山幸（第十段）</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">兄の火闌降命の釣鉤をなくした弟の火火出見尊が、鹽土老翁の助けで海神の宮へ行き、鉤と潮滿瓊・潮涸瓊を得て帰り、兄を従わせる。海神の娘の豐玉姫は出産の姿を見られて海へ去り、残された子が波瀲武鸕鷀草葺不合尊と名づけられるまでを、本文と四つの一書で伝える。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/umisachi.html">古事記で読む：海幸山幸 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>幸を取り替え釣鉤をなくす</h3>
+      <p class="t">兄の火闌降命はもともと海の幸を、弟の火火出見尊は山の幸を持っていた。二人は試しに幸を取り替えたが、どちらも獲物を得られなかった。兄は悔やんで弟に弓矢を返し、自分の釣鉤を返すよう求めたが、弟はすでに鉤をなくしていた。弟は自分の横刀を鍛えて新しい鉤を作り、箕に一杯盛って渡したが、兄は元の鉤でなければいくらあっても受け取らないと怒り、ますます強く責めた。</p>
+      <h3>鹽土老翁と海神の宮</h3>
+      <p class="t">火火出見尊が深く悩んで海辺をさまよっていると、鹽土老翁に出会い、わけを話した。老翁は心配はいらないと言って目の無い籠を作り、尊をその中に入れて海に沈めた。すると美しい小さな浜に着いたので、籠を捨てて進むと、たちまち海神の宮に着いた。宮は垣や高殿がととのい、門の前に井戸があり、その上に枝葉の茂った湯津杜樹が立っていた。</p>
+      <h3>赤女の口から鉤が見つかる</h3>
+      <p class="t">尊がその木の下でたたずんでいると、一人の美しい女性が戸を押し開けて出てきて、玉の器で水を汲もうとした。女性は尊を見て驚いて中に戻り、父母に、門の前の木の下に珍しい客がいると告げた。海神は八重の敷物を敷いて尊を迎え入れ、来たわけを尋ねた。尊がくわしく事情を話すと、海神は大小の魚を集めて問いただし、魚たちは、赤女（鯛の名）が近ごろ口の病で来ていないと答えた。赤女を呼んで口を探ると、なくした鉤が見つかった。</p>
+      <h3>豐玉姫を娶り海の宮に三年住む</h3>
+      <p class="t">尊は海神の娘の豐玉姫を娶って海の宮に三年住んだが、故郷を思う心があってため息をつくことがあった。それを聞いた豐玉姫が父に伝えると、海神は尊に、帰りたいならお送りしようと言い、見つけた鉤を授けた。そして、兄に渡す時にはひそかに「貧鉤」と呼んでから渡すこと、潮滿瓊を水に浸せば潮が満ちて兄を溺れさせられ、兄が悔いて願えば潮涸瓊を浸して潮を引かせて救うことを教えた。別れ際に豐玉姫は、身ごもっているので風波の激しい日に海辺に出ていく、産屋を作って待っていてほしいと頼んだ。</p>
+      <h3>兄の火闌降命を赦す</h3>
+      <p class="t">宮に帰った火火出見尊が海神の教えのとおりにすると、兄の火闌降命は苦しめられ、これからはあなたの俳優の民になるので助けてほしいと罪を認めた。弟は願いを聞き入れて兄を赦した。火闌降命は吾田君小橋らの本祖であるとされる。</p>
+      <h3>豐玉姫が龍になり海の道を閉じる</h3>
+      <p class="t">のちに豐玉姫は約束どおり、妹の玉依姫を連れて風波を冒して海辺に来た。出産の時、豐玉姫は産むところを見ないでほしいと頼んだが、天孫はこらえきれずにひそかにのぞき、豐玉姫は出産のさなかに龍になっていた。豐玉姫はひどく恥じて、辱められなければ海と陸を通わせて隔てを無くしたのに、辱められた今は親しい縁を結べないと言い、子を草で包んで海辺に置き、海の道を閉じて去った。そこで子を波瀲武鸕鷀草葺不合尊と名づけた。のちに火火出見尊は崩じ、日向の高屋山上陵に葬られた。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>本文では、海神が魚を集めて問い、口の病で来なかった赤女（鯛の名）の口から鉤が見つかる。海神は鉤を「貧鉤」とひそかに呼んで渡すよう教え、潮滿瓊・潮涸瓊を授けて兄を溺れさせ、悔いたら救うよう教えた。</li>
         <li><span class="kind ">本文</span>兄の火闌降命は苦しんで罪を認め「俳優之民」になることを誓って赦され、吾田君小橋らの本祖とされる。一書第二では子孫の隼人が宮の垣のそばで狗の代わりに吠えて仕える由来、一書第四では兄が溺れる様子をまねた所作が今も絶えない由来として語られる。</li>
@@ -115,32 +174,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>兄の火闌降命はもともと海の幸を、弟の火火出見尊は山の幸を持っていた。二人は試しに幸を取り替えたが、どちらも獲物を得られなかった。兄は悔やんで弟に弓矢を返し、自分の釣鉤を返すよう求めたが、弟はすでに鉤をなくしていた。弟は自分の横刀を鍛えて新しい鉤を作り、箕に一杯盛って渡したが、兄は元の鉤でなければいくらあっても受け取らないと怒り、ますます強く責めた。</p>
-      <p>火火出見尊が深く悩んで海辺をさまよっていると、鹽土老翁に出会い、わけを話した。老翁は心配はいらないと言って目の無い籠を作り、尊をその中に入れて海に沈めた。すると美しい小さな浜に着いたので、籠を捨てて進むと、たちまち海神の宮に着いた。宮は垣や高殿がととのい、門の前に井戸があり、その上に枝葉の茂った湯津杜樹が立っていた。</p>
-      <p>尊がその木の下でたたずんでいると、一人の美しい女性が戸を押し開けて出てきて、玉の器で水を汲もうとした。女性は尊を見て驚いて中に戻り、父母に、門の前の木の下に珍しい客がいると告げた。海神は八重の敷物を敷いて尊を迎え入れ、来たわけを尋ねた。尊がくわしく事情を話すと、海神は大小の魚を集めて問いただし、魚たちは、赤女（鯛の名）が近ごろ口の病で来ていないと答えた。赤女を呼んで口を探ると、なくした鉤が見つかった。</p>
-      <p>尊は海神の娘の豐玉姫を娶って海の宮に三年住んだが、故郷を思う心があってため息をつくことがあった。それを聞いた豐玉姫が父に伝えると、海神は尊に、帰りたいならお送りしようと言い、見つけた鉤を授けた。そして、兄に渡す時にはひそかに「貧鉤」と呼んでから渡すこと、潮滿瓊を水に浸せば潮が満ちて兄を溺れさせられ、兄が悔いて願えば潮涸瓊を浸して潮を引かせて救うことを教えた。別れ際に豐玉姫は、身ごもっているので風波の激しい日に海辺に出ていく、産屋を作って待っていてほしいと頼んだ。</p>
-      <p>宮に帰った火火出見尊が海神の教えのとおりにすると、兄の火闌降命は苦しめられ、これからはあなたの俳優の民になるので助けてほしいと罪を認めた。弟は願いを聞き入れて兄を赦した。火闌降命は吾田君小橋らの本祖であるとされる。</p>
-      <p>のちに豐玉姫は約束どおり、妹の玉依姫を連れて風波を冒して海辺に来た。出産の時、豐玉姫は産むところを見ないでほしいと頼んだが、天孫はこらえきれずにひそかにのぞき、豐玉姫は出産のさなかに龍になっていた。豐玉姫はひどく恥じて、辱められなければ海と陸を通わせて隔てを無くしたのに、辱められた今は親しい縁を結べないと言い、子を草で包んで海辺に置き、海の道を閉じて去った。そこで子を波瀲武鸕鷀草葺不合尊と名づけた。のちに火火出見尊は崩じ、日向の高屋山上陵に葬られた。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>一書第一</b><p>兄は火酢芹命。鹽土老翁は櫛を投げて竹林にし、その竹で籠を作って尊を海に入れ、海神の宮では侍女たちを従えた美人が尊を見つける。海神は鉤とともに「貧窮之本。飢饉之始。困苦之根」と唱えて渡すよう教え、尊は大鰐に乗って帰り、豐玉姫は八尋大熊鰐になった姿を見られて海へ帰り、妹の玉依姫を残して子を養わせ、鸕鷀の羽で葺いた産屋の甍が合わないうちに生まれたことを子の名の由来とする。</p></div>
-      <div class="var"><b>一書第二</b><p>尊は井戸の上の杜樹に登り、豐玉姫が井戸に映った影を見て器を落として割る。鉤は口女（赤女）の口から見つかり、海神は口女が餌を呑めず天孫の御膳にも出されないと定める。兄は一度降参した後に約束を翻し、潮が山や木の上まで迫ってついに伏し、その子孫の隼人らが今も宮の垣のそばで狗に代わって吠えて仕えている由来とされる。</p></div>
-      <div class="var"><b>一書第三</b><p>弟は海辺で罠にかかった川鴈を助けた後、鹽土老翁の作った無目堅間の小船で海神の宮に着き、海驢の皮の八重の敷物でもてなされる。海神は鯛女の口から鉤を得て渡し方を教え、一日で送ると名乗った一尋鰐魚に尊を送らせ、兄が高田を作れば窪田を、窪田を作れば高田を作るよう教える。豐玉姫は大亀に乗って来て八尋大鰐の姿を見られ、子の名を自ら付けて海へ去り、尊と豐玉姫が歌を贈り合う（擧歌）ほか、乳母をとって子を育てることの由来が語られる。</p></div>
-      <div class="var"><b>一書第四</b><p>兄の火酢芹命が山幸、弟の火折尊が海幸を得ていたとし、助けるのは鹽筒老翁で、海神の乗る八尋鰐の勧めで一尋鰐に乗って海に入る。海神は三つの床への座り方で天孫と知り、鉤は口女（鯔魚）の口から出る。弟が嘯いて風を起こして兄を溺れさせ、兄は褌をつけ顔と掌を赤土で塗り、溺れる様子をまねてみせて永く俳優になると誓い、豐玉姫は子を眞床覆衾と草で包んで波打ち際に置いて去り、これが海と陸が通わなくなった由来とされる。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">從今以後。吾將爲汝俳優之民</blockquote><p>兄の火闌降命の言葉。これからのち、私はあなたの俳優の民となりましょう。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">豐玉姫方產化爲龍</blockquote><p>豐玉姫は、ちょうど産んでいるところで龍になっていた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">代吠狗而奉事者矣</blockquote><p>一書第二。隼人らは（宮の垣のそばで）吠える犬の代わりとなってお仕えしている。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">此海陸不相通之縁也</blockquote><p>一書第四。これが、海と陸とが互いに通わないことの由来である。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全4件）。</p>
+      <details><summary>一書第一</summary><p>兄は火酢芹命。鹽土老翁は櫛を投げて竹林にし、その竹で籠を作って尊を海に入れ、海神の宮では侍女たちを従えた美人が尊を見つける。海神は鉤とともに「貧窮之本。飢饉之始。困苦之根」と唱えて渡すよう教え、尊は大鰐に乗って帰り、豐玉姫は八尋大熊鰐になった姿を見られて海へ帰り、妹の玉依姫を残して子を養わせ、鸕鷀の羽で葺いた産屋の甍が合わないうちに生まれたことを子の名の由来とする。</p></details>
+      <details><summary>一書第二</summary><p>尊は井戸の上の杜樹に登り、豐玉姫が井戸に映った影を見て器を落として割る。鉤は口女（赤女）の口から見つかり、海神は口女が餌を呑めず天孫の御膳にも出されないと定める。兄は一度降参した後に約束を翻し、潮が山や木の上まで迫ってついに伏し、その子孫の隼人らが今も宮の垣のそばで狗に代わって吠えて仕えている由来とされる。</p></details>
+      <details><summary>一書第三</summary><p>弟は海辺で罠にかかった川鴈を助けた後、鹽土老翁の作った無目堅間の小船で海神の宮に着き、海驢の皮の八重の敷物でもてなされる。海神は鯛女の口から鉤を得て渡し方を教え、一日で送ると名乗った一尋鰐魚に尊を送らせ、兄が高田を作れば窪田を、窪田を作れば高田を作るよう教える。豐玉姫は大亀に乗って来て八尋大鰐の姿を見られ、子の名を自ら付けて海へ去り、尊と豐玉姫が歌を贈り合う（擧歌）ほか、乳母をとって子を育てることの由来が語られる。</p></details>
+      <details><summary>一書第四</summary><p>兄の火酢芹命が山幸、弟の火折尊が海幸を得ていたとし、助けるのは鹽筒老翁で、海神の乗る八尋鰐の勧めで一尋鰐に乗って海に入る。海神は三つの床への座り方で天孫と知り、鉤は口女（鯔魚）の口から出る。弟が嘯いて風を起こして兄を溺れさせ、兄は褌をつけ顔と掌を赤土で塗り、溺れる様子をまねてみせて永く俳優になると誓い、豐玉姫は子を眞床覆衾と草で包んで波打ち際に置いて去り、これが海と陸が通わなくなった由来とされる。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -164,7 +204,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 上巻・邇々芸命の結婚（三子の誕生）と海神の国訪問</span><p>古事記では海佐知毘古として弟と争う兄を火照命とし、隼人阿多君の祖とする。書紀本文では兄は火闌降命（一書では火酢芹命）で、吾田君小橋らの本祖とされる。</p><blockquote lang="zh-Hant">火照命〔此者隼人阿多君之祖〕</blockquote></div>
       <div class="ns"><span class="where">古事記 上巻・海神の国訪問（綿津見神の教え）</span><p>古事記では鉤は「赤海鯽魚」の喉に刺さっていた。書紀本文では口の病の赤女（鯛の名）の口から見つかり、一書第二・第四では口女の名も出る。</p><blockquote lang="zh-Hant">探赤海鯽魚之喉者，有鉤</blockquote></div>
       <div class="ns"><span class="where">古事記 上巻・鵜葺草葺不合命の誕生</span><p>古事記では豊玉毘売は八尋和迩の姿になって腹ばいになり、のちに歌を贈り合う。書紀本文では龍になったとし、歌の贈答は一書第三に見える。</p><blockquote lang="zh-Hant">化八尋和迩而匍匐委虵</blockquote></div>
@@ -172,12 +212,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="dan09.html"><small>← 前のページ（巻第二 神代下）</small>葦原中国の平定と天孫降臨（第九段）</a><a class="next" href="dan11.html"><small>次のページ（巻第二 神代下）→</small>神日本磐余彦尊の誕生（第十一段）</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">日本書紀 巻第二</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoorinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hoorinomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hosuserinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hosuserinomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/shiotsuchinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/shiotsuchinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/toyotamabime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/toyotamabime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tamayoribime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tamayoribime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/watatsuminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/watatsuminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhitakahikonagisatakeukayafukiaezunomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhitakahikonagisatakeukayafukiaezunomikoto/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">從今以後。吾將爲汝俳優之民</blockquote><p>兄の火闌降命の言葉。これからのち、私はあなたの俳優の民となりましょう。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">豐玉姫方產化爲龍</blockquote><p>豐玉姫は、ちょうど産んでいるところで龍になっていた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">代吠狗而奉事者矣</blockquote><p>一書第二。隼人らは（宮の垣のそばで）吠える犬の代わりとなってお仕えしている。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">此海陸不相通之縁也</blockquote><p>一書第四。これが、海と陸とが互いに通わないことの由来である。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">日本書紀 巻第二</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoorinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hoorinomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hosuserinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hosuserinomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/shiotsuchinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/shiotsuchinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/toyotamabime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/toyotamabime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tamayoribime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tamayoribime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/watatsuminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/watatsuminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhitakahikonagisatakeukayafukiaezunomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhitakahikonagisatakeukayafukiaezunomikoto/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

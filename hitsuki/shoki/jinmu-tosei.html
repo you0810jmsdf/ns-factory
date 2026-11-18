@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第三 神武天皇（全50ページ中 10）</p>
-    <h1>神武天皇の東征</h1>
-    <p class="pg-lead">神日本磐余彦天皇が甲寅の年に日向を出て瀬戸内海を東へ進み、難波・熊野・菟田を経て大和に入るまでを扱う。長髄彦との戦いで兄の五瀬命を失いながら、韴靈の剣・頭八咫烏・金色の鵄の助けを得て、戊午年十二月に饒速日命の帰順を迎えるところまでである。</p>
-    <div class="xlink"><a href="../kojiki/jinmu-tosei.html">古事記で読む：神武天皇の東征（日向から熊野・吉野へ） ›</a><a href="../kojiki/jinmu-uda.html">古事記で読む：宇陀・忍坂・登美毘古と久米歌 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第三 神武天皇（全50ページ中 10）</p>
+        <h1>神武天皇の東征</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">神日本磐余彦天皇が甲寅の年に日向を出て瀬戸内海を東へ進み、難波・熊野・菟田を経て大和に入るまでを扱う。長髄彦との戦いで兄の五瀬命を失いながら、韴靈の剣・頭八咫烏・金色の鵄の助けを得て、戊午年十二月に饒速日命の帰順を迎えるところまでである。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../kojiki/jinmu-tosei.html">古事記で読む：神武天皇の東征（日向から熊野・吉野へ） ›</a><a href="../kojiki/jinmu-uda.html">古事記で読む：宇陀・忍坂・登美毘古と久米歌 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>東へ行って都を置こうと述べる</h3>
+      <p class="t">神日本磐余彦天皇は諱を彦火火出見といい、彦波瀲武鸕鷀草葺不合尊の第四子で、母は海童の末娘の玉依姫である。十五歳で太子となり、日向国吾田邑の吾平津媛を妃として手研耳命が生まれた。四十五歳のとき、天皇は兄たちや子らに、天祖の彦火瓊瓊杵尊が降ってから一百七十九萬二千四百七十余年がたつが、遠い地では村ごとに君や長がいて互いに争っていると語った。そして鹽土老翁から、東に青い山に囲まれた美しい地があり天磐船で飛び降りた者がいると聞いたので、そこは天下の中心であり、飛び降りた者は饒速日であろうと述べて、そこへ行って都を置こうと提案した。皇子たちも賛成し、この年は甲寅であった。</p>
+      <h3>珍彦が椎根津彦となり浪速国へ</h3>
+      <p class="t">冬十月、天皇は皇子たちと水軍を率いて東へ向かった。速吸之門で小舟に乗って来た漁人の珍彦が国神と名乗り、道案内を引き受けたので、椎の末を握らせて天皇の船に引き入れ、椎根津彦の名を与えた（倭直部の始祖）。筑紫の菟狹では菟狹津彦・菟狹津媛が一柱騰宮を造ってもてなし、菟狹津媛は侍臣の天種子命（中臣氏の遠祖）の妻とされた。十一月に筑紫の崗水門、十二月に安藝の埃宮に至り、乙卯年三月に吉備に移って高嶋宮で三年をかけて船と兵糧を整えた。戊午年二月に難波の碕に着き、潮の流れが速かったので浪速国と名づけ、三月に河内国草香邑の青雲白肩之津に至った。</p>
+      <h3>長髄彦と戦い五瀬命が亡くなる</h3>
+      <p class="t">四月、龍田への道が狭いので膽駒山を越えて中洲に入ろうとすると、長髄彦が「天神の子らが来るのは我が国を奪うためだ」として孔舍衞坂で迎え撃ち、流れ矢が五瀬命に当たった。天皇は、日神の子孫が日に向かって攻めるのは天道に逆らうことだと考え、いったん退いて神祇を祭り、日神の威を背に負って攻めることにした。草香津で盾を立てて雄誥をしたので、その津を盾津と名づけた。五月、茅渟の山城水門で五瀬命は傷の痛みに剣を撫でて雄誥をし、その地は雄水門と呼ばれた。軍が紀伊国の竃山に進んだところで五瀬命は亡くなり、竃山に葬られた。</p>
+      <h3>高倉下の剣と頭八咫烏の導き</h3>
+      <p class="t">六月、名草邑で名草戸畔を討ち、狹野を越えて熊野の神邑に至った。海上で暴風にあうと、稻飯命は剣を抜いて海に入り鋤持神となり、三毛入野命は波頭を踏んで常世郷へ去った。熊野荒坂津で丹敷戸畔を討ったとき、神が毒気を吐いて軍は皆弱り倒れた。熊野の高倉下は、天照太神に命じられた武甕雷神が自分の代わりに国を平らげた剣を下すという夢を見て、倉の底に立っていた剣を献上すると、天皇も兵も目を覚ました。さらに夢で天照大神が頭八咫烏を遣わすと告げ、その烏の導きにより日臣命が大來目を率いて山道を開き菟田下縣に至ったので、天皇は日臣命を道臣と改名した。</p>
+      <h3>兄猾が圧死し丹生川上で祭る</h3>
+      <p class="t">八月、菟田の兄猾は新しい宮に仕掛けを作って天皇を殺そうとしたが、弟猾がそれを知らせ、道臣命に追い込まれた兄猾は自分の仕掛けで圧死した（菟田血原の名の由来）。弟猾の酒宴で天皇は歌を詠み、これを來目歌という。吉野では井戸から出てきた、光っていて尾のある井光（吉野首部の始祖）などの国神に出会った。九月、菟田の高倉山から見ると、国見丘の八十梟帥や磐余邑の兄磯城の軍が要地をふさいでいた。天神の夢の教えと弟猾の進言に従い、椎根津彦と弟猾を老父・老嫗に変装させて天香山の頂の土を取ってこさせ、その埴で八十平瓮や嚴瓮を作って丹生川上で天神地祇を祭り、飴が自然にでき川に沈めた瓮で魚が浮かぶという占いの結果を得た。天皇は高皇産靈尊の顯齋を自ら行い、道臣命を齋主として嚴媛の名を与えた。</p>
+      <h3>国見丘の八十梟帥と兄磯城を斬る</h3>
+      <p class="t">十月、天皇は国見丘の八十梟帥を破り、忍坂では道臣命が大室に宴を設けて残党を誘い、歌を合図に一斉に斬り殺した。十一月、頭八咫烏を使いに出すと兄磯城は矢を射かけたが、弟磯城は恐れ従って兄の備えを知らせた。椎根津彦の策により女軍を忍坂から出して敵を引きつけ、男軍が墨坂を越えて背後から挟み撃ちにし、兄磯城らを斬った。</p>
+      <h3>金色の靈鵄と饒速日命の帰順</h3>
+      <p class="t">十二月、長髄彦との戦いでは勝てずにいたが、空が暗くなって氷が降るなか金色の靈鵄が天皇の弓の弭にとまり、その光で長髄彦の兵は目がくらんで戦えなくなった（鵄邑、今の鳥見の名の由来）。長髄彦は使いを送り、天磐船で天降った櫛玉饒速日命が妹の三炊屋媛をめとって可美眞手命が生まれ、自分は饒速日命を君として仕えていると述べた。天皇と長髄彦は互いに天羽羽矢一隻と歩靭を示し合ったが、長髄彦は考えを改めなかったので、饒速日命は長髄彦を殺し、その衆を率いて帰順した。天皇はこれをほめて寵愛し、饒速日命は物部氏の遠祖であると記される。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>甲寅の年、四十五歳の天皇は、天祖の降臨以来この西の辺りを治めてきたが遠い地はまだ王の恵みを受けず村ごとに君長が争っていると述べ、鹽土老翁から聞いた「東の美しい地」に都を置こうと決めた。</li>
         <li><span class="kind ">本文</span>孔舍衞坂で長髄彦に敗れ五瀬命が矢傷を負うと、天皇は「日神の子孫が日に向かって攻めるのは天道に逆らう」と考えて退き、日を背に負って攻める方針に改めた。五瀬命は紀伊国の竃山で亡くなった。</li>
@@ -115,30 +176,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>神日本磐余彦天皇は諱を彦火火出見といい、彦波瀲武鸕鷀草葺不合尊の第四子で、母は海童の末娘の玉依姫である。十五歳で太子となり、日向国吾田邑の吾平津媛を妃として手研耳命が生まれた。四十五歳のとき、天皇は兄たちや子らに、天祖の彦火瓊瓊杵尊が降ってから一百七十九萬二千四百七十余年がたつが、遠い地では村ごとに君や長がいて互いに争っていると語った。そして鹽土老翁から、東に青い山に囲まれた美しい地があり天磐船で飛び降りた者がいると聞いたので、そこは天下の中心であり、飛び降りた者は饒速日であろうと述べて、そこへ行って都を置こうと提案した。皇子たちも賛成し、この年は甲寅であった。</p>
-      <p>冬十月、天皇は皇子たちと水軍を率いて東へ向かった。速吸之門で小舟に乗って来た漁人の珍彦が国神と名乗り、道案内を引き受けたので、椎の末を握らせて天皇の船に引き入れ、椎根津彦の名を与えた（倭直部の始祖）。筑紫の菟狹では菟狹津彦・菟狹津媛が一柱騰宮を造ってもてなし、菟狹津媛は侍臣の天種子命（中臣氏の遠祖）の妻とされた。十一月に筑紫の崗水門、十二月に安藝の埃宮に至り、乙卯年三月に吉備に移って高嶋宮で三年をかけて船と兵糧を整えた。戊午年二月に難波の碕に着き、潮の流れが速かったので浪速国と名づけ、三月に河内国草香邑の青雲白肩之津に至った。</p>
-      <p>四月、龍田への道が狭いので膽駒山を越えて中洲に入ろうとすると、長髄彦が「天神の子らが来るのは我が国を奪うためだ」として孔舍衞坂で迎え撃ち、流れ矢が五瀬命に当たった。天皇は、日神の子孫が日に向かって攻めるのは天道に逆らうことだと考え、いったん退いて神祇を祭り、日神の威を背に負って攻めることにした。草香津で盾を立てて雄誥をしたので、その津を盾津と名づけた。五月、茅渟の山城水門で五瀬命は傷の痛みに剣を撫でて雄誥をし、その地は雄水門と呼ばれた。軍が紀伊国の竃山に進んだところで五瀬命は亡くなり、竃山に葬られた。</p>
-      <p>六月、名草邑で名草戸畔を討ち、狹野を越えて熊野の神邑に至った。海上で暴風にあうと、稻飯命は剣を抜いて海に入り鋤持神となり、三毛入野命は波頭を踏んで常世郷へ去った。熊野荒坂津で丹敷戸畔を討ったとき、神が毒気を吐いて軍は皆弱り倒れた。熊野の高倉下は、天照太神に命じられた武甕雷神が自分の代わりに国を平らげた剣を下すという夢を見て、倉の底に立っていた剣を献上すると、天皇も兵も目を覚ました。さらに夢で天照大神が頭八咫烏を遣わすと告げ、その烏の導きにより日臣命が大來目を率いて山道を開き菟田下縣に至ったので、天皇は日臣命を道臣と改名した。</p>
-      <p>八月、菟田の兄猾は新しい宮に仕掛けを作って天皇を殺そうとしたが、弟猾がそれを知らせ、道臣命に追い込まれた兄猾は自分の仕掛けで圧死した（菟田血原の名の由来）。弟猾の酒宴で天皇は歌を詠み、これを來目歌という。吉野では井戸から出てきた、光っていて尾のある井光（吉野首部の始祖）などの国神に出会った。九月、菟田の高倉山から見ると、国見丘の八十梟帥や磐余邑の兄磯城の軍が要地をふさいでいた。天神の夢の教えと弟猾の進言に従い、椎根津彦と弟猾を老父・老嫗に変装させて天香山の頂の土を取ってこさせ、その埴で八十平瓮や嚴瓮を作って丹生川上で天神地祇を祭り、飴が自然にでき川に沈めた瓮で魚が浮かぶという占いの結果を得た。天皇は高皇産靈尊の顯齋を自ら行い、道臣命を齋主として嚴媛の名を与えた。</p>
-      <p>十月、天皇は国見丘の八十梟帥を破り、忍坂では道臣命が大室に宴を設けて残党を誘い、歌を合図に一斉に斬り殺した。十一月、頭八咫烏を使いに出すと兄磯城は矢を射かけたが、弟磯城は恐れ従って兄の備えを知らせた。椎根津彦の策により女軍を忍坂から出して敵を引きつけ、男軍が墨坂を越えて背後から挟み撃ちにし、兄磯城らを斬った。</p>
-      <p>十二月、長髄彦との戦いでは勝てずにいたが、空が暗くなって氷が降るなか金色の靈鵄が天皇の弓の弭にとまり、その光で長髄彦の兵は目がくらんで戦えなくなった（鵄邑、今の鳥見の名の由来）。長髄彦は使いを送り、天磐船で天降った櫛玉饒速日命が妹の三炊屋媛をめとって可美眞手命が生まれ、自分は饒速日命を君として仕えていると述べた。天皇と長髄彦は互いに天羽羽矢一隻と歩靭を示し合ったが、長髄彦は考えを改めなかったので、饒速日命は長髄彦を殺し、その衆を率いて帰順した。天皇はこれをほめて寵愛し、饒速日命は物部氏の遠祖であると記される。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>或本云（高尾張邑）</b><p>弟猾の言葉に出る赤銅八十梟帥のいる「高尾張邑」について、小注に「或本」では葛城邑とするとある。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">東有美地。青山四周</blockquote><p>東に美しい土地があり、青い山が四方を囲んでいる。鹽土老翁から聞いた話として天皇が語る。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">今我是日神子孫。而向日征虜此逆天道也</blockquote><p>自分は日神の子孫なのに、日に向かって敵を攻めたのは天の道に逆らうことだった、という天皇の反省。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">予釼號曰韴靈</blockquote><p>武甕雷神が高倉下に、わが剣の名は韴靈だと告げる言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">乃有金色靈鵄。飛來止于皇弓之弭</blockquote><p>金色の不思議な鵄が飛んで来て、天皇の弓の端にとまった。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全1件）。</p>
+      <details><summary>或本云（高尾張邑）</summary><p>弟猾の言葉に出る赤銅八十梟帥のいる「高尾張邑」について、小注に「或本」では葛城邑とするとある。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -147,9 +188,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><b><a href="../../shrine-note/map/?d=jinmu">神武天皇</a></b><small>じんむてんのう</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kashihara">橿原神宮</a>、<a href="../../shrine-note/map/?s=miyazaki">宮﨑神宮</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=tamayori">玉依姫命</a></b><small>たまよりひめのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=tamasaki">玉前神社</a>、<a href="../../shrine-note/map/?s=takachiho">高千穂神社</a>、<a href="../../shrine-note/map/?s=shimogamo">賀茂御祖神社（下鴨神社）</a>、<a href="../../shrine-note/map/?s=miyazaki">宮﨑神宮</a>、<a href="../../shrine-note/map/?s=hakozaki">筥崎宮</a>、<a href="../../shrine-note/map/?s=kototomo">事任八幡宮</a>、<a href="../../shrine-note/map/?s=kifune">貴船神社</a>、<a href="../../shrine-note/map/?s=shikaumi">志賀海神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=ugayafukiaezu">鵜葺草葺不合命</a></b><small>うがやふきあえずのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=takachiho">高千穂神社</a>、<a href="../../shrine-note/map/?s=udo">鵜戸神宮</a>、<a href="../../shrine-note/map/?s=miyazaki">宮﨑神宮</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=ninigi">邇邇藝命</a></b><small>ににぎのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=takachiho">高千穂神社</a>、<a href="../../shrine-note/map/?s=kirishima">霧島神宮</a>、<a href="../../shrine-note/map/?s=kitaguchi">北口本宮冨士浅間神社</a>、<a href="../../shrine-note/map/?s=tsubaki">椿大神社</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hakone">箱根神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=ninigi">邇邇藝命</a></b><small>ににぎのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=takachiho">高千穂神社</a>、<a href="../../shrine-note/map/?s=kirishima">霧島神宮</a>、<a href="../../shrine-note/map/?s=kitaguchi">北口本宮冨士浅間神社</a>、<a href="../../shrine-note/map/?s=tsubaki">椿大神社</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hakone">箱根神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=takamimusubi">高御産巣日神</a></b><small>たかみむすひのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hirota">廣田神社</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=shiotsuchi">塩土老翁神</a></b><small>しおつちのおじのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=shiogama">鹽竈神社</a>、<a href="../../shrine-note/map/?s=aoshima">青島神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=takemikazuchi">武甕槌大神</a></b><small>たけみかづちのおおかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kashima">鹿島神宮</a>、<a href="../../shrine-note/map/?s=kasuga">春日大社</a>、<a href="../../shrine-note/map/?s=shiogama">鹽竈神社</a>、<a href="../../shrine-note/map/?s=hiraoka">枚岡神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=futsunomitama">布都御魂大神</a></b><small>ふつのみたまのおおかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=isonokami">石上神宮</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a></span></li>
@@ -174,7 +215,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">古事記では</h2>
+      <h2 id="ns-title">古事記との違い</h2>
       <div class="ns"><span class="where">古事記 中巻 神武天皇条の冒頭（東征の出発と道のり）</span><p>古事記では高千穂宮で兄の五瀬命と相談して東へ向かい、筑紫の岡田宮に一年、阿岐の多祁理宮に七年、吉備の高嶋宮に八年いたとする。書紀では天皇自身が諸兄・皇子に東征を語り、安藝の埃宮を経て吉備の高嶋宮に三年いたとする。</p><blockquote lang="zh-Hant">於吉備之高嶋宮。八年坐</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 神武天皇条（五瀬命の戦死）</span><p>古事記では五瀬命は紀国の男之水門で「賤しい奴の手傷を負って死ぬのか」と叫んで亡くなり（「崩」と書く）、陵は竈山にあるとする。書紀では雄水門は茅渟の山城水門で雄誥をした所の名となり、五瀬命が亡くなったのは紀伊国の竃山（「薨」と書く）とする。</p><blockquote lang="zh-Hant">負賤奴之手乎死</blockquote></div>
       <div class="ns"><span class="where">古事記 中巻 神武天皇条（邇藝速日命の参上）</span><p>古事記の邇藝速日命は、天神御子を追って天降り天津瑞を献上して仕えたとだけ記され、登美毘古を殺す話は見えない。書紀では長髄彦と天羽羽矢・歩靭を見せ合う場面と、饒速日命が長髄彦を殺して帰順する話がある。</p><blockquote lang="zh-Hant">即獻天津瑞以。仕奉也</blockquote></div>
@@ -182,12 +223,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="dan11.html"><small>← 前のページ（巻第二 神代下）</small>神日本磐余彦尊の誕生（第十一段）</a><a class="next" href="jinmu-sokui.html"><small>次のページ（巻第三 神武天皇）→</small>大和の平定と即位</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三" target="_blank" rel="noopener">日本書紀 巻第三</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/saonetsuhiko/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/saonetsuhiko/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/nigihayahinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/nigihayahinomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/itsusenomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/itsusenomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">東有美地。青山四周</blockquote><p>東に美しい土地があり、青い山が四方を囲んでいる。鹽土老翁から聞いた話として天皇が語る。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">今我是日神子孫。而向日征虜此逆天道也</blockquote><p>自分は日神の子孫なのに、日に向かって敵を攻めたのは天の道に逆らうことだった、という天皇の反省。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">予釼號曰韴靈</blockquote><p>武甕雷神が高倉下に、わが剣の名は韴靈だと告げる言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">乃有金色靈鵄。飛來止于皇弓之弭</blockquote><p>金色の不思議な鵄が飛んで来て、天皇の弓の端にとまった。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三" target="_blank" rel="noopener">日本書紀 巻第三</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/saonetsuhiko/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/saonetsuhiko/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/nigihayahinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/nigihayahinomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/itsusenomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/itsusenomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

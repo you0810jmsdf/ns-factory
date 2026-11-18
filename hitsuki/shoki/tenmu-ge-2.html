@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第二十九 天武天皇 下（全50ページ中 48）</p>
-    <h1>天武天皇の律令・帝紀の編纂と崩御</h1>
-    <p class="pg-lead">天武天皇十年から朱鳥元年の崩御までの記事をまとめる。律令の制定と帝紀の記し定め、八色の姓や新しい位階などの制度づくりが進み、天皇の病気と崩御、殯での誄で巻が終わる。</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第二十九 天武天皇 下（全50ページ中 48）</p>
+        <h1>天武天皇の律令・帝紀の編纂と崩御</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">天武天皇十年から朱鳥元年の崩御までの記事をまとめる。律令の制定と帝紀の記し定め、八色の姓や新しい位階などの制度づくりが進み、天皇の病気と崩御、殯での誄で巻が終わる。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>律令を定め草壁皇子尊を皇太子とする</h3>
+      <p class="t">十年正月、畿内と諸国に天社・地社の神の宮を修理させた。二月、天皇と皇后は大極殿で律令を定めると詔し、草壁皇子尊を皇太子とした。三月には帝紀と上古の諸事を記し定めさせ、四月に禁式九十二条を立てて身につける物の決まりを定めた。五月に皇祖の御魂を祭り、七月には天下に大祓をさせた。八月、多禰嶋に遣わした使いが多禰国の図を献じ、その国の暮らしを報告した。</p>
+      <h3>新城に都を置こうとする</h3>
+      <p class="t">十一年三月、三野王らを新城に遣わして地形を見させ、そこに都を置こうとした。境部連石積らには新字一部四十四巻を造らせた。親王以下の食封をやめて公に返させ、四月には男女ともに髪を結うよう命じた。七月には隼人が多く来て方物を納め、大隅隼人と阿多隼人が朝庭で相撲をとって大隅隼人が勝った。九月、跪く礼や這う礼をやめて、難波朝庭の立礼を用いるよう命じた。</p>
+      <h3>三足の雀を示す</h3>
+      <p class="t">十二年正月、筑紫から献上された三足の雀を群臣に示し、天皇の世に天の瑞しるしが毎年重ねて現れると詔して、赦と課役の免除を行った。二月、大津皇子が初めて朝政を聴いた。三月に僧正・僧都・律師を任じ、四月には銅銭を用いて銀銭を用いるなと詔したが、数日後に銀を用いることは止めるなと詔した。十二月には諸国の境を分けるため使いを巡らせたがこの年には定まらず、都城や宮室は二か所に造るとして、まず難波に都を置くと詔した。</p>
+      <h3>八色の姓を作る</h3>
+      <p class="t">十三年二月、広瀬王らを畿内に遣わして都に適した地を占わせ、三野王らを信濃に遣わして地形を見させた。三月、天皇は京を巡って宮室の地を定めた。閏四月、政の要は軍事であるとして、文武の官人に兵器と馬を備え、乗馬と用兵を習うよう命じた。十月には八色の姓を作り、その月の夜に大地震が起こって山が崩れ、伊予の湯泉が埋まり、土左国の田五十余万頃が海に沈んだ。十二月、唐に留まっていた土師宿禰甥らが新羅を経て帰ってきた。</p>
+      <h3>諸国の家ごとに仏舎を作る</h3>
+      <p class="t">十四年正月、爵位の名と段階を改めた。三月、諸国の家ごとに仏舎を作り、仏像と経を置いて礼拝するよう詔した。七月には位ごとの朝服の色を定めた。九月、天皇の体調がすぐれないため、大官大寺・川原寺・飛鳥寺で三日間経を読ませた。十一月には天皇のために招魂を行った。</p>
+      <h3>草薙剣の祟りと朱鳥と改元</h3>
+      <p class="t">朱鳥元年正月、難波の大蔵省から出た火で宮室がすべて焼けた。五月に天皇の体が初めて不安となり、川原寺で薬師経を説かせた。六月、病を占うと草薙剣の祟りとされ、剣を熱田社に送った。七月、天下のことを皇后と皇太子に申させ、朱鳥と改元して宮を飛鳥浄御原宮と名づけた。諸王臣は天皇のために観世音像を造り、多くの僧を得度させて回復を祈った。</p>
+      <h3>天皇が崩じ殯宮で誄する</h3>
+      <p class="t">九月、親王以下が川原寺に集まって天皇の病のために誓願したが、天皇は病が治らないまま正宮で崩じた。南庭に殯宮が建てられ、哀悼の中で大津皇子が皇太子に謀反をはかったと記す。その後、僧尼が殯の庭で哭し、諸臣が壬生・諸王・宮内・大政官・法官などの事を順に誄した。最後に百済王良虞や国造たちも誄し、さまざまな歌舞が奏された。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>十年二月、天皇と皇后は大極殿で親王・諸王・諸臣に、律令を定め法式を改めると詔した。同じ日に草壁皇子尊を皇太子に立て、政務を執らせた。</li>
         <li><span class="kind ">本文</span>十年三月、天皇は川嶋皇子・忍壁皇子ら十二人に、帝紀と上古の諸事を記し定めさせた。中臣連大嶋と平群臣子首が自ら筆を執って記録した。</li>
@@ -115,32 +176,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>十年正月、畿内と諸国に天社・地社の神の宮を修理させた。二月、天皇と皇后は大極殿で律令を定めると詔し、草壁皇子尊を皇太子とした。三月には帝紀と上古の諸事を記し定めさせ、四月に禁式九十二条を立てて身につける物の決まりを定めた。五月に皇祖の御魂を祭り、七月には天下に大祓をさせた。八月、多禰嶋に遣わした使いが多禰国の図を献じ、その国の暮らしを報告した。</p>
-      <p>十一年三月、三野王らを新城に遣わして地形を見させ、そこに都を置こうとした。境部連石積らには新字一部四十四巻を造らせた。親王以下の食封をやめて公に返させ、四月には男女ともに髪を結うよう命じた。七月には隼人が多く来て方物を納め、大隅隼人と阿多隼人が朝庭で相撲をとって大隅隼人が勝った。九月、跪く礼や這う礼をやめて、難波朝庭の立礼を用いるよう命じた。</p>
-      <p>十二年正月、筑紫から献上された三足の雀を群臣に示し、天皇の世に天の瑞しるしが毎年重ねて現れると詔して、赦と課役の免除を行った。二月、大津皇子が初めて朝政を聴いた。三月に僧正・僧都・律師を任じ、四月には銅銭を用いて銀銭を用いるなと詔したが、数日後に銀を用いることは止めるなと詔した。十二月には諸国の境を分けるため使いを巡らせたがこの年には定まらず、都城や宮室は二か所に造るとして、まず難波に都を置くと詔した。</p>
-      <p>十三年二月、広瀬王らを畿内に遣わして都に適した地を占わせ、三野王らを信濃に遣わして地形を見させた。三月、天皇は京を巡って宮室の地を定めた。閏四月、政の要は軍事であるとして、文武の官人に兵器と馬を備え、乗馬と用兵を習うよう命じた。十月には八色の姓を作り、その月の夜に大地震が起こって山が崩れ、伊予の湯泉が埋まり、土左国の田五十余万頃が海に沈んだ。十二月、唐に留まっていた土師宿禰甥らが新羅を経て帰ってきた。</p>
-      <p>十四年正月、爵位の名と段階を改めた。三月、諸国の家ごとに仏舎を作り、仏像と経を置いて礼拝するよう詔した。七月には位ごとの朝服の色を定めた。九月、天皇の体調がすぐれないため、大官大寺・川原寺・飛鳥寺で三日間経を読ませた。十一月には天皇のために招魂を行った。</p>
-      <p>朱鳥元年正月、難波の大蔵省から出た火で宮室がすべて焼けた。五月に天皇の体が初めて不安となり、川原寺で薬師経を説かせた。六月、病を占うと草薙剣の祟りとされ、剣を熱田社に送った。七月、天下のことを皇后と皇太子に申させ、朱鳥と改元して宮を飛鳥浄御原宮と名づけた。諸王臣は天皇のために観世音像を造り、多くの僧を得度させて回復を祈った。</p>
-      <p>九月、親王以下が川原寺に集まって天皇の病のために誓願したが、天皇は病が治らないまま正宮で崩じた。南庭に殯宮が建てられ、哀悼の中で大津皇子が皇太子に謀反をはかったと記す。その後、僧尼が殯の庭で哭し、諸臣が壬生・諸王・宮内・大政官・法官などの事を順に誄した。最後に百済王良虞や国造たちも誄し、さまざまな歌舞が奏された。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">一書（別の伝え）</h2>
-      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。</p>
-      <div class="var"><b>或曰</b><p>十一年八月、火の色をした灌頂幡のような物が空を北へ流れ、どの国でも見えたと本文は記す。或曰では、それが越の海に入ったという。</p></div>
-      <div class="var"><b>或曰</b><p>本文は難波の大蔵省から火が出て宮室がすべて焼けたとする。或曰では、阿斗連薬の家の失火が宮室に燃え移ったもので、兵庫職だけは焼けなかったという。</p></div>
-      <div class="var"><b>或曰</b><p>本文は南方に雷が光って鳴り、民部省の庸を納める倉が焼けたとする。或曰では、忍壁皇子の宮の失火が民部省に燃え広がったという。</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">朕今更欲定律令，改法式</blockquote><p>天皇が、律令を定め、法の決まりを改めようと思うと述べた言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">令記定帝紀及上古諸事</blockquote><p>帝紀と上古のさまざまな事を記し定めさせた、という記事。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">作八色之姓，以混天下萬姓</blockquote><p>八つの姓を作り、天下の多くの姓をまとめ直したという記事。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">卜天皇病，祟草薙劍</blockquote><p>天皇の病を占ったところ、草薙剣の祟りと出た。</p></div>
+      <p class="pg-note">日本書紀は、本文のあとに「一書に曰く」として、別の伝えを並べています。名前を押すと開きます（全3件）。</p>
+      <details><summary>或曰</summary><p>十一年八月、火の色をした灌頂幡のような物が空を北へ流れ、どの国でも見えたと本文は記す。或曰では、それが越の海に入ったという。</p></details>
+      <details><summary>或曰</summary><p>本文は難波の大蔵省から火が出て宮室がすべて焼けたとする。或曰では、阿斗連薬の家の失火が宮室に燃え移ったもので、兵庫職だけは焼けなかったという。</p></details>
+      <details><summary>或曰</summary><p>本文は南方に雷が光って鳴り、民部省の庸を納める倉が焼けたとする。或曰では、忍壁皇子の宮の失火が民部省に燃え広がったという。</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -163,12 +204,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="tenmu-ge-1.html"><small>← 前のページ（巻第二十九 天武天皇 下）</small>天武天皇の即位と吉野の盟約</a><a class="next" href="jito-1.html"><small>次のページ（巻第三十 持統天皇）→</small>持統天皇の称制と即位</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">日本書紀 巻第二十九</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第廿九</a>　https://zh.wikisource.org/wiki/日本書紀/卷第廿九</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">朕今更欲定律令，改法式</blockquote><p>天皇が、律令を定め、法の決まりを改めようと思うと述べた言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">令記定帝紀及上古諸事</blockquote><p>帝紀と上古のさまざまな事を記し定めさせた、という記事。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">作八色之姓，以混天下萬姓</blockquote><p>八つの姓を作り、天下の多くの姓をまとめ直したという記事。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">卜天皇病，祟草薙劍</blockquote><p>天皇の病を占ったところ、草薙剣の祟りと出た。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">日本書紀 巻第二十九</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第廿九</a>　https://zh.wikisource.org/wiki/日本書紀/卷第廿九</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>

@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">日本書紀 巻第三十 持統天皇（全50ページ中 49）</p>
-    <h1>持統天皇の称制と即位</h1>
-    <p class="pg-lead">持統天皇の生い立ちと、天武天皇の崩御後に政を執り、四年正月に即位するまでの記事をまとめる。大津皇子の謀反、草壁皇子尊の死、天武天皇の葬送、令の配布や高市皇子の太政大臣任命などが記される。</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">日本書紀 巻第三十 持統天皇（全50ページ中 49）</p>
+        <h1>持統天皇の称制と即位</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">持統天皇の生い立ちと、天武天皇の崩御後に政を執り、四年正月に即位するまでの記事をまとめる。大津皇子の謀反、草壁皇子尊の死、天武天皇の葬送、令の配布や高市皇子の太政大臣任命などが記される。</p>
+        <p class="bk-meta">本文の話を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">本文の話</h2>
+      <h3>鸕野讃良皇女が草壁皇子尊を生む</h3>
+      <p class="t">高天原広野姫天皇は、幼名を鸕野讃良皇女といい、天命開別天皇の第二女で、母は遠智娘である。天豊財重日足姫天皇の三年に天渟中原瀛真人天皇の妃となり、天命開別天皇の元年に大津宮で草壁皇子尊を生んだ。天命開別天皇の十年十月には、出家した天渟中原瀛真人天皇に従って吉野に入り、朝廷の疑いを避けた。天渟中原瀛真人天皇の元年六月には共に東国へ逃れて計画を定め、七月に大友皇子が討たれた。二年に皇后となり、天皇を助けて政についてたびたび意見を述べたという。</p>
+      <h3>大津皇子の謀反が発覚する</h3>
+      <p class="t">朱鳥元年九月、天渟中原瀛真人天皇が崩じ、皇后が政を執った。十月、大津皇子の謀反が発覚し、皇子にあざむかれた三十余人も捕らえられた。皇子は訳語田の家で死を賜り、妃の山辺皇女が殉じた。天皇は、従った者たちはやむを得なかったとして赦し、礪杵道作だけを伊豆に流し、新羅の沙門行心は飛驒の寺に移した。十一月、伊勢の神祠に仕えていた大来皇女が京に帰った。</p>
+      <h3>殯宮で慟哭し大内陵を築き始める</h3>
+      <p class="t">元年から二年にかけては、殯宮での慟哭・誄・奠の記事が続く。投化した高麗人・新羅人を常陸・下毛野・武蔵に住まわせて田を与えた。九月には新羅の王子金霜林が来て、筑紫で天皇の崩御を知らされ、喪服を着て東に向かって拝み哭した。十月、皇太子が公卿・百寮や諸国の人々を率いて大内陵を築き始めた。</p>
+      <h3>道蔵に雨を請わせ大内陵に葬る</h3>
+      <p class="t">二年七月、日照りのため大雩を行い、百済の沙門道蔵に雨を請わせると、朝のうちに天下に雨が降った。十一月、皇太子が公卿・百寮と諸蕃の賓客を率いて殯宮で慟哭し、諸臣がそれぞれ先祖の仕えたさまを誄した。蝦夷も調を負って誄し、当麻真人智徳が皇祖たちの位を継いだ順を誄したのち、大内陵に葬った。</p>
+      <h3>草壁皇子尊が薨じる</h3>
+      <p class="t">三年正月、天皇は吉野宮に行った。四月、皇太子草壁皇子尊が薨じた。五月、天皇は新羅の弔使に、使いの位が以前より低いことや船が一艘しかないことなどを挙げて、調と献上物を封じて返すと伝えさせた。六月に撰善言司を置き、令一部二十二巻を諸司に配った。閏八月には、今冬に戸籍を造り、浮浪の者を取り締まり、兵士は一国の四分の一を選んで武事を習わせるよう命じた。</p>
+      <h3>皇后が即位する</h3>
+      <p class="t">四年正月、皇后は即位した。四月には官人の勤務年数による位の授け方と朝服の色を定め、七月に公卿・百寮が初めて新しい朝服を着た。同月、高市皇子を太政大臣、丹比嶋真人を右大臣とし、八省・百寮の人事を改めた。十月に大伴部博麻をほめ、高市皇子が藤原の宮地を見た。十一月には勅によって元嘉暦と儀鳳暦を初めて用い、十二月には天皇自身が藤原に行って宮地を見た。</p>
+      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">このページの要点</h2>
       <ol>
         <li><span class="kind ">本文</span>朱鳥元年九月に天渟中原瀛真人天皇が崩じると、皇后は朝廷に臨んで政を執った（臨朝称制）。四年正月、物部麻呂朝臣が大盾を立て、中臣大嶋朝臣が天神寿詞を読み、忌部宿禰色夫知が神璽の剣・鏡を奉って、皇后は天皇の位についた。</li>
         <li><span class="kind ">本文</span>朱鳥元年十月、大津皇子の謀反が発覚し、皇子は訳語田の家で死を賜った（二十四歳）。妃の山辺皇女は髪を乱し裸足で駆けつけて殉じ、見た人は皆すすり泣いたという。</li>
@@ -113,25 +172,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">本文</span>三年六月に令一部二十二巻を諸司に配り、四年九月には戸籍は戸令によって造るよう詔した。四年七月、高市皇子を太政大臣、丹比嶋真人を右大臣とし、十月には高市皇子が、十二月には天皇が藤原の宮地を見に行った。</li>
         <li><span class="kind ">本文</span>四年十月、天皇は大伴部博麻をほめる詔を出した。博麻は百済救援の戦いで唐軍の捕虜となり、仲間を帰国させるため自分の身を売り、三十年も異国に留まっていたので、位や田などを与えられた。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">本文の話</h2>
-      <p>高天原広野姫天皇は、幼名を鸕野讃良皇女といい、天命開別天皇の第二女で、母は遠智娘である。天豊財重日足姫天皇の三年に天渟中原瀛真人天皇の妃となり、天命開別天皇の元年に大津宮で草壁皇子尊を生んだ。天命開別天皇の十年十月には、出家した天渟中原瀛真人天皇に従って吉野に入り、朝廷の疑いを避けた。天渟中原瀛真人天皇の元年六月には共に東国へ逃れて計画を定め、七月に大友皇子が討たれた。二年に皇后となり、天皇を助けて政についてたびたび意見を述べたという。</p>
-      <p>朱鳥元年九月、天渟中原瀛真人天皇が崩じ、皇后が政を執った。十月、大津皇子の謀反が発覚し、皇子にあざむかれた三十余人も捕らえられた。皇子は訳語田の家で死を賜り、妃の山辺皇女が殉じた。天皇は、従った者たちはやむを得なかったとして赦し、礪杵道作だけを伊豆に流し、新羅の沙門行心は飛驒の寺に移した。十一月、伊勢の神祠に仕えていた大来皇女が京に帰った。</p>
-      <p>元年から二年にかけては、殯宮での慟哭・誄・奠の記事が続く。投化した高麗人・新羅人を常陸・下毛野・武蔵に住まわせて田を与えた。九月には新羅の王子金霜林が来て、筑紫で天皇の崩御を知らされ、喪服を着て東に向かって拝み哭した。十月、皇太子が公卿・百寮や諸国の人々を率いて大内陵を築き始めた。</p>
-      <p>二年七月、日照りのため大雩を行い、百済の沙門道蔵に雨を請わせると、朝のうちに天下に雨が降った。十一月、皇太子が公卿・百寮と諸蕃の賓客を率いて殯宮で慟哭し、諸臣がそれぞれ先祖の仕えたさまを誄した。蝦夷も調を負って誄し、当麻真人智徳が皇祖たちの位を継いだ順を誄したのち、大内陵に葬った。</p>
-      <p>三年正月、天皇は吉野宮に行った。四月、皇太子草壁皇子尊が薨じた。五月、天皇は新羅の弔使に、使いの位が以前より低いことや船が一艘しかないことなどを挙げて、調と献上物を封じて返すと伝えさせた。六月に撰善言司を置き、令一部二十二巻を諸司に配った。閏八月には、今冬に戸籍を造り、浮浪の者を取り締まり、兵士は一国の四分の一を選んで武事を習わせるよう命じた。</p>
-      <p>四年正月、皇后は即位した。四月には官人の勤務年数による位の授け方と朝服の色を定め、七月に公卿・百寮が初めて新しい朝服を着た。同月、高市皇子を太政大臣、丹比嶋真人を右大臣とし、八省・百寮の人事を改めた。十月に大伴部博麻をほめ、高市皇子が藤原の宮地を見た。十一月には勅によって元嘉暦と儀鳳暦を初めて用い、十二月には天皇自身が藤原に行って宮地を見た。</p>
-      <p class="pg-note">日本書紀の本文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">皇后臨朝稱制</blockquote><p>天皇が崩じたあと、皇后が即位しないまま朝廷に臨んで政を執った。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">詩賦之興，自大津始也</blockquote><p>詩や賦が盛んになったのは大津皇子から始まった、という人物評。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">奉上神璽劍、鏡於皇后。皇后即天皇位</blockquote><p>神のしるしである剣と鏡が皇后に奉られ、皇后が天皇の位についた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">朕嘉厥尊朝愛國，賣己顯忠</blockquote><p>朝廷を尊び国を愛し、自分の身を売って忠義を示したことを天皇がほめた言葉。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -153,12 +193,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="tenmu-ge-2.html"><small>← 前のページ（巻第二十九 天武天皇 下）</small>天武天皇の律令・帝紀の編纂と崩御</a><a class="next" href="jito-2.html"><small>次のページ（巻第三十 持統天皇）→</small>持統天皇の藤原宮と譲位</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三十" target="_blank" rel="noopener">日本書紀 巻第三十</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三十" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第三十</a>　https://zh.wikisource.org/wiki/日本書紀/卷第三十</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">皇后臨朝稱制</blockquote><p>天皇が崩じたあと、皇后が即位しないまま朝廷に臨んで政を執った。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">詩賦之興，自大津始也</blockquote><p>詩や賦が盛んになったのは大津皇子から始まった、という人物評。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">奉上神璽劍、鏡於皇后。皇后即天皇位</blockquote><p>神のしるしである剣と鏡が皇后に奉られ、皇后が天皇の位についた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">朕嘉厥尊朝愛國，賣己顯忠</blockquote><p>朝廷を尊び国を愛し、自分の身を売って忠義を示したことを天皇がほめた言葉。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は日本書紀の本文、「一書」は本文のあとに並ぶ別の伝え、「古事記と比較」は古事記の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の本文から一字一句そのまま写しています（〔 〕は原文の小注）。年は原文の紀年のままで、西暦への換算はしていません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三十" target="_blank" rel="noopener">日本書紀 巻第三十</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三十" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第三十</a>　https://zh.wikisource.org/wiki/日本書紀/卷第三十</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← ページの一覧へ</a>
     </section>
   </main>
