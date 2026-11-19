@@ -1160,8 +1160,8 @@ function photoHTML(s) {
       <figcaption>${TX('写真：', 'Photo: ')}${esc(p.credit || '')}${TX('／', ' / ')}${esc(p.license || '')}${p.source_url ? TX('／', ' / ') + '<a href="' + esc(p.source_url) + '" target="_blank" rel="noopener">' + TX('出典', 'source') + '</a>' : ''}</figcaption>`;
   }
   if (p.kind === 'ai' && p.src) {
-    return `<div class="ph-frame"><img src="${esc(p.src)}" alt="${esc(s.name)}"><div class="ph-tag">${TX('AIによるイメージ図です。実在の社殿・ご神体の姿ではありません。', 'An AI-made illustration. It does not show the real shrine buildings or sacred object.')}</div></div>
-      <figcaption>${esc(EN ? 'An imaginary picture based on the Kojiki' : (p.note || '古事記の記述に基づく想像図'))}${TX('（生成ツール・日付は assets/generated/LOG.md に記録）', ' (generation tool and date are recorded in assets/generated/LOG.md)')}</figcaption>`;
+    return `<div class="ph-frame"><img src="${esc(p.src)}" alt="${esc(s.name)}"><div class="ph-tag ai" title="${TX('AIによるイメージ図です。実在の社殿・ご神体の姿ではありません。', 'An AI-made illustration. It does not show the real shrine buildings or sacred object.')}">${TX('AIイメージ図', 'AI illustration')}</div></div>
+      <figcaption>${TX('AIによるイメージ図です。実在の社殿・ご神体の姿ではありません。', 'An AI-made illustration. It does not show the real shrine buildings or sacred object.')} ${esc(EN ? 'An imaginary picture based on the Kojiki' : (p.note || '古事記の記述に基づく想像図'))}${TX('（生成ツール・日付は assets/generated/LOG.md に記録）', ' (generation tool and date are recorded in assets/generated/LOG.md)')}</figcaption>`;
   }
   return `<div class="ph-frame">${toriiSVG()}<div class="ph-tag">${TX('写真は準備中です（権利を確認できた写真を、順に掲載します）', 'Photo coming soon (we add photos as their rights are confirmed)')}</div></div>
     <figcaption>${esc((EN && enData.shrines[s.id] ? enData.shrines[s.id].name : s.name))}</figcaption>`;
