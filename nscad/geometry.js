@@ -1539,3 +1539,49 @@ export function cornerLimit(l1, p1, l2, p2, kind = 'fillet') {
   if (theta < EPS || Math.PI - theta < EPS) return null;
   const short = Math.min(la, lb); return { max: kind === 'chamfer' ? short : short * Math.tan(theta / 2), short };
 }
+
+/** 書き出し用：端どうしがつながった線を、1本の続いた線（type 'path'）にまとめる（事業主 2026-11-19「レーザー加工機で加工する際に、線と線の境目でひっかかる感じがする」：
+ *  図形1本ごとに別の線で書き出すので、加工機が境目ごとに止まって、レーザーを入れ直していた）。入力は変えない。返す値 { shapes, merged（まとめた図形の数）, made（できた線の数） }。
+ *  対象＝開いた 直線・円弧・制御点つきの曲線・折れ線・ペンの線。まとめるのは、層・線の種類・色などの見た目が同じで、端が tol(mm) 以内で重なり、その点に集まる端がちょうど2つの所だけ（3本以上が集まる分かれ道では切る）。
+ *  そのまま残す＝keepIds の図形（縫い穴の経路が付いた線）・塗りや質感の付いた図形・金具・ファスナー・見えない補助の線。円弧は 90°以下ごとの曲線に置き換える（半径に対するずれは 0.03% 以下）。
+ *  一周してつながれば、閉じた線にする。できた線には chained: true の印を付け、id・見た目は先頭の図形のものを使う。並びは、先頭の図形の位置。 */
+export function chainStrokes(shapes, { tol = 0.02, keepIds = null } = {}) {
+  const GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'nodes', 'closed', 'cx', 'cy', 'r', 'startDeg', 'endDeg', 'joined', 'groupId']);
+  const N = (x, y, inX = x, inY = y, outX = x, outY = y) => ({ x, y, inX, inY, outX, outY, smooth: false }), fin = v => Number.isFinite(v);
+  const nodesOf = s => {
+    if (s.type === 'line') return [N(s.x1, s.y1), N(s.x2, s.y2)];
+    if (s.type === 'bezier') return [N(s.x1, s.y1, s.x1, s.y1, s.c1x, s.c1y), N(s.x2, s.y2, s.c2x, s.c2y, s.x2, s.y2)];
+    if (s.type === 'polyline') return s.closed || !Array.isArray(s.points) || s.points.length < 2 ? null : s.points.map(q => N(q.x, q.y));
+    if (s.type === 'path') return s.closed || !Array.isArray(s.nodes) || s.nodes.length < 2 ? null : s.nodes.map(n => ({ x: n.x, y: n.y, inX: n.inX, inY: n.inY, outX: n.outX, outY: n.outY, smooth: false }));
+    if (s.type === 'arc') { const sweep = arcSweep(s); if (!(sweep > 1e-9) || sweep >= 360 || !(s.r > 0)) return null; const n = Math.max(1, Math.ceil(sweep / 90 - 1e-9)), step = sweep / n * Math.PI / 180, k = 4 / 3 * Math.tan(step / 4) * s.r, a0 = s.startDeg * Math.PI / 180, out = []; for (let i = 0; i <= n; i++) { const a = a0 + step * i, x = s.cx + s.r * Math.cos(a), y = s.cy + s.r * Math.sin(a), tx = -Math.sin(a) * k, ty = Math.cos(a) * k; out.push(N(x, y, i ? x - tx : x, i ? y - ty : y, i < n ? x + tx : x, i < n ? y + ty : y)); } return out; }
+    return null;
+  };
+  const eligible = s => !(keepIds && keepIds.has(s.id)) && !s.holeLink && !s.hw && !s.hwHole && !s.foldSec && !s.zipper && !s.leather && !s.texture && !s.metal && !s.noOutput;
+  const lookKey = s => JSON.stringify(Object.keys(s).filter(k => !GEOM.has(k)).sort().map(k => [k, s[k]]));
+  const items = []; shapes.forEach((s, at) => { if (!eligible(s)) return; const nodes = nodesOf(s); if (!nodes || !nodes.every(n => [n.x, n.y, n.inX, n.inY, n.outX, n.outY].every(fin))) return; items.push({ s, at, nodes, key: lookKey(s), used: false }); });
+  const cell = Math.max(tol, 1e-6), grid = new Map(), ck = (x, y) => Math.floor(x / cell) + ',' + Math.floor(y / cell), endOf = (it, last) => it.nodes[last ? it.nodes.length - 1 : 0];
+  items.forEach(it => { for (const last of [false, true]) { const p = endOf(it, last), k = it.key + '|' + ck(p.x, p.y); if (!grid.has(k)) grid.set(k, []); grid.get(k).push({ it, last }); } });
+  /** 点（図形 it の端 last）に集まる、同じ見た目の、ほかの端の一覧 */
+  const meet = (it, last) => { const p = endOf(it, last), cx = Math.floor(p.x / cell), cy = Math.floor(p.y / cell), out = []; for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (const o of grid.get(it.key + '|' + (cx + dx) + ',' + (cy + dy)) || []) if (!(o.it === it && o.last === last) && distance(endOf(o.it, o.last), p) <= tol) out.push(o); return out; };
+  /** 端 last の先に続く相手（ちょうど1つ・自分自身でない・まだ使っていない）。無ければ null */
+  const next = (it, last) => { const m = meet(it, last); return m.length === 1 && m[0].it !== it && !m[0].it.used ? m[0] : null; };
+  const rev = nodes => nodes.slice().reverse().map(n => ({ ...n, inX: n.outX, inY: n.outY, outX: n.inX, outY: n.inY }));
+  const made = new Map(), drop = new Set(); let merged = 0;
+  for (const it of items) {
+    if (it.used) continue; it.used = true;
+    const chain = [{ it, flip: false }];
+    for (let c = next(it, true); c; c = next(c.it, !c.last)) { c.it.used = true; chain.push({ it: c.it, flip: c.last }); }   /* 終わりの側へたどる：相手の端が「始まり」ならそのまま、「終わり」なら向きを逆に */
+    for (let c = next(it, false); c; c = next(c.it, !c.last)) { c.it.used = true; chain.unshift({ it: c.it, flip: !c.last }); }   /* 始まりの側へたどる */
+    if (chain.length < 2) continue;
+    const head = chain[0], tail = chain[chain.length - 1], hm = meet(head.it, head.flip), tm = meet(tail.it, !tail.flip);
+    const closed = hm.length === 1 && tm.length === 1 && hm[0].it === tail.it && hm[0].last === !tail.flip;   /* 先頭の始まりと、末尾の終わりが、2つだけで重なる＝一周 */
+    const nodes = [];
+    for (const c of chain) { const ns = c.flip ? rev(c.it.nodes) : c.it.nodes.map(n => ({ ...n })); if (nodes.length) { const a = nodes[nodes.length - 1], b = ns[0]; a.outX = b.outX + (a.x - b.x); a.outY = b.outY + (a.y - b.y); nodes.push(...ns.slice(1)); } else nodes.push(...ns); }
+    if (closed) { const a = nodes[0], z = nodes.pop(); a.inX = z.inX + (a.x - z.x); a.inY = z.inY + (a.y - z.y); }
+    const first = chain.reduce((m, c) => (c.it.at < m.it.at ? c : m), chain[0]).it, look = {}; for (const [k, v] of Object.entries(first.s)) if (!GEOM.has(k)) look[k] = v;
+    made.set(first.at, { ...look, id: first.s.id, type: 'path', closed, nodes, chained: true }); for (const c of chain) if (c.it !== first) drop.add(c.it.at); merged += chain.length;
+  }
+  if (!made.size) return { shapes, merged: 0, made: 0 };
+  const out = []; shapes.forEach((s, at) => { if (made.has(at)) out.push(made.get(at)); else if (!drop.has(at)) out.push(s); });
+  return { shapes: out, merged, made: made.size };
+}

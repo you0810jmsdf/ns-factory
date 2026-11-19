@@ -5,7 +5,7 @@ import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadius
 import { nestPieces } from './nest.js';
 import { packSets } from './pack.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround, TEXT_FONTS, TEXT_FONT_FILES, textFontStack } from './geometry.js';
-import { stitchSegments, isLccLayerId, faceAngler, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, smoothPolylineToPath, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { stitchSegments, isLccLayerId, faceAngler, dedupeStrokes, chainStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, smoothPolylineToPath, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { RULER_NOTE, printPagesPlan, patchPieceSvg, zipStore, docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale, textOutlineD, fontFamilyNames } from './formats.js';
@@ -505,6 +505,14 @@ function vectorOutDoc() {
   const keep = new Set(doc.paths.flatMap(p => p.shapeIds)), r = dedupeStrokes(d.shapes, { keepIds: keep });
   if (!r.touched) return d; lastDedupe = { mm: r.removed, n: r.touched }; return { ...d, shapes: r.shapes };
 }
+/** SVG の書き出し用：つながった線を1本の続いた線にまとめた図面（出力カードのチェックが入っているとき）。図面のデータは変えない。縫い穴の経路が付いた線は、そのまま（穴が付いたまま出る）。まとめた数は lastChain（書き出し後の案内に使う）。 */
+let lastChain = null;
+function chainOutDoc(d) {
+  lastChain = null; if (!$('outChain')?.checked) return d;
+  const keep = new Set(doc.paths.flatMap(p => p.shapeIds)), r = chainStrokes(d.shapes, { keepIds: keep });
+  if (!r.made) return d; lastChain = { n: r.merged, m: r.made }; return { ...d, shapes: r.shapes };
+}
+const chainNote = () => lastChain ? ' ' + t('outChainNote', { n: lastChain.n, m: lastChain.m }) : '';
 const dedupeNote = () => lastDedupe && lastDedupe.mm >= 0.05 ? ' ' + t('outDedupeNote', { mm: lastDedupe.mm.toFixed(1), n: lastDedupe.n }) : '';
 /** 図形を選んでいる間だけ、出力カードと保存メニューに「選んだ N 個だけを出力します」を出す（事業主 2026-11-02「SVG出力で菱目が出力されない」：選んだまま書き出すと、選んだ図形とその穴だけが出る決まりに気づけなかった）。書き出しを押す前に目に入る・押す回数は増えない。 */
 function syncOutSelWarn() {
@@ -4502,13 +4510,13 @@ function exportSvg() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
-  const outDoc = zipperOutDoc(vectorOutDoc()), hasText = outDoc.shapes.some(s => s.type === 'text' && String(s.text ?? '').trim());
+  let outDoc = zipperOutDoc(vectorOutDoc()); outDoc = chainOutDoc(outDoc); const hasText = outDoc.shapes.some(s => s.type === 'text' && String(s.text ?? '').trim());   /* つながった線は、1本の続いた線にして出す（レーザーが境目で止まらない） */
   if (hasText) localFontsOnce();   /* PC の書体の一覧は、押した直後に頼む（保存の窓より先。あとからだと、ブラウザが断る） */
   let beamN = 0, notOutlined = 0;
   const build = textPaths => { const svg = preset === 'beam' ? beamStudioSvg(outDoc, { textPaths, kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked, beamFix: !!$('outBeamFix')?.checked }) : docToSvg(outDoc, { textPaths, includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill', beamFix: !!$('outBeamFix')?.checked, holeDot: printDotMm(), holeDotStroke: true });   /* SVG の点は、線だけの丸（塗りの丸は、Beam Studio が画像として読む） */   /* 「縫い穴を点で出力する」は SVG にも効く（事業主 2026-10-30「印刷とPDFしか対応していないのでは？SVGも」：Beam Studio で読み込むと菱目のままだった） */
   beamN = (svg.match(/data-beamfix=/g) || []).length; return svg; };   /* Beam Studio 補正をかけた層の数（標準の SVG も、方式「Beam Studio」も） */
   const data = hasText ? textOutlines(outDoc).then(r => { notOutlined = r.failed; return build(r.paths); }) : build(null);   /* 文字は、書体の輪郭の線にして出す（事業主 2026-11-13「SVG出力すると別のフォントになる（BeamboxⅡ）」）。文字が無ければ今までどおり */
-  exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', data, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + dedupeNote() + (beamN ? ' ' + t('outBeamFixNote', { n: beamN }) : '') + (notOutlined ? ' ' + t('outTextNotOutlined', { n: notOutlined }) : '') + savedTo(saved); });
+  exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', data, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + dedupeNote() + chainNote() + (beamN ? ' ' + t('outBeamFixNote', { n: beamN }) : '') + (notOutlined ? ' ' + t('outTextNotOutlined', { n: notOutlined }) : '') + savedTo(saved); });
 }
 /** PDF 書き出しで、日本語など ASCII 以外の文字を出すための画像（事業主 2026-11-11 案A「文字を画像（白黒・高解像度）として埋め込む」）。
  *  図形ごとに、画面の書体と同じ字体を、600dpi の白黒（1ビット）画像にする。{ wPx, hPx, bits, wMm, hMm, offX, offY }＝画像の大きさと、基準点（文字の左・基準線）から画像の左下までのずれ（mm・上向きが正）。

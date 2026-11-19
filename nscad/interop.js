@@ -13,7 +13,7 @@ export function beamStudioSvg(doc, { kerfMm = 0.15, includeHoles = true, cutLaye
   const cut = doc.shapes.filter(s => visible(s) && (cutLayerIds.includes(s.layer) || (s.hwHole && s.layer === 'hardware')) && !['text', 'dimension', 'fold'].includes(s.type));
   const engrave = doc.shapes.filter(s => visible(s) && (engraveLayerIds.includes(s.layer) || (s.type === 'text' && !cutLayerIds.includes(s.layer) && s.layer !== 'guide' && s.layer !== 'hardware')) && s.type !== 'fold' && s.type !== 'dimension');
   const holes = holesOnCut(doc, cut, includeHoles);
-  const kerfed = cut.map(s => (kerfMm > 0 && (s.closed || s.type === 'circle')) ? (offsetShape(s, kerfMm / 2) || s) : s);
+  const kerfed = cut.map(s => (kerfMm > 0 && !s.chained && (s.closed || s.type === 'circle')) ? (offsetShape(s, kerfMm / 2) || s) : s);   /* chained＝書き出しのときに1本にまとめた線：今までどおり、外側へずらさない（まとめる前は、ばらの線でずらしていなかった。寸法を変えない） */
   const all = [...kerfed, ...engrave], b = bboxOfDoc({ ...doc, shapes: all.length ? all : cut, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
   const x0 = b.minX - 1, y0 = b.minY - 1, w = b.maxX - b.minX + 2, h = b.maxY - b.minY + 2;
   const cutBody = kerfed.map(s => { const d = shapeToSvgD(s); return d ? `<path d="${d}"/>` : ''; }).join('');
