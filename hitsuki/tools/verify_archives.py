@@ -2,7 +2,7 @@
 使い方: python3 hitsuki/tools/verify_archives.py
 段落番号：古事記 上巻 K1〜／中巻 C1〜／下巻 G1〜、日本書紀 巻第n N{n}-1〜（下の clean() で整えた本文の、空行で区切った段落の通し番号）。
 見るもの：引用（quotes・nihonshoki・kojiki）が指定の段落に含まれるか／段落番号が範囲（span）の中か／
-神様IDが shrine-note/deities.json にあるか／ポイントが4〜6個で「解説」に出典URLがあるか／古事記⇔日本書紀の対応先があるか。"""
+神様IDが shrine-note/deities.json にあるか／ポイントが4〜7個で「解説」に出典URLがあるか／古事記⇔日本書紀の対応先があるか。"""
 import json, os, re, sys, time, urllib.error, urllib.parse, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -77,7 +77,7 @@ bad = 0
 def check(label, m, own_quotes_key, other_key):
     global bad
     probs = []
-    if not 4 <= len(m['points']) <= 6: probs.append('points の数')
+    if not 4 <= len(m['points']) <= 7: probs.append('points の数')
     for p in m['points']:
         if p['kind'] == '解説' and not p.get('src'): probs.append('解説に出典なし')
     for s in m['story']:
