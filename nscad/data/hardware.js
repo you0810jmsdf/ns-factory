@@ -529,8 +529,8 @@ export const DATA_HARDWARE = {
             "no": 8
           }
         ],
-        "note_ja": "足の穴を3〜4mmとする解説もあり、食い違います。捨て革で試し抜きして、足が通る号数にしてください（10号＝3.0mm、12号＝3.6mm）。",
-        "note_en": "Other guides say 3–4 mm, which disagrees. Test on scrap leather and pick the punch the post fits (No.10 = 3.0 mm, No.12 = 3.6 mm)."
+        "note_ja": "オス側・メス側とも同じ大きさの穴です（販売元の案内：凹と凸のパーツは同じ号数）。足の穴を3〜4mmとする解説もあり、食い違います。捨て革で試し抜きして、足が通る号数にしてください（10号＝3.0mm、12号＝3.6mm）。",
+        "note_en": "The stud side and the socket side use the same hole size (per the maker’s guide). Other guides say 3–4 mm, which disagrees. Test on scrap leather and pick the punch the post fits (No.10 = 3.0 mm, No.12 = 3.6 mm)."
       },
       "confidence": "estimated",
       "colors": [
@@ -574,8 +574,8 @@ export const DATA_HARDWARE = {
             "no": 8
           }
         ],
-        "note_ja": "足の穴を3〜4mmとする解説もあり、食い違います。捨て革で試し抜きして、足が通る号数にしてください（10号＝3.0mm、12号＝3.6mm）。",
-        "note_en": "Other guides say 3–4 mm, which disagrees. Test on scrap leather and pick the punch the post fits (No.10 = 3.0 mm, No.12 = 3.6 mm)."
+        "note_ja": "オス側・メス側とも同じ大きさの穴です（販売元の案内：凹と凸のパーツは同じ号数）。足の穴を3〜4mmとする解説もあり、食い違います。捨て革で試し抜きして、足が通る号数にしてください（10号＝3.0mm、12号＝3.6mm）。",
+        "note_en": "The stud side and the socket side use the same hole size (per the maker’s guide). Other guides say 3–4 mm, which disagrees. Test on scrap leather and pick the punch the post fits (No.10 = 3.0 mm, No.12 = 3.6 mm)."
       },
       "confidence": "estimated",
       "colors": [
@@ -619,8 +619,8 @@ export const DATA_HARDWARE = {
             "no": 12
           }
         ],
-        "note_ja": "穴を4mmとする案内もあります。足が通るか、捨て革で試し抜きして決めてください。",
-        "note_en": "Some sellers say 4 mm. Test on scrap leather to confirm the post fits."
+        "note_ja": "オス側・メス側とも同じ大きさの穴です（販売元の案内：凹と凸のパーツは同じ号数）。穴を4mmとする案内もあります。足が通るか、捨て革で試し抜きして決めてください。",
+        "note_en": "The stud side and the socket side use the same hole size (per the maker’s guide). Some sellers say 4 mm. Test on scrap leather to confirm the post fits."
       },
       "confidence": "estimated",
       "colors": [
@@ -664,8 +664,8 @@ export const DATA_HARDWARE = {
             "no": 12
           }
         ],
-        "note_ja": "穴を4mmとする案内もあります。足が通るか、捨て革で試し抜きして決めてください。",
-        "note_en": "Some sellers say 4 mm. Test on scrap leather to confirm the post fits."
+        "note_ja": "オス側・メス側とも同じ大きさの穴です（販売元の案内：凹と凸のパーツは同じ号数）。穴を4mmとする案内もあります。足が通るか、捨て革で試し抜きして決めてください。",
+        "note_en": "The stud side and the socket side use the same hole size (per the maker’s guide). Some sellers say 4 mm. Test on scrap leather to confirm the post fits."
       },
       "confidence": "estimated",
       "colors": [
