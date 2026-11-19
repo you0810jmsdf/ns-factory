@@ -8857,6 +8857,14 @@ function drawBezierCtrl(s) {
   const r = 3.5 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = '#888'; ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.c1x, s.c1y); ctx.moveTo(s.x2, s.y2); ctx.lineTo(s.c2x, s.c2y); ctx.stroke();
   ctx.fillStyle = '#c9a96e'; for (const h of [[s.c1x, s.c1y], [s.c2x, s.c2y]]) { ctx.beginPath(); ctx.arc(h[0], h[1], r * 0.8, 0, Math.PI * 2); ctx.fill(); } ctx.restore();
 }
+/** 選んでいない、開いた曲線（ペンの線・グループでないもの）の端のうち、p から 6px 以内でいちばん近いもの { shape, index }。無ければ null。選ぶ前に端を押して引いたとき、端だけを動かすため。 */
+function curveEndAt(p) {
+  const r = 6 / scale; let best = null;
+  for (const s of doc.shapes) { if (s.type !== 'path' || s.closed || s.holeLink || selected.has(s.id) || groupIdOf(s) || !visible(s) || !editable(s) || !Array.isArray(s.nodes) || s.nodes.length < 2) continue;
+    for (const index of [0, s.nodes.length - 1]) { const d = distance(s.nodes[index], p); if (d <= r && (!best || d < best.d)) best = { shape: s, index, d }; }
+  }
+  return best ? { shape: best.shape, index: best.index } : null;
+}
 function nodeHit(s, p) {
   const r = 6 / scale;
   for (let i = 0; i < s.nodes.length; i++) { const n = s.nodes[i];
@@ -11901,6 +11909,8 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
     if (hole) { const ln = pickShapeAt(cursor); if (ln && distTo(ln, cursor) < 4 / scale && hole.d > 7 / scale) hole = undefined; }
     hole = hole?.h;
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else if(selected.has(hole.id)&&selectedShapeIds().size){ /* 線などの図形といっしょに選んだ菱目をつかんだら、その菱目だけを滑らせず、選んだ全体を動かす（不具合記録 2026-10-17：菱目の近くをつかむと、選んだ図形が移動できなかった） */ gesture={kind:'move',start:cursor,screen:p,ids:selectedShapeIds()}; beginMoveSnap(gesture);} else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor,screen:p};} draw();return;}
+    /* 選んでいない曲線（ペンの線）の端を押して引く：その曲線だけを選び、端の節点をつかむ＝端だけ動き、反対側は動かない（事業主 2026-11-19「片方の端部だけ操作したいのに全体が固定される」：選ぶ前に端を引くと、曲線全体が動いていた）。線の途中をつかめば、今までどおり全体が動く。Shift・Ctrl・Alt を押しているとき、グループの曲線、選択中の曲線は、今までどおり */
+    if (e.button === 0 && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) { const ce = curveEndAt(cursor); if (ce) { cancelSpanClick(); selected = new Set([ce.shape.id]); nodeSel = { id: ce.shape.id, index: ce.index }; rangeOff = true; gesture = { kind: 'node', id: ce.shape.id, index: ce.index, part: 'anchor', alt: false, screen: p, preview: null }; $('hint').textContent = t('curveEndGrab'); draw(); return; } }
     const hit = pickShapeAt(cursor);
     cancelSpanClick();
     if (e.altKey && hit) { selectSpanAt(cursor, e.shiftKey, { byHoles: true }); return; } /* Alt+クリック：菱目と菱目の間だけを選ぶ（Shift で追加） */
