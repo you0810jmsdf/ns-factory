@@ -133,8 +133,26 @@ function nstCompactSheet(items, bounds, tmax) {
  *  orient（'portrait'｜'landscape'｜'auto'＝両方を試す・既定 'auto'）／timeMs（試す時間の上限・既定 1500）／trials（順番を試す回数の上限・既定 60）／seed。
  *  戻り値 { orient, sheetW, sheetH, margin, gap, sheets: [{ items: [{ id, angle, center, dx, dy, points }], usedArea }], unplaced: [id], usage（使った面積の割合＝型紙の面積の合計 ÷ 使った用紙の印刷できる面積）, wasteRatio }。
  *  items の変換：外形の各点 p を、center を中心に angle 度（geometry.js の rotate と同じ向き）回し、(dx, dy) だけ動かす。points は変換後の外形（用紙の左上が (0,0)・印刷余白の内側）。 */
+/** 見映えを整える（事業主 2026-11-19「見映え重視（左右上下バランス）で再配置できるモードが欲しい」・決定「均等に広げて中央へ」）：
+ *  1枚の用紙に詰めて並べた型紙（items＝[{ points, dx, dy }]）を、並び順はそのまま、型紙どうしのすき間を縦・横に均等に広げ、かたまり全体を印刷できる範囲（bounds）の中央へ置く。items を書き換える。
+ *  広げ方＝かたまりの中心から、型紙の中心までの距離を、横は sx 倍・縦は sy 倍にする（型紙の大きさと向きは変えない）。外側には、空きの 1/4（最大 15mm）を残す。
+ *  広げて型紙が重なるときは、広げる量を半分ずつ弱める。それでも重なるなら、広げずに中央へ寄せるだけ。 */
+export function nestBalanceSheet(items, bounds) {
+  if (!items.length) return;
+  const bx = items.map(it => nstBox(it.points)), c = bx.map(b => ({ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2, hw: (b.maxX - b.minX) / 2, hh: (b.maxY - b.minY) / 2 }));
+  const C = { x: (Math.min(...bx.map(b => b.minX)) + Math.max(...bx.map(b => b.maxX))) / 2, y: (Math.min(...bx.map(b => b.minY)) + Math.max(...bx.map(b => b.maxY))) / 2 };
+  const span = (s, k, h) => { let lo = Infinity, hi = -Infinity; for (const q of c) { const v = C[k] + (q[k] - C[k]) * s; lo = Math.min(lo, v - q[h]); hi = Math.max(hi, v + q[h]); } return { lo, hi, len: hi - lo }; };
+  const solve = (k, h, usable) => { const now = span(1, k, h).len, target = usable - 2 * Math.min(15, Math.max(0, usable - now) / 4); if (!(target > now + 1e-6) || !(span(2, k, h).len > now + 1e-6)) return 1; let lo = 1, hi = 2; while (span(hi, k, h).len < target && hi < 64) hi *= 2; for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (span(m, k, h).len <= target) lo = m; else hi = m; } return lo; };
+  let sx = solve('x', 'hw', bounds.maxX - bounds.minX), sy = solve('y', 'hh', bounds.maxY - bounds.minY);
+  const shifts = (ax, ay) => { const X = span(ax, 'x', 'hw'), Y = span(ay, 'y', 'hh'), ox = (bounds.minX + bounds.maxX) / 2 - (X.lo + X.hi) / 2, oy = (bounds.minY + bounds.maxY) / 2 - (Y.lo + Y.hi) / 2; return c.map(q => ({ x: (q.x - C.x) * (ax - 1) + ox, y: (q.y - C.y) * (ay - 1) + oy })); };
+  const clash = sh => { const P = items.map((it, i) => it.points.map(q => ({ x: q.x + sh[i].x, y: q.y + sh[i].y }))), B = P.map(nstBox); for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) if (nstPolyOverlap(P[i], P[j], B[i], B[j], 1e-6)) return true; return false; };
+  let sh = shifts(sx, sy);
+  for (let k = 0; k < 8 && (sx > 1 || sy > 1) && clash(sh); k++) { sx = k === 7 ? 1 : 1 + (sx - 1) / 2; sy = k === 7 ? 1 : 1 + (sy - 1) / 2; sh = shifts(sx, sy); }
+  if ((sx > 1 || sy > 1) && clash(sh)) sh = shifts(1, 1);
+  items.forEach((it, i) => { it.dx += sh[i].x; it.dy += sh[i].y; it.points = it.points.map(q => ({ x: q.x + sh[i].x, y: q.y + sh[i].y })); });
+}
 export function nestPieces(pieces, opts = {}) {
-  const { sheetW = 210, sheetH = 297, margin = 10, gap = 3, cell = 2, rotate = true, orient = 'auto', timeMs = 1500, trials = 60, seed = 1 } = opts;
+  const { sheetW = 210, sheetH = 297, margin = 10, gap = 3, cell = 2, rotate = true, orient = 'auto', timeMs = 1500, trials = 60, seed = 1, balance = false } = opts;
   const orients = orient === 'portrait' ? [[sheetW, sheetH, 'portrait']] : orient === 'landscape' ? [[sheetH, sheetW, 'landscape']] : [[sheetW, sheetH, 'portrait'], [sheetH, sheetW, 'landscape']];
   const valid = pieces.filter(p => Array.isArray(p.points) && p.points.length >= 3 && nstArea(p.points) > 1e-6), gc = Math.max(0, Math.ceil(gap / cell - 1e-9));
   const deadline = Date.now() + timeMs; let best = null;
@@ -164,6 +182,7 @@ export function nestPieces(pieces, opts = {}) {
       return { id: pl.piece.id, angle: R.angle, center: I.center, dx, dy, points: R.rp.map(q => ({ x: q.x + dx, y: q.y + dy })) };
     });
     if (gap <= 1e-9 && items.length > 1) nstCompactSheet(items, { minX: margin, minY: margin, maxX: pw - margin, maxY: ph - margin }, cell * 3);   /* 間隔 0：ぴったり接するまで寄せる */
+    if (balance) nestBalanceSheet(items, { minX: margin, minY: margin, maxX: pw - margin, maxY: ph - margin });   /* 見映えを整える：すき間を均等に広げて、中央へ */
     return { items, usedArea: items.reduce((s, it) => s + nstArea(it.points), 0) };
   });
   const total = sheets.reduce((s, sh) => s + sh.usedArea, 0), usage = sheets.length ? total / (sheets.length * usableArea) : 0;

@@ -6518,7 +6518,7 @@ function nestRun() {
   for (const sh of doc.shapes) { if (!visible(sh) || !editable(sh)) continue; const own0 = own.findIndex(o => o.has(sh.id)); if (own0 >= 0) { owner.set(sh.id, own0); continue; } let b; try { b = bboxOf(sh); } catch { continue; } if (![b.minX, b.maxX, b.minY, b.maxY].every(Number.isFinite)) continue; const c = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }; let best = -1; polys.forEach((poly, i) => { if (nestInside(c, poly) && (best < 0 || areas[i] < areas[best])) best = i; }); if (best >= 0) owner.set(sh.id, best); }
   /* 型紙の外の文字（どの型紙の中にも無い文字）：近い行どうしのまとまりごとに、囲みの四角を1個として並べる（回転はさせない）。図形を選んで並べるときは、選んだ文字だけ */
   const selNow = selectedShapeIds(), textBlocks = nestTextBlocks(doc.shapes.filter(sh => sh.type === 'text' && visible(sh) && editable(sh) && !owner.has(sh.id) && (!selNow.size || selNow.has(sh.id))));
-  const res = nestPieces([...pcs.map((c, i) => ({ id: i, points: c.points })), ...textBlocks.map((b, k) => ({ id: pcs.length + k, points: b.points, fixed: true }))], { sheetW: pw, sheetH: ph, margin, gap, rotate: $('nestRotate').checked, orient: $('nestOrient').value, timeMs: 2000 });
+  const res = nestPieces([...pcs.map((c, i) => ({ id: i, points: c.points })), ...textBlocks.map((b, k) => ({ id: pcs.length + k, points: b.points, fixed: true }))], { sheetW: pw, sheetH: ph, margin, gap, rotate: $('nestRotate').checked, orient: $('nestOrient').value, timeMs: 2000, balance: !!$('nestBalance')?.checked });
   const pieces = [...pcs.map((c, i) => ({ ids: [...owner].filter(([, k]) => k === i).map(([id]) => id) })), ...textBlocks.map(b => ({ ids: b.ids }))];
   const bb = bboxOfDoc(doc), origin = bb && Number.isFinite(bb.maxX) ? { x: bb.maxX + 30, y: bb.minY } : { x: 0, y: 0 };
   nestPreview = { res, pieces, origin, polys, sizeName: $('nestSize').value.toUpperCase() };
@@ -6533,7 +6533,10 @@ function nestFitView() {
   let x0 = so.x, y0 = so.y, x1 = so.x + n * res.sheetW + (n - 1) * 20, y1 = so.y + res.sheetH;
   for (const m of nestOpen.marks) { x0 = Math.min(x0, m.x - 10); y0 = Math.min(y0, m.y - 10); x1 = Math.max(x1, m.x + 10); y1 = Math.max(y1, m.y + 10); }   /* 並べられなかった型紙の切れ目（赤い輪）があるときは、輪も画面に入れる（用紙だけを映すと、輪が画面の外で見えない） */
   const w = x1 - x0, h = y1 - y0;
-  scale = Math.max(0.1, Math.min(100, (vw - 80) / w, (vh - 110) / h)); origin = { x: vw / 2 - (x0 + w / 2) * scale, y: vh / 2 - (y0 + h / 2) * scale };
+  /* 「用紙に並べる」の窓に隠れない所へ映す（事業主 2026-11-19「シミュレーション結果が見えない」：画面の真ん中に映すと、用紙が窓の下になった）。窓の左・右・上・下の空きのうち、いちばん広い所を使う */
+  let ax = 0, ay = 0, aw = vw, ah = vh;
+  try { const card = $('nestCard'), cr = card.dataset.win === '1' && card.getBoundingClientRect ? card.getBoundingClientRect() : null, cv = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null; if (cr && cv && cr.width > 0 && cr.height > 0) { const l = Math.max(0, cr.left - cv.left), r = Math.min(vw, cr.right - cv.left), tp = Math.max(0, cr.top - cv.top), bt = Math.min(vh, cr.bottom - cv.top); if (l < r && tp < bt) { const best = [[0, 0, l, vh], [r, 0, vw - r, vh], [0, 0, vw, tp], [0, bt, vw, vh - bt]].filter(a => a[2] > 160 && a[3] > 160).sort((p, q) => q[2] * q[3] - p[2] * p[3])[0]; if (best) [ax, ay, aw, ah] = best; } } } catch { /* 位置が分からないときは、画面ぜんぶを使う */ }
+  scale = Math.max(0.1, Math.min(100, (aw - 80) / w, (ah - 110) / h)); origin = { x: ax + aw / 2 - (x0 + w / 2) * scale, y: ay + ah / 2 - (y0 + h / 2) * scale };
 }
 /** 「配置する」の、複製の形（事業主 2026-11-08「別のタブに作図ではなかったですか？」）：元の図形は動かさず、型紙ごとのコピー（中の菱目・線・スロットなどもいっしょに）を、回転・移動して、用紙1枚＝1つの新しいタブに並べる。
  *  型紙ごとの複製の元＝型紙の外形の中の図形（pieces[i].ids）と、外形の中の穴（いちばん小さい外形に入れる）。「重なった直線を1本にまとめる」が入っていれば、新しいタブの中で、辺が重なった直線を1本にする（革色の塗りは付かない）。 */
