@@ -1351,6 +1351,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'avail.soldout': 'SOLDOUT (available as a custom order)',
     'avail.noRestock': 'No restock planned',
     'cta.reorder': 'Request a re-make (create a quote)',
+    'badge.madeToOrder': 'Made to order',
+    'avail.madeToOrder': 'Made to order (crafted after you order)',
+    'cta.orderThis': 'Order this piece (made to order: send your name and contact)',
     'cta.buyQuote': 'Get a quote to buy this piece (rough simulation)',
     'cta.line': '💬 Ask the maker directly on LINE about a similar full-custom piece (Japanese)',
     'cta.mail': 'Ask by e-mail',
@@ -1580,11 +1583,18 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       el.onclick = conf.action ? () => logProductAction(activeWork, conf.action) : null;
     }
 
+    // 受注製作で作れる作品（2026-11-19 事業主決定）：在庫0（SOLDOUT・再販予定なし）で、説明文に【受注製作品です】の段落がある作品。
+    // 札・詳細の帯・注文ボタンを受注製作向けにし、「再製作できるようになったら知らせる」欄は出さない。
+    function isMadeToOrder(work) {
+      return !!(work && (work.soldout || work.noRestock) && !work.orderMaking && String(work.longDesc || '').indexOf('【受注製作品です】') !== -1);
+    }
+
     function configureOrderLinks(work) {
       const planner = isSystemPlannerWork(work);
       const unavailable = !!(work.soldout || work.noRestock);
+      const madeToOrder = isMadeToOrder(work);
       const hasPrice = Number(work.price) > 0;
-      const noticeLabel = work.orderMaking ? T('avail.orderMaking', 'オーダー製作中') : work.soldout ? T('avail.soldout', 'SOLDOUT（オーダーメイドで承ります）') : T('avail.noRestock', '再販予定なし');
+      const noticeLabel = work.orderMaking ? T('avail.orderMaking', 'オーダー製作中') : madeToOrder ? T('avail.madeToOrder', '受注製作（ご注文後にお作りします）') : work.soldout ? T('avail.soldout', 'SOLDOUT（オーダーメイドで承ります）') : T('avail.noRestock', '再販予定なし');
 
       if (availabilityNotice) {
         if (unavailable) {
@@ -1596,13 +1606,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         }
       }
 
-      configureWaitlist(work, unavailable && !work.orderMaking); // オーダー製作中は「知らせてもらう」を出さない
+      configureWaitlist(work, unavailable && !work.orderMaking && !madeToOrder); // オーダー製作中・受注製作は「知らせてもらう」を出さない
 
       // 価格が入っていない（0円）商品は、金額の出ない見積り帳票を表示しても意味が無いため
       // 「お見積りを作成する」ボタン自体を出さない。フルオーダー見積り・チャット・LINEで代替する。
       const quoteIntent = unavailable ? 'similar_order_quote' : 'stock_purchase_quote';
       const quoteConf = (hasPrice && !work.orderMaking) // オーダー製作中は「同じものを再注文したい」を出さない
-        ? { href: buildStockQuoteUrl(work, quoteIntent), label: unavailable ? T('cta.reorder', '同じものを再注文したい（受注製作・名前と連絡先を送る）') : T('cta.buyQuote', 'この在庫品の購入相談をする（名前・連絡先を送る）'), action: unavailable ? '見積フォームを開いた（同一作品の再注文相談）' : '見積フォームを開いた（在庫品購入相談）' }
+        ? { href: buildStockQuoteUrl(work, quoteIntent), label: madeToOrder ? T('cta.orderThis', 'この作品を注文したい（受注製作・名前と連絡先を送る）') : unavailable ? T('cta.reorder', '同じものを再注文したい（受注製作・名前と連絡先を送る）') : T('cta.buyQuote', 'この在庫品の購入相談をする（名前・連絡先を送る）'), action: unavailable ? '見積フォームを開いた（同一作品の再注文相談）' : '見積フォームを開いた（在庫品購入相談）' }
         : null;
       const estimateConf = null;
       const lineConf = { href: LINE_URL, label: T('cta.line', '💬 類似したフルオーダー品を作家に直接LINEで相談する'), action: 'LINE相談' };
@@ -1776,6 +1786,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         const unavailable = work.soldout || work.noRestock;
         const badge = work.orderMaking
           ? '<span class="badge-unavailable">' + T('badge.orderMaking', 'オーダー製作中') + '</span>'
+          : isMadeToOrder(work)
+          ? '<span class="badge-unavailable">' + T('badge.madeToOrder', '受注製作') + '</span>'
           : work.soldout
           ? '<span class="badge-unavailable">SOLDOUT</span>'
           : work.noRestock
