@@ -6483,6 +6483,17 @@ $('moveStretch').onclick = () => { if (!stretchNumbers()) { $('hint').textConten
 let nestPreview = null;
 const NEST_PAPERS = { a4: [210, 297], a3: [297, 420] };
 function nestInside(p, poly) { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) if ((poly[i].y > p.y) !== (poly[j].y > p.y) && p.x < (poly[j].x - poly[i].x) * (p.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x) c = !c; return c; }
+/** 外形がつながっていなくて、並べられない型紙（事業主 2026-11-19「選んだものを再配置した際に、選択がされないものがある」：切れ目のある型紙は、何も言わずに外していた）。
+ *  n＝外形の一周をたどれない型紙の数。marks＝その型紙の線の端のうち、ほかの線の端が 0.5mm 以内（つながりとみなす距離・autodim.js の AD_JOIN と同じ）に無い所＝切れ目。
+ *  seq＝調べたときの図面の版（commitSeq）。図面を直したら、古い印は出さない（もう一度シミュレーションすると調べ直す）。 */
+let nestOpen = { seq: -1, n: 0, marks: [] };
+function nestOpenOf(clusters, cands) {
+  const endsOf = s => { if (s.type === 'circle' || s.closed) return []; try { const len = arcLength(s); return len > 1e-9 ? [pointAtLength(s, 0), pointAtLength(s, len)].filter(q => Number.isFinite(q.x) && Number.isFinite(q.y)).map(q => ({ x: q.x, y: q.y, id: s.id })) : []; } catch { return []; } };
+  const open = clusters.filter(c => c.piece && !c.points), all = cands.flatMap(endsOf), marks = [];
+  for (const c of open) for (const s of c.list) for (const e of endsOf(s)) if (!all.some(o => o.id !== s.id && distance(o, e) <= 0.5)) marks.push({ x: e.x, y: e.y });
+  return { seq: commitSeq, n: open.length, marks };
+}
+function nestOpenText() { return nestOpen.n ? t(nestOpen.marks.length ? 'nestOpen' : 'nestOpenNoMark', { n: nestOpen.n }) : ''; }
 function nestCandidates() {
   const sel = selectedShapeIds(), all = doc.shapes.filter(sh => visible(sh) && editable(sh) && !sh.holeLink && sh.layer !== 'guide' && sh.layer !== 'marks' && sh.lineStyle !== 'dashed' && !isHardwareShape(sh) && !['text', 'dimension', 'fold', 'image'].includes(sh.type));
   return sel.size ? all.filter(sh => sel.has(sh.id)) : all;
@@ -6490,8 +6501,8 @@ function nestCandidates() {
 function nestRun() {
   const num = id => Number($(id).value), margin = num('nestMargin'), gap = num('nestGap'), [pw, ph] = NEST_PAPERS[$('nestSize').value] || NEST_PAPERS.a4;
   if (!(margin >= 0) || !(gap >= 0) || margin * 2 >= Math.min(pw, ph)) { $('hint').textContent = t('invalidNumber'); return; }
-  const pcs = adPieces(nestCandidates()).filter(c => c.piece && c.points);
-  if (!pcs.length) { nestPreview = null; $('nestApply').disabled = true; $('nestResult').textContent = t('nestNone'); $('hint').textContent = t('nestNone'); draw(); return; }
+  const cands = nestCandidates(), clusters = adPieces(cands), pcs = clusters.filter(c => c.piece && c.points); nestOpen = nestOpenOf(clusters, cands);
+  if (!pcs.length) { nestPreview = null; $('nestApply').disabled = true; $('nestResult').textContent = t('nestNone') + nestOpenText(); $('hint').textContent = $('nestResult').textContent; draw(); return; }
   const res = nestPieces(pcs.map((c, i) => ({ id: i, points: c.points })), { sheetW: pw, sheetH: ph, margin, gap, rotate: $('nestRotate').checked, orient: $('nestOrient').value, timeMs: 2000 });
   /* 型紙といっしょに動かすもの：型紙の外形の中に中心がある、見えて動かせる図形（菱目の線・スロット・ガイド・寸法・文字ほか）。いちばん小さい外形に入れる */
   const owner = new Map(), polys = pcs.map(c => c.points), areas = polys.map(p => Math.abs(p.reduce((a, q, i) => a + q.x * p[(i + 1) % p.length].y - p[(i + 1) % p.length].x * q.y, 0)) / 2);
@@ -6501,7 +6512,7 @@ function nestRun() {
   const bb = bboxOfDoc(doc), origin = bb && Number.isFinite(bb.maxX) ? { x: bb.maxX + 30, y: bb.minY } : { x: 0, y: 0 };
   nestPreview = { res, pieces, origin, polys, sizeName: $('nestSize').value.toUpperCase() };
   const orient = t(res.orient === 'landscape' ? 'nestLandscape' : 'nestPortrait'), n = res.sheets.reduce((a, sh) => a + sh.items.length, 0);
-  $('nestResult').textContent = res.sheets.length ? t('nestResult', { sheets: res.sheets.length, size: nestPreview.sizeName, orient, usage: (res.usage * 100).toFixed(1), waste: (res.wasteRatio * 100).toFixed(1), n, un: res.unplaced.length ? t('nestUnplaced', { n: res.unplaced.length }) : '' }) : t('nestNoFit');
+  $('nestResult').textContent = res.sheets.length ? t('nestResult', { sheets: res.sheets.length, size: nestPreview.sizeName, orient, usage: (res.usage * 100).toFixed(1), waste: (res.wasteRatio * 100).toFixed(1), n, un: res.unplaced.length ? t('nestUnplaced', { n: res.unplaced.length }) : '' }) + nestOpenText() : t('nestNoFit') + nestOpenText();
   $('nestApply').disabled = !res.sheets.length; $('hint').textContent = $('nestResult').textContent; nestFitView(); draw();
 }
 /** 結果の用紙の枠が、ぜんぶ画面に入るよう、表示を移す（結果は図面の右はしの外に出るので、そのままでは画面の外で見えない・事業主 2026-10-29「用紙に並べる機能の使い方がまったくわからん」）。 */
@@ -6614,7 +6625,7 @@ function restoreSupportLines() {
   cancel(); commit(() => { doc.shapes = doc.shapes.map(s => fix.has(s.id) ? (({ holeLink, ...rest }) => rest)(s) : s); });
   $('hint').textContent = t('unlinkDone', { n: fix.size, m: holes.size });
 }
-function openNestWin() { $('nestCard').hidden = false; setCardWin('nestCard', true); nestPreview = null; $('nestApply').disabled = true; $('nestResult').textContent = ''; $('hint').textContent = t('nestOpened'); draw(); }
+function openNestWin() { $('nestCard').hidden = false; setCardWin('nestCard', true); nestPreview = null; nestOpen = { seq: -1, n: 0, marks: [] }; $('nestApply').disabled = true; $('nestResult').textContent = ''; $('hint').textContent = t('nestOpened'); draw(); }
 /** 印刷の範囲とページの割り付け（実際の印刷 printPages・PDF 書き出し・印刷ガイド・出力の枚数・「1ページに収める」で同じ計算）。計算の本体は formats.js の printPagesPlan（寸法の数字の箱・印刷補正・空のページを出さない）。base＝図面（target）。 */
 function printPlan(base, shapes, holes) {
   const b0 = bboxOfDoc({ ...base, shapes, holes }); if (!b0) return null;
@@ -6666,7 +6677,9 @@ function drawPrintGuide() {
 }
 /** 用紙の枠・印刷できる範囲・置く位置の薄い点線（draw から）。窓が開いていて、結果があるときだけ。 */
 function drawNestPreview() {
-  if (!nestPreview || exporting || $('nestCard').hidden) return;
+  if (exporting || $('nestCard').hidden) return;
+  if (nestOpen.marks.length && nestOpen.seq === commitSeq) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 2 / scale; ctx.strokeStyle = '#ff4040'; for (const m of nestOpen.marks) { ctx.beginPath(); ctx.arc(m.x, m.y, 7 / scale, 0, Math.PI * 2); ctx.stroke(); } ctx.restore(); }   /* 並べられなかった型紙の切れ目：赤い輪（図面を直すと消える） */
+  if (!nestPreview) return;
   const { res, origin } = nestPreview; ctx.save();
   res.sheets.forEach((sh, k) => {
     const x0 = origin.x + k * (res.sheetW + 20), y0 = origin.y;
