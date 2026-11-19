@@ -1229,6 +1229,21 @@ function specialtiesHTML(id) {
     <p class="meta">${EN ? 'Contains PR / advertising (Rakuten Ichiba affiliate links; Japanese site). These are specialties of the prefecture, not of this shrine alone. Ratings and review counts are from Rakuten Ichiba' : 'PR・広告を含みます（楽天市場のアフィリエイトリンク）。この神社だけでなく、' + esc(x.pref) + 'の名産として紹介しています。評価・件数は楽天市場'}${at}${TX('。価格・在庫は変動します。最新は楽天市場で確認してください。', '. Prices and stock change; check Rakuten for the latest.')}</p></div>`;
 }
 
+// 神社めぐりの商品（Amazonアソシエイト・2026-11-20 申請。ID nsfactory0a-22）。商品を推薦せず、検索結果ページへのリンクだけにする。金額・画像は載せない
+const AMZ_TAG = 'nsfactory0a-22';
+const AMZ_ITEMS = [
+  { ja: '御朱印帳', en: 'Goshuin books (shrine stamp books)', q: '御朱印帳' },
+  { ja: '御朱印帳のケース・カバー', en: 'Goshuin book cases and covers', q: '御朱印帳 ケース' },
+  { ja: '神社めぐりのガイドブック（英語）', en: 'Guidebooks to Japan\'s shrines (English)', q: 'Japan shrines guidebook' },
+];
+const amzUrl = (q) => `https://www.amazon.co.jp/s?k=${encodeURIComponent(q)}&language=en_US&tag=${AMZ_TAG}`;
+function amazonHTML() {
+  return `<h3 class="chh sub">${TX('神社めぐりの道具・本', 'Goods and books for shrine visits')} <span class="badge pr">${TX('PR・広告', 'PR / ads')}</span></h3>
+    <div class="prbox stays">
+    <ul class="staylist">${AMZ_ITEMS.map((a) => `<li><a href="${esc(amzUrl(a.q))}" target="_blank" rel="sponsored noopener">${esc(TX(a.ja, a.en))}</a></li>`).join('')}</ul>
+    <p class="meta">${TX('PR・広告を含みます（Amazonアソシエイトのリンク）。Amazonのアソシエイトとして、神社巡りノートは適格販売により収入を得ています。特定の商品をすすめるものではなく、Amazon.co.jp の検索結果ページへのリンクです。価格・在庫は変動します。', 'Contains PR / advertising (Amazon Associates links; Amazon.co.jp). As an Amazon Associate, Shrine Note earns from qualifying purchases. These are links to search result pages, not recommendations of specific products. Prices and stock change; please check Amazon.co.jp.')}</p></div>`;
+}
+
 const CHAPTERS = ['はじまり', '御祭神', '由緒', '見どころ', '行き方'];
 const rvs = (html, i = 0) => `<div class="rv" style="--i:${i}">${html}</div>`;
 function visitBoxHTML(s) {
@@ -1334,6 +1349,7 @@ function shrineHTML(s0) {
     ${foodsHTML(s.id)}
     ${specialtiesHTML(s.id)}
     ${staysHTML(s.id)}
+    ${amazonHTML()}
     <h3 class="chh sub">${EN ? U('noteArticle', '') + (s.article_url_en ? '' : ' (Japanese)') : 'note 記事'}</h3>
     ${EN && s.article_url_en ? `<a class="btn" data-art="en" href="${esc(s.article_url_en)}" target="_blank" rel="noopener">${U('readNoteEn', '')}</a>${s.article_url ? ` <a class="btn" data-art="ja" href="${esc(s.article_url)}" target="_blank" rel="noopener">${U('readNoteJa', '')}</a>` : ''}` : s.article_url ? `<a class="btn" data-art="ja" href="${esc(s.article_url)}" target="_blank" rel="noopener">note で読む</a>` : `<span class="btn off">記事は準備中</span>`}
     ${(s.extra_articles || []).map(a => `<p class="meta">${TX('あわせて読む：', 'Also (Japanese): ')}<a class="btn" data-art="extra" href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.title)}</a></p>`).join('')}
