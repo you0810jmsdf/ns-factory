@@ -6162,8 +6162,23 @@ function pasteText(text, at = null) {
 }
 // タブ：文書ごとに undo/redo/選択を持つ
 function snapshotTab() { if (tabs[activeTab]) Object.assign(tabs[activeTab], { doc, undo, redo, selected, activeLayer, scale, origin }); }
+/** 「用紙に並べる」で作った図面（用紙の枠＝出力しない四角が入っている）を開いた・切り替えたとき、印刷・PDF の用紙（「出力」の「用紙」）を、その枠の大きさ・向きに合わせる
+ *  （事業主 2026-11-19・JHCS 型紙：11:30 版は「配置する」を押した時だけ合わせていたので、読み込み直す・保存した図面を開き直すと A4 縦に戻り、PDF がまた2ページに分かれた）。
+ *  枠の大きさが A4・A3 の縦か横のときだけ。同じ図面を見ている間は1回だけ合わせる（そのあと、欄を手で変えたら、その値を使う）。枠が無い図面では何もしない。 */
+let paperFrameSeen = [];
+function nestFramePaper(d = doc) {
+  const s = (d.shapes || []).find(x => x.noOutput && x.type === 'polyline' && x.closed && Array.isArray(x.points) && x.points.length === 4); if (!s) return null;
+  const xs = s.points.map(q => q.x), ys = s.points.map(q => q.y), w = Math.round(Math.max(...xs) - Math.min(...xs)), h = Math.round(Math.max(...ys) - Math.min(...ys));
+  const key = { '210x297': 'a4', '297x210': 'a4l', '297x420': 'a3', '420x297': 'a3l' }[w + 'x' + h]; return key ? { key, id: s.id } : null;
+}
+function syncPaperToFrame() {
+  const el = $('paper'), fr = nestFramePaper(), tab = tabs[activeTab], seen = [tab, fr?.id, fr?.key, tab?.fileHandle?.name || ''];
+  if (seen.every((v, i) => v === paperFrameSeen[i])) return false; paperFrameSeen = seen;
+  if (!el || !fr || el.value === fr.key) return false;
+  el.value = fr.key; scheduleOutSummary(); return true;
+}
 function renderTabs() {
-  scheduleAutosave(); syncAutosaveBar();
+  scheduleAutosave(); syncAutosaveBar(); syncPaperToFrame();
   const bar = $('tabBar'); bar.textContent = '';
   tabs.forEach((tab, i) => { const b = document.createElement('button'), file = tab.fileHandle?.name || ''; b.textContent = (file || tab.name) + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); b.title = t('tabDblTip');   /* 保存先のファイルがあるタブは、ファイル名だけを出す（タブ名と二重に出すと長い・事業主 2026-11-12「タブが長い。ファイル名だけよくないか？」。それまでは、タブ名の横に小さくファイル名を添えていた） */ b.onauxclick = e => { if (e.button === 1) { e.preventDefault(); closeTabAt(i); } }; if (tabs.length > 1 || tabHasWork(tab)) { const x = document.createElement('span'); x.className = 'tabX'; const armed = closeArmedFor(tab); x.textContent = armed ? t('closeTabAsk') : '×'; x.title = t('tabClose'); if (armed) { x.style.opacity = '1'; x.style.background = '#c0392b'; x.style.color = '#fff'; } /* 確認中（5秒）は、×が赤い「閉じる？」になる＝下のヒント文を見落としても分かる */ x.onclick = e => { e.stopPropagation(); closeTabAt(i); }; b.appendChild(x); } bar.appendChild(b); });
   if (closedTabs.length) { const r = document.createElement('button'); r.className = 'tabReopen'; r.textContent = '↩'; r.title = t('tabReopenTip', { name: closedTabs[closedTabs.length - 1].name }); r.onclick = reopenClosedTab; bar.appendChild(r); }   /* 閉じたタブがあるあいだだけ出る「戻す」ボタン */
@@ -6576,7 +6591,7 @@ function nestApplyCopies() {
   const payloads = new Map();
   for (const i of new Set(res.sheets.flatMap(sh => sh.items.map(it => it.id)))) { const ids = new Set(pieces[i]?.ids || []); if (!ids.size) continue; const holeIds = new Set([...holeOwner].filter(([, k]) => k === i).map(([id]) => id)); payloads.set(i, extractSelection(doc, ids, { holeIds, asIs: asIsWithin(ids) })); }
   const baseName = String(tabs[activeTab]?.name || '').replace(/^（再配置）/, '');   /* 元のタブ名（事業主指示 2026-11-11：新しいタブの名前は、元のタブ名の頭に「（再配置）」を付ける。再配置したタブを並べ直したときは、「（再配置）」を重ねない） */
-  cancel(); const first = tabs.length; let removed = 0, n = 0;
+  cancel(); const first = tabs.length, paperBefore = $('paper')?.value ?? null; let removed = 0, n = 0;
   res.sheets.forEach((sh, k) => {
     newTab(t(res.sheets.length > 1 ? 'nestTabMulti' : 'nestTab', { name: baseName, k: k + 1, n: res.sheets.length }));
     const nd = doc;
@@ -6591,13 +6606,13 @@ function nestApplyCopies() {
     nd.shapes.push({ id: freshId(nd.shapes, 's'), layer: 'guide', type: 'polyline', closed: true, lineStyle: 'dashed', color: 'blue', noOutput: true, points: [{ x: 0, y: 0 }, { x: W, y: 0 }, { x: W, y: H }, { x: 0, y: H }] });
     rebuildSnaps(); tabs[activeTab].dirty = true;
   });
-  nestPreview = null; $('nestApply').disabled = true; switchTab(first); renderTabs(); fit(); const paperNote = nestSyncPaper(res, sizeName);
+  nestPreview = null; $('nestApply').disabled = true; switchTab(first); renderTabs(); fit(); const paperNote = nestSyncPaper(res, sizeName, paperBefore);
   $('hint').textContent = t('nestCopyDone', { size: sizeName, orient, sheets: res.sheets.length, n }) + (removed > 0.005 ? ' ' + t('packMerged', { mm: removed.toFixed(1) }) : '') + paperNote;
 }
 /** 「配置する」のあと、印刷・PDF の用紙（「出力」の「用紙」の欄）を、並べた結果と同じ大きさ・向きに合わせる（事業主 2026-11-19「シミュレーションではA4１枚に収まっているので、バグです」：
  *  並べた向きが A4 横でも、出力の用紙は A4 縦のままで、PDF が2ページに分かれた）。変えたときは、案内に足す文を返す。同じなら ''。 */
-function nestSyncPaper(res, sizeName) {
-  const el = $('paper'), key = (sizeName === 'A3' ? 'a3' : 'a4') + (res.orient === 'landscape' ? 'l' : ''); if (!el || el.value === key) return '';
+function nestSyncPaper(res, sizeName, before = null) {   /* before：「配置する」を押す前の用紙（新しいタブを作ると、用紙の枠に合わせて先に変わるので、押す前の値と比べて案内を出す） */
+  const el = $('paper'), key = (sizeName === 'A3' ? 'a3' : 'a4') + (res.orient === 'landscape' ? 'l' : ''); if (!el || (before ?? el.value) === key) { if (el && el.value !== key) el.value = key; return ''; }
   el.value = key; if (typeof scheduleOutSummary === 'function') scheduleOutSummary();
   return ' ' + t('nestPaperSet', { paper: t({ a4: 'paperA4P', a4l: 'paperA4L', a3: 'paperA3P', a3l: 'paperA3L' }[key]) });
 }
