@@ -6529,8 +6529,11 @@ function nestRun() {
 /** 結果の用紙の枠が、ぜんぶ画面に入るよう、表示を移す（結果は図面の右はしの外に出るので、そのままでは画面の外で見えない・事業主 2026-10-29「用紙に並べる機能の使い方がまったくわからん」）。 */
 function nestFitView() {
   if (!nestPreview || !nestPreview.res.sheets.length) return;
-  const { res, origin: so } = nestPreview, n = res.sheets.length, w = n * res.sheetW + (n - 1) * 20, h = res.sheetH, vw = viewW(), vh = viewH();
-  scale = Math.max(0.1, Math.min(100, (vw - 80) / w, (vh - 110) / h)); origin = { x: vw / 2 - (so.x + w / 2) * scale, y: vh / 2 - (so.y + h / 2) * scale };
+  const { res, origin: so } = nestPreview, n = res.sheets.length, vw = viewW(), vh = viewH();
+  let x0 = so.x, y0 = so.y, x1 = so.x + n * res.sheetW + (n - 1) * 20, y1 = so.y + res.sheetH;
+  for (const m of nestOpen.marks) { x0 = Math.min(x0, m.x - 10); y0 = Math.min(y0, m.y - 10); x1 = Math.max(x1, m.x + 10); y1 = Math.max(y1, m.y + 10); }   /* 並べられなかった型紙の切れ目（赤い輪）があるときは、輪も画面に入れる（用紙だけを映すと、輪が画面の外で見えない） */
+  const w = x1 - x0, h = y1 - y0;
+  scale = Math.max(0.1, Math.min(100, (vw - 80) / w, (vh - 110) / h)); origin = { x: vw / 2 - (x0 + w / 2) * scale, y: vh / 2 - (y0 + h / 2) * scale };
 }
 /** 「配置する」の、複製の形（事業主 2026-11-08「別のタブに作図ではなかったですか？」）：元の図形は動かさず、型紙ごとのコピー（中の菱目・線・スロットなどもいっしょに）を、回転・移動して、用紙1枚＝1つの新しいタブに並べる。
  *  型紙ごとの複製の元＝型紙の外形の中の図形（pieces[i].ids）と、外形の中の穴（いちばん小さい外形に入れる）。「重なった直線を1本にまとめる」が入っていれば、新しいタブの中で、辺が重なった直線を1本にする（革色の塗りは付かない）。 */
