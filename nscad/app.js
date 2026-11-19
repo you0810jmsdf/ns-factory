@@ -8857,10 +8857,12 @@ function drawBezierCtrl(s) {
   const r = 3.5 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = '#888'; ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.c1x, s.c1y); ctx.moveTo(s.x2, s.y2); ctx.lineTo(s.c2x, s.c2y); ctx.stroke();
   ctx.fillStyle = '#c9a96e'; for (const h of [[s.c1x, s.c1y], [s.c2x, s.c2y]]) { ctx.beginPath(); ctx.arc(h[0], h[1], r * 0.8, 0, Math.PI * 2); ctx.fill(); } ctx.restore();
 }
-/** 選んでいない、開いた曲線（ペンの線・グループでないもの）の端のうち、p から 6px 以内でいちばん近いもの { shape, index }。無ければ null。選ぶ前に端を押して引いたとき、端だけを動かすため。 */
+/** 選んでいない、開いた曲線（ペンの線・制御点つきの曲線。グループでないもの）の端のうち、p から 6px 以内でいちばん近いもの { shape, index }。無ければ null。選ぶ前に端を押して引いたとき、端だけを動かすため。 */
 function curveEndAt(p) {
   const r = 6 / scale; let best = null;
-  for (const s of doc.shapes) { if (s.type !== 'path' || s.closed || s.holeLink || selected.has(s.id) || groupIdOf(s) || !visible(s) || !editable(s) || !Array.isArray(s.nodes) || s.nodes.length < 2) continue;
+  for (const s of doc.shapes) { const bz = s.type === 'bezier'; if ((s.type !== 'path' && !bz) || s.closed || s.holeLink || selected.has(s.id) || groupIdOf(s) || !visible(s) || !editable(s)) continue;
+    if (bz) { if (doc.paths.some(pt => pt.shapeIds.includes(s.id) && doc.holes.some(h => h.pathId === pt.id))) continue; const ends = shapeHandles(s); for (const index of [0, 1]) { const d = distance(ends[index], p); if (d <= r && (!best || d < best.d)) best = { shape: s, index, d }; } continue; }   /* 制御点つきの曲線（bezier）の端。菱目が付いている曲線は、穴を壊さないよう対象外（線の端と同じ） */
+    if (!Array.isArray(s.nodes) || s.nodes.length < 2) continue;
     for (const index of [0, s.nodes.length - 1]) { const d = distance(s.nodes[index], p); if (d <= r && (!best || d < best.d)) best = { shape: s, index, d }; }
   }
   return best ? { shape: best.shape, index: best.index } : null;
@@ -10588,7 +10590,7 @@ function alignToCenters(p) {
   return bx || by ? { ...(bx ? { x: bx.c.x, fromX: bx.c } : {}), ...(by ? { y: by.c.y, fromY: by.c } : {}) } : null;
 }
 /** いまのドラッグが、円弧の端・曲線（ペンの線）の節点やハンドルか。目盛り（グリッド）に丸めない対象。曲がりのない2節点の線（実質は直線）は、直線と同じに丸める。 */
-function curveEndDrag() { const g = gesture; if (!g) return false; if (g.kind === 'node') return !g.dir; if (g.kind !== 'lineEnd') return false; const s = doc.shapes.find(x => x.id === g.id); return s?.type === 'arc'; }
+function curveEndDrag() { const g = gesture; if (!g) return false; if (g.kind === 'node') return !g.dir; if (g.kind !== 'lineEnd') return false; const s = doc.shapes.find(x => x.id === g.id); return s?.type === 'arc' || s?.type === 'bezier'; }
 /** 円弧の端・曲線の節点（ハンドルは除く）をつかんでいて Alt を押している＝吸着なし（図形を動かすときの Alt と同じ）。ハンドルの Alt は「折れた節点にする」なので対象外。 */
 function curveEndFreeAlt(e) { const g = gesture; return !!(e.altKey && g && curveEndDrag() && (g.kind === 'lineEnd' || g.part === 'anchor')); }
 function snapped(p, shift, anchor) {
@@ -11151,6 +11153,7 @@ function shapeHandles(s) {
   if (s.type === 'line') return [{ x: s.x1, y: s.y1, end: 1 }, { x: s.x2, y: s.y2, end: 2 }];
   if (s.type === 'polyline') return s.points.map((q, index) => ({ x: q.x, y: q.y, index }));
   if (s.type === 'arc') return [{ ...circlePoint(s, s.startDeg), end: 1 }, { ...circlePoint(s, s.endDeg), end: 2 }];
+  if (s.type === 'bezier') return [{ x: s.x1, y: s.y1, end: 1 }, { x: s.x2, y: s.y2, end: 2 }];
   return [];
 }
 /** ハンドル h だけを p へ動かした図形。直線＝その端、折れ線＝その角、円弧＝中心と半径はそのまま角度だけ。 */
@@ -11158,6 +11161,7 @@ function handleMoved(s, h, p) {
   if (s.type === 'line') return h.end === 1 ? { ...s, x1: p.x, y1: p.y } : { ...s, x2: p.x, y2: p.y };
   if (s.type === 'polyline') return { ...s, points: s.points.map((q, i) => i === h.index ? { x: p.x, y: p.y } : q) };
   if (s.type === 'arc') { const deg = Math.atan2(p.y - s.cy, p.x - s.cx) * 180 / Math.PI; return h.end === 1 ? { ...s, startDeg: deg } : { ...s, endDeg: deg }; }
+  if (s.type === 'bezier') { const k = h.end === 1 ? '1' : '2', dx = p.x - s['x' + k], dy = p.y - s['y' + k]; return { ...s, ['x' + k]: p.x, ['y' + k]: p.y, ['c' + k + 'x']: s['c' + k + 'x'] + dx, ['c' + k + 'y']: s['c' + k + 'y'] + dy }; }   /* 端と、その端の制御点をいっしょに動かす（端での向きは変わらない）。反対側の端と制御点は動かさない */
   return s;
 }
 /** 円弧を、同じ形の曲線（節点とハンドルつきのペンの線）にしたもの。90°以下ごとに1区間。id・層・線の種類などはそのまま。 */
@@ -11252,7 +11256,7 @@ function reanchorArcDims(id, nodeCount) {
   for (const d of doc.shapes) if (d.type === 'dimension' && d.anchors) d.anchors = d.anchors.map(a => a && a.id === id ? (map[a.k] == null ? null : { ...a, k: map[a.k] }) : a);
 }
 /** 端のハンドルを持つ図形（直線・折れ線・矩形・円弧）。 */
-const hasHandles = s => ['line', 'polyline', 'arc'].includes(s.type);
+const hasHandles = s => ['line', 'polyline', 'arc', 'bezier'].includes(s.type);   /* bezier（制御点つきの曲線）：端をつかんで、端だけ動かせる（事業主 2026-11-19「まだ、曲線端部だけうごかせない」：ベジェの道具で描いた曲線には、端をつかむ処理が無かった） */
 /** 延長線スナップ：カーソルが、動かさない側の端から元の向きに伸ばした線（延長線）の近く（画面で12px以内）なら、吸着した点を延長線の上にそろえる。離れれば自由に動かせる（Shift 不要でまっすぐ延長できる）。 */
 function extensionSnap(fixed, dir, w, sp) {
   if (!dir) return sp;
@@ -11894,7 +11898,7 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
     const bh = handleOk ? bezierCtrlHit(cursor) : null;   /* 制御点型のベジエ：制御点をつかんで角度を変える */
     if (bh) { gesture = { kind: 'bzctrl', id: bh.shape.id, part: bh.part, screen: p, preview: null }; draw(); return; }
     const le = handleOk ? lineEndHit(cursor) : null;
-    if (le) { let fixed = null, dir = null, orig = null; const sh = le.shape, h = le.handle; if (sh.type === 'line' || (sh.type === 'polyline' && !sh.closed && sh.points.length === 2)) { /* 直線、または節点が2つだけの折れ線（実質は直線）：動かさない側の端から元の向きに延長できる */ fixed = sh.type === 'line' ? (h.end === 1 ? { x: sh.x2, y: sh.y2 } : { x: sh.x1, y: sh.y1 }) : sh.points[1 - h.index]; const ln = Math.hypot(h.x - fixed.x, h.y - fixed.y); dir = ln > 1e-9 ? { x: (h.x - fixed.x) / ln, y: (h.y - fixed.y) / ln } : null; } else if (sh.type === 'polyline') orig = { x: h.x, y: h.y }; const holed = doc.paths.some(pt => pt.shapeIds.includes(sh.id) && doc.holes.some(hh => hh.pathId === pt.id)); if (holed && !dir) { $('hint').textContent = t('lineEndHoles'); draw(); return; } /* 菱目付きは、直線を元の向きに延ばす・縮めるだけ（向きは自動で固定） */ gesture = { kind: 'lineEnd', id: sh.id, h, screen: p, fixed, dir, orig, holed }; $('hint').textContent = t(sh.type === 'line' || dir ? 'lineEndDrag' : sh.type === 'arc' ? 'arcEndDrag' : 'vertexDrag'); draw(); return; } /* 端・角のハンドルをつかむと、ほかは動かさずその端・角だけ動かす */
+    if (le) { let fixed = null, dir = null, orig = null; const sh = le.shape, h = le.handle; if (sh.type === 'line' || (sh.type === 'polyline' && !sh.closed && sh.points.length === 2)) { /* 直線、または節点が2つだけの折れ線（実質は直線）：動かさない側の端から元の向きに延長できる */ fixed = sh.type === 'line' ? (h.end === 1 ? { x: sh.x2, y: sh.y2 } : { x: sh.x1, y: sh.y1 }) : sh.points[1 - h.index]; const ln = Math.hypot(h.x - fixed.x, h.y - fixed.y); dir = ln > 1e-9 ? { x: (h.x - fixed.x) / ln, y: (h.y - fixed.y) / ln } : null; } else if (sh.type === 'polyline') orig = { x: h.x, y: h.y }; const holed = doc.paths.some(pt => pt.shapeIds.includes(sh.id) && doc.holes.some(hh => hh.pathId === pt.id)); if (holed && !dir) { $('hint').textContent = t('lineEndHoles'); draw(); return; } /* 菱目付きは、直線を元の向きに延ばす・縮めるだけ（向きは自動で固定） */ gesture = { kind: 'lineEnd', id: sh.id, h, screen: p, fixed, dir, orig, holed }; $('hint').textContent = t(sh.type === 'line' || dir ? 'lineEndDrag' : sh.type === 'arc' ? 'arcEndDrag' : sh.type === 'bezier' ? 'curveEndGrab' : 'vertexDrag'); draw(); return; } /* 端・角のハンドルをつかむと、ほかは動かさずその端・角だけ動かす */
     const nh = pathShape && handleOk && nodeHit(pathShape, cursor);
     if (nh) {
       nodeSel = { id: pathShape.id, index: nh.index }; gesture = { kind: 'node', id: pathShape.id, index: nh.index, part: nh.part, alt: e.altKey, screen: p, preview: null };
@@ -11910,7 +11914,7 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
     hole = hole?.h;
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else if(selected.has(hole.id)&&selectedShapeIds().size){ /* 線などの図形といっしょに選んだ菱目をつかんだら、その菱目だけを滑らせず、選んだ全体を動かす（不具合記録 2026-10-17：菱目の近くをつかむと、選んだ図形が移動できなかった） */ gesture={kind:'move',start:cursor,screen:p,ids:selectedShapeIds()}; beginMoveSnap(gesture);} else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor,screen:p};} draw();return;}
     /* 選んでいない曲線（ペンの線）の端を押して引く：その曲線だけを選び、端の節点をつかむ＝端だけ動き、反対側は動かない（事業主 2026-11-19「片方の端部だけ操作したいのに全体が固定される」：選ぶ前に端を引くと、曲線全体が動いていた）。線の途中をつかめば、今までどおり全体が動く。Shift・Ctrl・Alt を押しているとき、グループの曲線、選択中の曲線は、今までどおり */
-    if (e.button === 0 && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) { const ce = curveEndAt(cursor); if (ce) { cancelSpanClick(); selected = new Set([ce.shape.id]); nodeSel = { id: ce.shape.id, index: ce.index }; rangeOff = true; gesture = { kind: 'node', id: ce.shape.id, index: ce.index, part: 'anchor', alt: false, screen: p, preview: null }; $('hint').textContent = t('curveEndGrab'); draw(); return; } }
+    if (e.button === 0 && !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) { const ce = curveEndAt(cursor); if (ce) { cancelSpanClick(); selected = new Set([ce.shape.id]); nodeSel = { id: ce.shape.id, index: ce.index }; rangeOff = true; gesture = ce.shape.type === 'bezier' ? { kind: 'lineEnd', id: ce.shape.id, h: shapeHandles(ce.shape)[ce.index], screen: p, fixed: null, dir: null, orig: null, holed: false } : { kind: 'node', id: ce.shape.id, index: ce.index, part: 'anchor', alt: false, screen: p, preview: null }; $('hint').textContent = t('curveEndGrab'); draw(); return; } }
     const hit = pickShapeAt(cursor);
     cancelSpanClick();
     if (e.altKey && hit) { selectSpanAt(cursor, e.shiftKey, { byHoles: true }); return; } /* Alt+クリック：菱目と菱目の間だけを選ぶ（Shift で追加） */
@@ -12291,7 +12295,7 @@ canvas.addEventListener('pointerup', drawOnce(e => {
     penRelease(g.start, cursor, distance(p, g.screen) >= 4); lastPoint = g.start;
   } else if (g.kind === 'lineEnd') {
     const s = doc.shapes.find(s => s.id === g.id);
-    if (s && editable(s) && distance(p, g.screen) >= 2) { const next = lineEndMoved(s, g, cursor), freed = s.type === 'arc' && next.type === 'path'; if (s.type === 'line' && Math.hypot(next.x2 - next.x1, next.y2 - next.y1) < 1e-6) { if (lineEndRetracted(s, g)) { removeSelected(new Set([s.id])); $('hint').textContent = t('lineEndRetracted'); } else $('hint').textContent = t('lineEndZero'); } else { const holed = doc.paths.some(pt => pt.shapeIds.includes(s.id) && doc.holes.some(h => h.pathId === pt.id)); if (holed && !lineEndKeepsHoles(s, next)) { $('hint').textContent = t('lineEndHoles'); draw(); return; } if (holed) moveShapeKeepingHoles(next); else transformSelectedTo(next, freed ? () => reanchorArcDims(s.id, next.nodes.length) : null); $('hint').textContent = freed ? t('arcEndCurve') : s.type === 'line' ? t('lineEndDone', { len: Math.hypot(next.x2 - next.x1, next.y2 - next.y1).toFixed(2) }) : t(s.type === 'arc' ? 'arcEndDone' : 'vertexDone'); } }
+    if (s && editable(s) && distance(p, g.screen) >= 2) { const next = lineEndMoved(s, g, cursor), freed = s.type === 'arc' && next.type === 'path'; if (s.type === 'line' && Math.hypot(next.x2 - next.x1, next.y2 - next.y1) < 1e-6) { if (lineEndRetracted(s, g)) { removeSelected(new Set([s.id])); $('hint').textContent = t('lineEndRetracted'); } else $('hint').textContent = t('lineEndZero'); } else { const holed = doc.paths.some(pt => pt.shapeIds.includes(s.id) && doc.holes.some(h => h.pathId === pt.id)); if (holed && !lineEndKeepsHoles(s, next)) { $('hint').textContent = t('lineEndHoles'); draw(); return; } if (holed) moveShapeKeepingHoles(next); else transformSelectedTo(next, freed ? () => reanchorArcDims(s.id, next.nodes.length) : null); $('hint').textContent = freed ? t('arcEndCurve') : s.type === 'line' ? t('lineEndDone', { len: Math.hypot(next.x2 - next.x1, next.y2 - next.y1).toFixed(2) }) : t(s.type === 'arc' ? 'arcEndDone' : s.type === 'bezier' ? 'curveEndDone' : 'vertexDone'); } }
   } else if (g.kind === 'node') {
     const s = doc.shapes.find(s => s.id === g.id);
     if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedNodePath(s, g, cursor));
