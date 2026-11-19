@@ -141,7 +141,7 @@ export function nestPieces(pieces, opts = {}) {
   const rasters = new Map(), info = new Map();
   for (const p of valid) {
     const c = (b => ({ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }))(nstBox(p.points)), list = [];
-    for (const ang of nstAngles(p.points, rotate)) { const rp = p.points.map(q => nstRot(q, ang, c)), R = nstRaster(rp, cell); R.angle = ang; R.rp = rp; list.push(R); }
+    for (const ang of nstAngles(p.points, rotate && !p.fixed)) {   /* fixed：この1個は回転させない（文字のまとまり） */ const rp = p.points.map(q => nstRot(q, ang, c)), R = nstRaster(rp, cell); R.angle = ang; R.rp = rp; list.push(R); }
     rasters.set(p.id, list); info.set(p.id, { center: c, area: nstArea(p.points), perim: p.points.reduce((s, q, i) => s + Math.hypot(q.x - p.points[(i + 1) % p.points.length].x, q.y - p.points[(i + 1) % p.points.length].y), 0), box: nstBox(p.points) });
   }
   const orders = [valid.slice().sort((a, b) => info.get(b.id).area - info.get(a.id).area), valid.slice().sort((a, b) => Math.max(info.get(b.id).box.maxX - info.get(b.id).box.minX, info.get(b.id).box.maxY - info.get(b.id).box.minY) - Math.max(info.get(a.id).box.maxX - info.get(a.id).box.minX, info.get(a.id).box.maxY - info.get(a.id).box.minY)), valid.slice().sort((a, b) => info.get(b.id).perim - info.get(a.id).perim)];

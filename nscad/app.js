@@ -6494,6 +6494,15 @@ function nestOpenOf(clusters, cands) {
   return { seq: commitSeq, n: open.length, marks };
 }
 function nestOpenText() { return nestOpen.n ? t(nestOpen.marks.length ? 'nestOpen' : 'nestOpenNoMark', { n: nestOpen.n }) : ''; }
+/** 型紙の外にある文字を、近い行どうしで1まとまりにする（事業主 2026-11-19「用紙に並べる機能に文字が含まれていない」・決定A：文字も1個として並べる）。
+ *  返す値：[{ ids, points（囲みの四角・4点） }]。文字の幅は、全角を文字高ぶん、半角をその 0.6 倍で見積もる。行の間が文字高の 0.6 倍以内なら同じまとまり。 */
+function nestTextBlocks(texts) {
+  const boxOf = s => { const w = Math.max(0.6, [...String(s.text || '')].reduce((a, ch) => a + (ch.charCodeAt(0) > 0xff ? 1 : 0.6), 0)) * s.sizeMm, r = (s.angleDeg || 0) * Math.PI / 180, c = Math.cos(r), sn = Math.sin(r), pts = [[0, -s.sizeMm], [w, -s.sizeMm], [w, s.sizeMm * 0.25], [0, s.sizeMm * 0.25]].map(([x, y]) => ({ x: s.x + x * c - y * sn, y: s.y + x * sn + y * c })); return { minX: Math.min(...pts.map(q => q.x)), maxX: Math.max(...pts.map(q => q.x)), minY: Math.min(...pts.map(q => q.y)), maxY: Math.max(...pts.map(q => q.y)), pad: s.sizeMm * 0.6 }; };
+  const items = texts.map(s => ({ s, b: boxOf(s) })).filter(it => [it.b.minX, it.b.maxX, it.b.minY, it.b.maxY].every(Number.isFinite)), parent = items.map((_, i) => i), find = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) { const a = items[i].b, b = items[j].b, pad = Math.max(a.pad, b.pad); if (a.minX - pad <= b.maxX && b.minX - pad <= a.maxX && a.minY - pad <= b.maxY && b.minY - pad <= a.maxY) parent[find(i)] = find(j); }
+  const groups = new Map(); items.forEach((it, i) => { const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(it); });
+  return [...groups.values()].map(g => { const x0 = Math.min(...g.map(it => it.b.minX)), x1 = Math.max(...g.map(it => it.b.maxX)), y0 = Math.min(...g.map(it => it.b.minY)), y1 = Math.max(...g.map(it => it.b.maxY)); return { ids: g.map(it => it.s.id), points: [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }] }; });
+}
 function nestCandidates() {
   const sel = selectedShapeIds(), all = doc.shapes.filter(sh => visible(sh) && editable(sh) && !sh.holeLink && sh.layer !== 'guide' && sh.layer !== 'marks' && sh.lineStyle !== 'dashed' && !isHardwareShape(sh) && !['text', 'dimension', 'fold', 'image'].includes(sh.type));
   return sel.size ? all.filter(sh => sel.has(sh.id)) : all;
@@ -6503,12 +6512,14 @@ function nestRun() {
   if (!(margin >= 0) || !(gap >= 0) || margin * 2 >= Math.min(pw, ph)) { $('hint').textContent = t('invalidNumber'); return; }
   const cands = nestCandidates(), clusters = adPieces(cands), pcs = clusters.filter(c => c.piece && c.points); nestOpen = nestOpenOf(clusters, cands);
   if (!pcs.length) { nestPreview = null; $('nestApply').disabled = true; $('nestResult').textContent = t('nestNone') + nestOpenText(); $('hint').textContent = $('nestResult').textContent; draw(); return; }
-  const res = nestPieces(pcs.map((c, i) => ({ id: i, points: c.points })), { sheetW: pw, sheetH: ph, margin, gap, rotate: $('nestRotate').checked, orient: $('nestOrient').value, timeMs: 2000 });
   /* 型紙といっしょに動かすもの：型紙の外形の中に中心がある、見えて動かせる図形（菱目の線・スロット・ガイド・寸法・文字ほか）。いちばん小さい外形に入れる */
   const owner = new Map(), polys = pcs.map(c => c.points), areas = polys.map(p => Math.abs(p.reduce((a, q, i) => a + q.x * p[(i + 1) % p.length].y - p[(i + 1) % p.length].x * q.y, 0)) / 2);
   const own = pcs.map(c => new Set(c.ids));
   for (const sh of doc.shapes) { if (!visible(sh) || !editable(sh)) continue; const own0 = own.findIndex(o => o.has(sh.id)); if (own0 >= 0) { owner.set(sh.id, own0); continue; } let b; try { b = bboxOf(sh); } catch { continue; } if (![b.minX, b.maxX, b.minY, b.maxY].every(Number.isFinite)) continue; const c = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }; let best = -1; polys.forEach((poly, i) => { if (nestInside(c, poly) && (best < 0 || areas[i] < areas[best])) best = i; }); if (best >= 0) owner.set(sh.id, best); }
-  const pieces = pcs.map((c, i) => ({ ids: [...owner].filter(([, k]) => k === i).map(([id]) => id) }));
+  /* 型紙の外の文字（どの型紙の中にも無い文字）：近い行どうしのまとまりごとに、囲みの四角を1個として並べる（回転はさせない）。図形を選んで並べるときは、選んだ文字だけ */
+  const selNow = selectedShapeIds(), textBlocks = nestTextBlocks(doc.shapes.filter(sh => sh.type === 'text' && visible(sh) && editable(sh) && !owner.has(sh.id) && (!selNow.size || selNow.has(sh.id))));
+  const res = nestPieces([...pcs.map((c, i) => ({ id: i, points: c.points })), ...textBlocks.map((b, k) => ({ id: pcs.length + k, points: b.points, fixed: true }))], { sheetW: pw, sheetH: ph, margin, gap, rotate: $('nestRotate').checked, orient: $('nestOrient').value, timeMs: 2000 });
+  const pieces = [...pcs.map((c, i) => ({ ids: [...owner].filter(([, k]) => k === i).map(([id]) => id) })), ...textBlocks.map(b => ({ ids: b.ids }))];
   const bb = bboxOfDoc(doc), origin = bb && Number.isFinite(bb.maxX) ? { x: bb.maxX + 30, y: bb.minY } : { x: 0, y: 0 };
   nestPreview = { res, pieces, origin, polys, sizeName: $('nestSize').value.toUpperCase() };
   const orient = t(res.orient === 'landscape' ? 'nestLandscape' : 'nestPortrait'), n = res.sheets.reduce((a, sh) => a + sh.items.length, 0);
