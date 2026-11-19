@@ -99,7 +99,7 @@ import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP, PHRASE_HISTORY_KEY, parsePhraseHistory, pushPhraseHistory, serializePhraseHistory } from './phrases.js';
-import { coverLayout, binderOverallExtent, leverArcDrop, binderMechParts, punchLines } from './hardware.js';
+import { coverLayout, binderOverallExtent, leverArcDrop, binderMechParts, punchLines, PUNCH_MM_PER_NO } from './hardware.js';
 import { zipperArt, zipperRuns, zipperLength, zipperNetLength, zipperEnds, normalizeZipper, zipperHalfWidth, ZIPPER_TAPE_DEFAULT, ZIPPER_METAL_COLORS, ZIPPER_STD_CM, zipperTapeCheck, zipperSeamAuto, ZIPPER_SEW_MARGIN, ZIPPER_GAP_MAX, ZIPPER_ATT_MAX, ZIPPER_LT_MAX, ZIPPER_TAPE_PRESETS, ZIPPER_TW_MAX } from './zipper.js';
 import { buyLinkOf } from './buy.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId, tidyDuplicateProducts } from './binder_edits.js';
@@ -6280,11 +6280,31 @@ function hwPunchText(it) {
 /** 「穴あけ」の行と、号数を直して確定にする欄（号数の入力・「この号数で確定にする」・確定済みなら「仮に戻す」）。 */
 function renderHwPunch() {
   const it = hwCurrent(), p = hwPunchText(it), el = $('hwPunch'), box = $('hwPunchEdit'); if (el) el.textContent = p.text;
+  renderHwSide(it, p.slots);
   if (!box) return; box.textContent = ''; box.hidden = !p.slots.length; if (!p.slots.length) return;
   const inputs = [];
   p.slots.forEach((s, i) => { const label = document.createElement('label'), span = document.createElement('span'), inp = document.createElement('input'); span.textContent = s.label + ' ' + t('hwPunchNoUnit'); inp.type = 'number'; inp.step = '1'; inp.min = '1'; inp.max = '60'; inp.value = String(s.no); inp.dataset.punchSlot = String(i); label.appendChild(span); label.appendChild(inp); box.appendChild(label); inputs.push(inp); });
   const ok = document.createElement('button'); ok.type = 'button'; ok.id = 'hwPunchConfirm'; ok.textContent = t('hwPunchConfirm'); ok.onclick = () => confirmHwPunch(it, inputs); box.appendChild(ok);
   if (p.confirmed) { const rv = document.createElement('button'); rv.type = 'button'; rv.id = 'hwPunchRevert'; rv.textContent = t('hwPunchRevert'); rv.onclick = () => revertHwPunch(it); box.appendChild(rv); }
+}
+/** 「置く側」の欄（事業主 2026-11-19「バネホックの雄雌の使い分けができない。他のボタンも」）：穴あけが部分ごと（オス側・メス側など）に分かれている留め具だけに出す。
+ *  「両方」＝今までどおり（外径と足の円）。部分を選ぶと、その部分の穴あけの円（号数 × 0.3mm）と、金具の外径（目安の点線）を置く。金具を替えたら「両方」に戻す。 */
+let hwSideFor = '';
+function renderHwSide(it, slots) {
+  const row = $('hwSideRow'), sel = $('hwSide'); if (!row || !sel) return;
+  const on = !!it && (it.punch?.parts?.length || 0) >= 2 && slots.length >= 2; row.hidden = !on;
+  const keep = on && hwSideFor === it.id ? sel.value : ''; sel.textContent = ''; hwSideFor = on ? it.id : '';
+  if (!on) { sel.value = ''; return; }
+  const add = (value, text) => { const o = document.createElement('option'); o.value = value; o.textContent = text; sel.appendChild(o); };
+  add('', t('hwSideBoth')); slots.forEach((s, i) => add(String(i), s.label));
+  sel.value = slots[Number(keep)] && keep !== '' ? keep : '';
+}
+/** いま選んでいる「置く側」：{ index, label, no（号数・欄に入っている数を優先）, mm（穴の直径） }。「両方」・欄が無い金具は null。 */
+function hwSidePick(it) {
+  const row = $('hwSideRow'), sel = $('hwSide'); if (!it || !row || row.hidden || !sel || sel.value === '' || hwSideFor !== it.id) return null;
+  const slots = hwPunchText(it).slots, i = Number(sel.value), s = slots[i]; if (!s) return null;
+  const typed = Number([...($('hwPunchEdit')?.querySelectorAll?.('input') || [])].find(x => x.dataset?.punchSlot === String(i))?.value), no = Number.isInteger(typed) && typed >= 1 && typed <= 60 ? typed : s.no;
+  return { index: i, label: s.label, no, mm: Math.round(no * PUNCH_MM_PER_NO * 100) / 100 };
 }
 function confirmHwPunch(it, inputs) {
   const nos = inputs.map(i => Number(i.value)); if (!it || !nos.length || !nos.every(n => Number.isInteger(n) && n >= 1 && n <= 60)) { $('hint').textContent = t('hwPunchBad'); return; }
@@ -7059,9 +7079,11 @@ function placeHardware(at) {
   const isBinder = it.footprint2d.kind === 'binder', sel = isBinder ? binderSpec($('binderSpecSel').value) : null, spec = isBinder ? (sel && (sel.parent || sel.id) === it.params.spec ? sel : binderSpec(it.params.spec)) : null;
   const overrides = isBinder ? { ringD: Number($('ringD').value) || undefined, ...(spec && spec.id !== it.params.spec ? { spec: spec.id } : {}) } : hwParams();
   let drafts; try { drafts = hardwareDrafts(it, overrides, spec, at, hwAngleValue()); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
+  const side = isBinder ? null : hwSidePick(it);   /* 置く側（オス側・メス側）を選んでいるとき：穴はその側の穴あけの大きさ、外径は目安の点線 */
+  if (side) drafts = drafts.map(d => d.hwHole && d.type === 'circle' ? { ...d, r: side.mm / 2 } : d.hw ? { ...d, lineStyle: 'dashed', hw: { ...d.hw, side: side.index, punchNo: side.no } } : d);
   cancel();
   commit(() => { selected = new Set(addHardwareDrafts(drafts, nextGroupId(doc.shapes))); }); /* 置いた金具は自動で1つのグループ（クリックで全体・ダブルクリックで中の1つ） */
-  renderLayers(); const en = document.documentElement.lang === 'en'; $('hint').textContent = t('hwPlaced', { name: spec && spec.id !== it.params.spec ? (en ? spec.names.en : spec.names.ja) : (en ? it.name_en : it.name_ja) }); { const pp = hwPunchText(it), pl = pp.lines; if (pl.length && !isBinder) $('hint').textContent += ' ' + t('hwPunchPlaced', { tag: pp.tag, s: pl.join(en ? '; ' : '／') }); }   /* 製品を置いたら製品名で案内（事業主決定A・2026-10-12） */
+  renderLayers(); const en = document.documentElement.lang === 'en'; $('hint').textContent = t('hwPlaced', { name: spec && spec.id !== it.params.spec ? (en ? spec.names.en : spec.names.ja) : (en ? it.name_en : it.name_ja) }); { const pp = hwPunchText(it), pl = pp.lines; if (side) $('hint').textContent += ' ' + t('hwSidePlaced', { side: side.label, no: side.no, mm: side.mm.toFixed(1) }); else if (pl.length && !isBinder) $('hint').textContent += ' ' + t('hwPunchPlaced', { tag: pp.tag, s: pl.join(en ? '; ' : '／') }); }   /* 製品を置いたら製品名で案内（事業主決定A・2026-10-12） */
 }
 /** 「寸法データ」：規格・製品の寸法を読める表にする（JSON は出さない）。確かさは 実測／規格表／推定／未入力 の言葉で。製品なら親の規格を示す。 */
 function binderDataHtml(spec, ringD) {
