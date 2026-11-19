@@ -6563,13 +6563,20 @@ function nestApplyCopies() {
     nd.shapes.push({ id: freshId(nd.shapes, 's'), layer: 'guide', type: 'polyline', closed: true, lineStyle: 'dashed', color: 'blue', noOutput: true, points: [{ x: 0, y: 0 }, { x: W, y: 0 }, { x: W, y: H }, { x: 0, y: H }] });
     rebuildSnaps(); tabs[activeTab].dirty = true;
   });
-  nestPreview = null; $('nestApply').disabled = true; switchTab(first); renderTabs(); fit();
-  $('hint').textContent = t('nestCopyDone', { size: sizeName, orient, sheets: res.sheets.length, n }) + (removed > 0.005 ? ' ' + t('packMerged', { mm: removed.toFixed(1) }) : '');
+  nestPreview = null; $('nestApply').disabled = true; switchTab(first); renderTabs(); fit(); const paperNote = nestSyncPaper(res, sizeName);
+  $('hint').textContent = t('nestCopyDone', { size: sizeName, orient, sheets: res.sheets.length, n }) + (removed > 0.005 ? ' ' + t('packMerged', { mm: removed.toFixed(1) }) : '') + paperNote;
+}
+/** 「配置する」のあと、印刷・PDF の用紙（「出力」の「用紙」の欄）を、並べた結果と同じ大きさ・向きに合わせる（事業主 2026-11-19「シミュレーションではA4１枚に収まっているので、バグです」：
+ *  並べた向きが A4 横でも、出力の用紙は A4 縦のままで、PDF が2ページに分かれた）。変えたときは、案内に足す文を返す。同じなら ''。 */
+function nestSyncPaper(res, sizeName) {
+  const el = $('paper'), key = (sizeName === 'A3' ? 'a3' : 'a4') + (res.orient === 'landscape' ? 'l' : ''); if (!el || el.value === key) return '';
+  el.value = key; if (typeof scheduleOutSummary === 'function') scheduleOutSummary();
+  return ' ' + t('nestPaperSet', { paper: t({ a4: 'paperA4P', a4l: 'paperA4L', a3: 'paperA3P', a3l: 'paperA3L' }[key]) });
 }
 function nestApply() {
   if (!nestPreview || !nestPreview.res.sheets.length) return;
   if ($('nestCopy').checked) { nestApplyCopies(); return; }
-  const { res, pieces, origin } = nestPreview, n0 = undo.length, moved = new Set();
+  const { res, pieces, origin, sizeName } = nestPreview, n0 = undo.length, moved = new Set();
   cancel();
   res.sheets.forEach((sh, k) => {
     const ox = origin.x + k * (res.sheetW + 20), oy = origin.y;
@@ -6577,7 +6584,7 @@ function nestApply() {
   });
   if (undo.length > n0 + 1) undo.splice(n0 + 1);   /* 型紙ごとの移動を、元に戻す1回にまとめる */
   selected = moved; nestPreview = null; $('nestApply').disabled = true; refreshInfo(); draw();
-  $('hint').textContent = t('nestDone', { n: res.sheets.reduce((a, sh) => a + sh.items.length, 0) });
+  $('hint').textContent = t('nestDone', { n: res.sheets.reduce((a, sh) => a + sh.items.length, 0) }) + nestSyncPaper(res, sizeName);
 }
 /** 選んだ図形を、用紙に詰めて複製し、新しいタブに並べる（事業主 2026-11-08「選択した図形を印刷時に余白を作らないように最適な配置にする（複製して配置）機能が欲しい。共有できる直線は重ねて統合すること」・選択：四角で詰める・回転しない・新しいタブ）。
  *  部品＝選んだ図形のうち、外接の四角が重なる（0.3mm 以内）図形のまとまり（外形・中の線・スロットなど）。文字は、中心が部品の四角の中にあれば、その部品に入れる。寸法・写真・折りの図形は入れない。
