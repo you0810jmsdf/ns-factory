@@ -14520,7 +14520,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/nbad53c09af20",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/togakushi.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（茅葺きの門と杉並木、岩山のイメージ）。"
       },
       "checked": "2026-11-19",
       "note_geo": "住所検索の点は国土地理院の注記『戸隠奥社』から約1503m離れていたため、注記の位置に合わせた（2026-10-12 確認）。"
@@ -16025,7 +16027,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n8afd38eb9eea",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/nukisaki.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（谷底の拝殿と石段上の楼門のイメージ）。"
       },
       "checked": "2026-11-19",
       "note_geo": "国土地理院の注記『貫前神社』と約61m以内で一致（2026-10-12 確認）。"
@@ -16531,7 +16535,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n7b63c220449c",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/tagataisha.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（檜皮葺の社殿と石畳の広場のイメージ）。"
       },
       "checked": "2026-11-19",
       "note_geo": "国土地理院の注記『多賀大社』と約50m以内で一致（2026-10-12 確認）。"
@@ -17174,7 +17180,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n754dd5af3625",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/tosa.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（紅葉の山を背にした社殿と砂利の境内のイメージ）。"
       },
       "checked": "2026-11-19",
       "note_geo": "国土地理院の注記『土佐神社』と約17m以内で一致（2026-10-12 確認）。"
@@ -18713,7 +18721,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/nd4c5fdec8fae",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/tsubaki.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（杉の森と自然石の石段のイメージ）。"
       },
       "checked": "2026-11-19",
       "note_geo": "国土地理院の注記『椿大神社』と約131m以内で一致（2026-10-12 確認）。"
@@ -22271,7 +22281,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n4cddc534f80e",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/suwashimosha.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（唐破風の幣拝殿と御柱のイメージ）。"
       },
       "checked": "2026-11-19",
       "note_geo": "国土地理院の注記『諏訪大社下社秋宮』の位置に合わせた（公式の地図の値 36.0754,138.0891 とは約202m ずれていたため。2026-10-12 確認）。"
@@ -28716,7 +28728,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n3661e15bd190",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/tamaki.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（霧の杉林と緑青の屋根の社殿のイメージ）。"
       },
       "checked": "2026-11-19",
       "note_geo": "座標は Wikipedia（33.924744, 135.829973）と OpenStreetMap（33.92485, 135.83000）が一致した値（33.9247, 135.8300）を使用。国土地理院の住所検索API（奈良県吉野郡十津川村玉置川1）は地区の代表点（33.9115, 135.8412）を返し、山頂近くの社殿から約1.5km離れるため採用しなかった。 ／ 国土地理院の注記『玉置神社』と約53m以内で一致（2026-10-29 確認）。住所検索の点は約1.5kmずれたため、OpenStreetMap と Wikipedia が一致する座標を使用。"
@@ -29616,7 +29630,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n9edb13739fde",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/hikosan.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（霧氷と雲海の山頂の社殿のイメージ）。"
       },
       "checked": "2026-11-19",
       "note_geo": "国土地理院の注記『英彦山神宮』と約13m以内で一致（2026-11-02 確認）。"
@@ -29744,7 +29760,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n9bdd97e424ef",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/shikaumi.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（海を望む石段と木造の社殿のイメージ）。"
       },
       "checked": "2026-11-19",
       "note_geo": "国土地理院の注記『志賀海神社』と約21m以内で一致（2026-11-02 確認）。"
@@ -30601,7 +30619,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n97fc372cfc86",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/susa.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（霧の谷の栩葺の社殿のイメージ）。"
       },
       "checked": "2026-11-19",
       "note_geo": "住所検索の点が注記と約530mずれていたため、国土地理院の注記『須佐神社』の位置に直した。"
