@@ -3125,6 +3125,34 @@
           "review_count": 234
         }
       ]
+    },
+    {
+      "shrine_id": "habu",
+      "pref": "千葉県",
+      "fetched_at": "2026-10-12",
+      "items": [
+        {
+          "name": "ゆで落花生!産地ならではの味!千葉県八街産「ナカテユタカ」",
+          "shop": "ハクダイ食品グルメ村",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/g00pv1d8.0r79k1c3.g00pv1d8.0r79lce5/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fhakudai%2F706768%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Fhakudai%2Fi%2F10000235%2F&rafcid=wsc_i_is_88ea717f-f7c2-4370-a1e2-0d815f1d57fc",
+          "review_average": 4.2,
+          "review_count": 51
+        },
+        {
+          "name": "沢田漬物 成田漬 2本入",
+          "shop": "なごみの米屋",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/g00pkf48.0r79k0a6.g00pkf48.0r79l927/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fyoneya%2F10000457%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Fyoneya%2Fi%2F10000457%2F&rafcid=wsc_i_is_88ea717f-f7c2-4370-a1e2-0d815f1d57fc",
+          "review_average": 4.74,
+          "review_count": 34
+        },
+        {
+          "name": "2026年産 新豆 手もぎゆで落花生 450g 10袋セット千葉県八街産落花生",
+          "shop": "遠藤ピーナツ楽天市場店",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/g00q2ec8.0r79ke63.g00q2ec8.0r79l1d8/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fenpea%2F10001104%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Fenpea%2Fi%2F10001104%2F&rafcid=wsc_i_is_88ea717f-f7c2-4370-a1e2-0d815f1d57fc",
+          "review_average": 4.5,
+          "review_count": 12
+        }
+      ]
     }
   ]
 }
