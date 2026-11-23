@@ -3161,6 +3161,37 @@
           "status": "candidate"
         }
       ]
+    },
+    {
+      "shrine_id": "habu",
+      "shrine_name": "埴生神社",
+      "fetched_at": "2026-11-24",
+      "hotels": [
+        {
+          "name": "和空 成田山門前",
+          "area": "千葉県成田市仲町379-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D184054",
+          "review_average": 4.69,
+          "review_count": 68,
+          "status": "candidate"
+        },
+        {
+          "name": "成田山門前 旅館 若松本店",
+          "area": "千葉県成田市本町355",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D4688",
+          "review_average": 4.62,
+          "review_count": 404,
+          "status": "candidate"
+        },
+        {
+          "name": "アパホテル〈京成成田駅前〉",
+          "area": "千葉県成田市花崎町906番",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D76896",
+          "review_average": 4.23,
+          "review_count": 5843,
+          "status": "candidate"
+        }
+      ]
     }
   ]
 }
