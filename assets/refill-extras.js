@@ -291,7 +291,172 @@
     sync();
   }
 
-  function mount() { injectStyle(); fold(); holeRow(); mountBackup(); pwa(); usage(); loadMobile(); }
+  // 7. 紙面の上の操作バー（2026-11-24 事業主決定B）
+  //  背景: PDF・印刷のボタンが閉じた「☰」の中にしかなく、ページを開いた42回のうち☰が開かれたのは2回（11/13〜19）。
+  //  - 「📄 PDFを作る」「🖨 印刷」「⚙ 期間・設定」を、サイズ切り替えの下（紙面の上）に常に出す。PDFは本体の #btnPdf を押すだけ（生成の仕組みに触れない）
+  //  - PDF・印刷のたびに「作った期間」をツールごとに端末へ保存し、次に来たら「▶ 続きから作る」で開始日を翌日に、長さは前回と同じにする
+  //  - パソコン幅で初めて来た人にだけ、設定パネルを開いた状態で始める（スマホは重なるので開かない）
+  // ⛔ 期間の欄は2種類の名前がある（開始 startDate／periodStart・終了 periodEnd／endDate）。値を入れて change を送るだけで、各ツールの再描画に任せる。
+  const PERIOD_KEY = 'nsf_last_period_v1';
+  const INTRO_KEY = 'nsf_panel_intro_v1';
+  const $id = id => document.getElementById(id);
+  let applying = false;   // 「続きから」で日付を入れている最中（手で変えたときと区別する）
+  const startEl = () => $id('startDate') || $id('periodStart');
+  const endEl = () => $id('periodEnd') || $id('endDate');
+  const pad2 = n => String(n).padStart(2, '0');
+  const toVal = d => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  function parseVal(v) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+  function isUndated() { const u = $id('btnUndated'); return !!(u && u.classList.contains('on')); }
+  function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function lastDayOf(y, m) { return new Date(y, m + 1, 0); }
+  // 前回の期間の翌日から、同じ長さの期間。前回が「月初〜月末」なら月数で合わせる（1か月＝28〜31日のずれを出さない）
+  function nextRange(s, e) {
+    const ns = addDays(e, 1);
+    if (s.getDate() === 1 && e.getDate() === lastDayOf(e.getFullYear(), e.getMonth()).getDate()) {
+      const months = (e.getFullYear() - s.getFullYear()) * 12 + e.getMonth() - s.getMonth() + 1;
+      return { s: ns, e: lastDayOf(ns.getFullYear(), ns.getMonth() + months - 1) };
+    }
+    return { s: ns, e: addDays(ns, Math.round((e - s) / 86400000)) };
+  }
+  function fmtMD(d) { return (d.getFullYear() !== new Date().getFullYear() ? d.getFullYear() + '/' : '') + (d.getMonth() + 1) + '/' + d.getDate(); }
+  function savedPeriod() {
+    const p = lsGet(PERIOD_KEY, {})[toolSlug()];
+    const s = p && parseVal(p.s), e = p && parseVal(p.e);
+    return s && e && e >= s ? { s, e } : null;
+  }
+  // 実際に紙面に出る期間にそろえる。週間・バーチカルは「開始日の週の頭〜終了日の週の終わり」、月間は「開始月の1日〜終了月の末日」で描くので、
+  // 入力欄の値のまま次を作ると1週間（1か月）重なる。リフィルメーカーは週間バーチカルの時だけ期間欄を使う（ほかの書式は対象外）。
+  function effectiveRange(s, e) {
+    const fs = $id('fmtSel');
+    if (fs && fs.value !== 'weekly') return null;
+    const wsd = $id('weekStartDay');
+    if (wsd && $id('startDate') && $id('periodEnd')) {
+      const sd = parseInt(wsd.value, 10) || 0;
+      const snap = d => addDays(d, -((d.getDay() - sd + 7) % 7));
+      return { s: snap(s), e: addDays(snap(e), 6) };
+    }
+    if ($id('periodStart')) return { s: new Date(s.getFullYear(), s.getMonth(), 1), e: lastDayOf(e.getFullYear(), e.getMonth()) };
+    return { s, e };
+  }
+  function recordPeriod() {
+    if (isUndated()) return;
+    const s0 = parseVal(startEl() && startEl().value), e0 = parseVal(endEl() && endEl().value);
+    if (!s0 || !e0 || e0 < s0) return;
+    const r = effectiveRange(s0, e0); if (!r) return;
+    const s = r.s, e = r.e;
+    const all = lsGet(PERIOD_KEY, {});
+    all[toolSlug()] = { s: toVal(s), e: toVal(e), at: Date.now() };
+    lsSet(PERIOD_KEY, all);
+    const note = $id('nsfBarNote'); if (note) note.textContent = '';
+    refreshBar();
+  }
+  function setDate(el, d) {
+    if (!el) return;
+    el.value = toVal(d);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  function applyNext() {
+    const p = savedPeriod(); if (!p) return;
+    const n = nextRange(p.s, p.e);
+    applying = true;
+    try { setDate(startEl(), n.s); setDate(endEl(), n.e); } finally { applying = false; }
+    const note = $id('nsfBarNote');
+    if (note) note.textContent = '開始日を ' + fmtMD(n.s) + '、終了日を ' + fmtMD(n.e) + ' にしました（前回の続き）。紙面を確かめてから PDF を作ってください。';
+    refreshBar();
+  }
+  function refreshBar() {
+    const row = $id('nsfBarNextRow'); if (!row) return;
+    const p = savedPeriod();
+    const cur = parseVal(startEl() && startEl().value);
+    const n = p && nextRange(p.s, p.e);
+    const already = n && cur && toVal(cur) === toVal(n.s);
+    const fs = $id('fmtSel');
+    const show = !!n && !isUndated() && !already && !(fs && fs.value !== 'weekly');
+    const noteEl = $id('nsfBarNote');
+    if (isUndated() && noteEl) noteEl.textContent = '';
+    row.style.display = show || (noteEl && noteEl.textContent) ? '' : 'none';
+    const btn = $id('nsfBarNext');
+    if (btn) { btn.style.display = show ? '' : 'none'; if (n) btn.textContent = '▶ 続きから作る（' + fmtMD(n.s) + '〜' + fmtMD(n.e) + '）'; }
+    const prev = $id('nsfBarPrev');
+    if (prev) prev.textContent = show && p ? '前回は ' + fmtMD(p.s) + '〜' + fmtMD(p.e) + ' を作りました。' : '';
+  }
+  function actionBar() {
+    const controls = $id('controls'), preview = $id('preview'), real = $id('btnPdf');
+    if (!controls || !preview || !real || $id('nsfActionBar')) return;
+    const st = document.createElement('style');
+    st.textContent = [
+      '#nsfActionBar{max-width:760px;margin:0 auto 12px;padding:8px 10px;background:#fff;border:1px solid #E0D2C2;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-wrap:wrap;gap:8px;align-items:center;font:13px/1.6 -apple-system,"Hiragino Sans",Meiryo,sans-serif;color:#4a3a2c;box-sizing:border-box}',
+      '#nsfActionBar button{border-radius:6px;padding:7px 12px;font:inherit;font-weight:700;cursor:pointer}',
+      '#nsfBarPdf{background:#7A5540;color:#fff;border:1px solid #7A5540}',
+      '#nsfBarPrint,#nsfBarSettings{background:#F3ECE4;color:#4a3a2c;border:1px solid #E0D2C2}',
+      '#nsfBarSettings{margin-left:auto}',
+      '#nsfBarNextRow{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;border-top:1px dashed #E0D2C2;padding-top:8px}',
+      '#nsfBarNext{background:#fbf7ef;color:#6f4e37;border:1.5px dashed #c9a96e}',
+      '#nsfBarPrev,#nsfBarNote{font-size:12px;color:#6b5646}',
+      '#nsfBarNote:empty,#nsfBarPrev:empty{display:none}',
+      '@media (min-width:1100px){#nsfActionBar{position:sticky;top:0;z-index:60}}',
+      '@media (min-width:601px){body.panel-open #nsfActionBar{margin-left:max(292px,calc(50% - 380px));margin-right:auto}}',
+      '@media (max-width:600px){#nsfActionBar{margin:0 12px 8px;padding:6px 8px;gap:6px}#nsfActionBar button{padding:7px 10px}}',
+      '@media print{#nsfActionBar{display:none!important}}'
+    ].join('');
+    document.head.appendChild(st);
+    const bar = document.createElement('div');
+    bar.id = 'nsfActionBar';
+    bar.setAttribute('role', 'toolbar');
+    bar.setAttribute('aria-label', '作る・印刷する');
+    bar.innerHTML = '<button type="button" id="nsfBarPdf">📄 PDFを作る</button>'
+      + '<button type="button" id="nsfBarPrint">🖨 印刷</button>'
+      + '<button type="button" id="nsfBarSettings">⚙ 期間・設定</button>'
+      + '<div id="nsfBarNextRow" style="display:none"><button type="button" id="nsfBarNext"></button><span id="nsfBarPrev"></span><span id="nsfBarNote" role="status"></span></div>';
+    preview.parentNode.insertBefore(bar, preview);
+    // 更新履歴（HISTORY_ENTRIES の末尾が最新・refill-mobile.js と同じやり方）。refill-mobile.js（10/31の項目）を読み終えてから足して、日付の順を保つ
+    const pushHist = () => { try {
+      if (typeof HISTORY_ENTRIES !== 'undefined' && Array.isArray(HISTORY_ENTRIES) && !HISTORY_ENTRIES.some(x => x.title === '紙面の上に「PDFを作る・印刷・続きから作る」'))
+      HISTORY_ENTRIES.push({ date: '2026-11-24', type: 'improve', title: '紙面の上に「PDFを作る・印刷・続きから作る」',
+        detail: 'PDF・印刷のボタンを、☰を開かなくても押せるように紙面の上に出しました。PDF・印刷のときに作った期間をこの端末に覚えておき、次に開いたとき「▶ 続きから作る」で、前回の翌日から同じ長さの期間を用意します（週間は週単位・月間は月単位でそろえます）。' });
+    } catch (e) {} };
+    setTimeout(() => {
+      const m = $id('nsf-refill-mobile-js');
+      if (m && !window.__nsfRefillMobile) { m.addEventListener('load', pushHist); m.addEventListener('error', pushHist); setTimeout(pushHist, 5000); }
+      else pushHist();
+    }, 0);
+    $id('nsfBarPdf').addEventListener('click', () => real.click());
+    $id('nsfBarPrint').addEventListener('click', () => window.print());
+    $id('nsfBarSettings').addEventListener('click', () => { if (typeof window.toggleSidebar === 'function') window.toggleSidebar(); });
+    $id('nsfBarNext').addEventListener('click', applyNext);
+    // 作った期間を覚える（本体のPDFボタン・スマホのPDFボタン・印刷）
+    document.addEventListener('click', e => { if (e.target && e.target.closest && e.target.closest('#btnPdf, [data-nsf-pdf]')) recordPeriod(); }, true);
+    window.addEventListener('beforeprint', recordPeriod);
+    // 日付あり／なしの切り替え・開始日の変更に合わせて「続きから」を出し入れする
+    const u = $id('btnUndated');
+    if (u) new MutationObserver(() => refreshBar()).observe(u, { attributes: true, attributeFilter: ['class'] });
+    const fsel = $id('fmtSel');
+    if (fsel) fsel.addEventListener('change', () => setTimeout(() => refreshBar(), 0));
+    const se = startEl();
+    if (se) se.addEventListener('change', () => {
+      if (applying) return;
+      const note = $id('nsfBarNote'); if (note) note.textContent = '';
+      setTimeout(() => refreshBar(), 0);
+    });
+    refreshBar();
+    // アクセス数の表示（access-counter.js・右端に固定）はサイズ切り替えの下に置かれ、狭い画面では操作バーに重なる → 操作バーの下へずらす
+    const placeCounter = () => {
+      const c = $id('access-counter'); if (!c || innerWidth >= 920) return;
+      c.style.top = Math.round(bar.getBoundingClientRect().bottom) + 8 + 'px';
+    };
+    if ($id('access-counter')) placeCounter();
+    else { const mo = new MutationObserver(() => { if ($id('access-counter')) { mo.disconnect(); placeCounter(); } }); mo.observe(document.body, { childList: true }); setTimeout(() => mo.disconnect(), 15000); }
+    window.addEventListener('resize', () => setTimeout(placeCounter, 0));
+    new MutationObserver(() => placeCounter()).observe($id('nsfBarNextRow'), { attributes: true, attributeFilter: ['style'] });
+    // パソコン幅で初めて来た人には、設定パネルを開いて見せる（1回だけ）
+    try {
+      if (!localStorage.getItem(INTRO_KEY) && innerWidth >= 1024 && !controls.classList.contains('open') && typeof window.toggleSidebar === 'function') window.toggleSidebar();
+      localStorage.setItem(INTRO_KEY, '1');
+    } catch (e) {}
+  }
+
+  function mount() { injectStyle(); fold(); holeRow(); mountBackup(); pwa(); usage(); actionBar(); loadMobile(); }
   // print-adjust.js が DOMContentLoaded で差し込む設定欄を待ってから畳む
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(mount, 0)); else setTimeout(mount, 0);
 })();
