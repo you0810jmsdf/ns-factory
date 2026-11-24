@@ -39,7 +39,9 @@ export function createRegistration({ endpoint = REG_ENDPOINT, storage = null, fe
     allowed: () => !api.enabled() || st.status === 'ok',
     /** 最初に開いたとき、登録の窓を出すか（2026-11-24 事業主決定：最初に開いたとき必須・一度登録すれば2回目は不要）。
      *  未登録、または前の登録（10-14〜11-24）で名前・区分が無いとき true。確認メール待ち（オーナーのメールだけ）は出さない。 */
-    needsProfile: () => api.enabled() && (st.status === 'none' || !st.status || (st.status === 'ok' && (!REG_KINDS.includes(st.kind) || !String(st.nick || '').trim()))),
+    needsProfile: () => api.enabled() && (st.status === 'none' || !st.status || (st.status === 'ok' && (!REG_KINDS.includes(st.kind) || !String(st.nick || '').trim())) || api.stalePending()),
+    /** 前の仕組み（10-14〜11-24：確認メール待ち）で止まったままの登録か。オーナーのメール以外は、もう確認メールを使わないので、窓を出して登録し直してもらう（同じ端末の合言葉で送れば、サーバーがその場で登録済みにする）。 */
+    stalePending: () => st.status === 'pending' && regOwnerHash(st.email) !== OWNER_EMAIL_HASH,
     /** 登録。名前・メール・区分・同意を送る。ふつうはその場で登録済み（ok）。オーナーのメールだけは確認メールを待つ（pending）。
      *  同じメールでの登録し直し（名前・区分の書き直し）は、同じ端末の合言葉で送る（サーバーは行を増やさない）。 */
     async register({ email, name = '', nick = '', kind = '', consent = false } = {}) {

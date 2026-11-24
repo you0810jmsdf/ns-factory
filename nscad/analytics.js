@@ -6,13 +6,14 @@ const NAME_RE = /^ncad_[a-z0-9_]{1,30}$/, KIND_RE = /^[A-Za-z0-9_.-]{1,24}$/;
 
 /** env（既定は window）から計測器を作る。{ pageview(), event(name, { kind }) }。送れない環境では何もしない。 */
 export function createTracker(env = globalThis) {
-  let ready = false, sink = null;   /* sink：GA4 に送ったのと同じ（イベント名・kind）を渡す先（2026-10-28 利用モニタ・presence.js の use）。送れる環境・作家の端末でないときだけ呼ばれる */
+  let ready = false, sink = null;   /* sink：GA4 に送ったのと同じ（イベント名・kind）を渡す先（2026-10-28 利用モニタ・presence.js の use）。送れる環境で呼ばれる。作家の端末でも呼ぶ（中継が「自分」の印で受け、数には入れない・2026-11-24） */
   const enabled = () => {
     try {
       const loc = env.location; if (!loc || loc.protocol !== 'https:' || loc.hostname !== HOST) return false;
       return env.localStorage?.getItem(OPTOUT_KEY) !== '1';   /* 作家自身の端末（管理画面で設定）では計測しない */
     } catch { return false; }
   };
+  const ownerHere = () => { try { const loc = env.location; return !!loc && loc.protocol === 'https:' && loc.hostname === HOST && env.localStorage?.getItem(OPTOUT_KEY) === '1'; } catch { return false; } };
   const load = () => {
     if (ready) return true; if (!enabled()) return false;
     try {
@@ -26,8 +27,9 @@ export function createTracker(env = globalThis) {
   return {
     pageview() { load(); },
     event(name, params = {}) {
-      if (!NAME_RE.test(String(name)) || !load()) return;
+      if (!NAME_RE.test(String(name))) return;
       const clean = {}; if (typeof params?.kind === 'string' && KIND_RE.test(params.kind)) clean.kind = params.kind;
+      if (!load()) { if (ownerHere()) try { sink?.(String(name), clean.kind); } catch { /* 渡せなくても止めない */ } return; }   /* 作家の端末：GA4 には送らず、利用モニタへだけ渡す（中継は「自分」として数に入れない・2026-11-24 事業主「自分の操作も名前で出す」） */
       try { env.gtag('event', name, clean); } catch { /* 計測の失敗で本体の動作を止めない */ }
       try { sink?.(String(name), clean.kind); } catch { /* 利用モニタへ渡せなくても、本体は止めない */ }
     },

@@ -4446,7 +4446,8 @@ function openRegistration(first = false) {
   const s = registration.state(); if (s.email) $('regEmail').value = s.email; if (s.nick) $('regNick').value = s.nick;
   for (const k of REG_KINDS) $('regKind-' + k).checked = s.kind === k;
   $('regDialog').dataset.first = first ? '1' : ''; $('regClose').hidden = first; $('regLater').hidden = true;
-  $('regConsent').checked = false; $('regCheck').hidden = s.status !== 'pending'; regMsg(s.status === 'pending' ? 'regSent' : '', { email: s.email });
+  const ownerWait = s.status === 'pending' && !registration.stalePending?.();   /* 確認メール待ちはオーナーのメールだけ。前の仕組みで止まった確認待ち（オーナー以外）は、登録し直してもらう */
+  $('regConsent').checked = false; $('regCheck').hidden = !ownerWait; regMsg(ownerWait ? 'regSent' : '', { email: s.email });
   $('hint').textContent = t(first ? 'regFirst' : 'regNeed'); if (!$('regDialog').open) $('regDialog').showModal();
 }
 /** 中継（人数・利用モニタ）へ渡す、登録の印：利用者番号（メールから作った8字の番号・名前やメールではない）と区分。登録済みのときだけ。 */

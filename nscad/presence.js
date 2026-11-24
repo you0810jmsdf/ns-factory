@@ -44,7 +44,7 @@ export function createPresence({ env = globalThis, onCount = () => {}, fetchFn =
   const toKind = (name, kind) => { const n = String(name || ''), k = typeof kind === 'string' ? kind : ''; if (!/^ncad_[a-z0-9_]{1,30}$/.test(n)) return ''; const s = n === 'ncad_use' ? k : n.replace(/^ncad_/, '') + (k ? ':' + k : ''); return USE_KIND_RE.test(s) ? s : ''; };
   const flushUse = (viaBeacon = false) => {
     if (useTimer != null) { env.clearTimeout(useTimer); useTimer = null; } if (!queue.length || !started || !id) { queue = []; return; }
-    const b = base(), body = JSON.stringify({ id, ks: queue.splice(0, 20), ...(reg ? { p: reg.p, c: reg.c } : {}) }); if (!b) return;
+    const b = base(), body = JSON.stringify({ id, ks: queue.splice(0, 20), ...(reg ? { p: reg.p, c: reg.c } : {}), ...(isOwner() ? { o: 1 } : {}) }); if (!b) return;   /* o：作家の端末（中継は「自分」として出し、数には入れない） */
     try { if (viaBeacon && env.navigator?.sendBeacon) env.navigator.sendBeacon(b + '/use', new Blob([body], { type: 'text/plain' })); else (fetchFn || env.fetch.bind(env))(b + '/use', { method: 'POST', headers: { 'content-type': 'text/plain' }, body, cache: 'no-store', keepalive: true }).catch(() => {}); } catch { /* 送れなくても止めない */ }
     if (queue.length) useTimer = env.setTimeout(() => flushUse(), USE_FLUSH_MS);
   };
