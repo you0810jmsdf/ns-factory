@@ -1,8 +1,26 @@
 {
- "generatedAt": "2026-11-23T23:32:29",
+ "generatedAt": "2026-11-24T22:30:45",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 470,
+ "count": 472,
  "items": [
+  {
+   "title": "2026-11-24（火） - 出品45件と本づくりと動画直しの日",
+   "url": "https://note.com/you0810jmsdf/n/n5fdbe10d54cb",
+   "date": "2026-11-24",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-11-24_ig.jpg",
+   "key": "n5fdbe10d54cb",
+   "imageSource": "sns",
+   "summary": "複数の販売サイトへ多数の作品を出品し、在庫品の状態も整えて、薄マチのL字ファスナーポーチの値段をそろえた日。神社の本を日英でそろえ、動画の発音を直し、名刺入れの台も作り直した。"
+  },
+  {
+   "title": "「三ノ宮様」は土の神を祀る社｜成田の埴生神社、土師部の伝えと古事記・日本書紀の波邇夜須毘売神・埴山姫",
+   "url": "https://note.com/you0810jmsdf/n/n5325354d21ea",
+   "date": "2026-11-24",
+   "image": "https://assets.st-note.com/production/uploads/images/339961348/rectangle_large_type_2_22983e3ebe831726c1ae84312975131a.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n5325354d21ea",
+   "imageSource": "note",
+   "summary": ""
+  },
   {
    "title": "AIの利用状況を記録する処理の設計を見直しました｜Jarvis日記 2026.11.23（月）",
    "url": "https://note.com/you0810jmsdf/n/n07dff83392e0",
