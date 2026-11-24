@@ -42,7 +42,7 @@
   }
   var KIND_JA = { s: '生徒', g: '一般', student: '生徒', general: '一般' };
   function who(pid, c) { var p = people[pid]; return { name: p && p.name ? p.name : '番号 ' + pid, kind: KIND_JA[c] || (p && KIND_JA[p.kind]) || '区分なし', known: !!p }; }
-  function kindBadge(kind) { var col = kind === '生徒' ? '#2f6f4f' : kind === '一般' ? '#8B5E3C' : '#a08a74', bg = kind === '生徒' ? '#e3f3ea' : kind === '一般' ? '#f7ebdd' : '#f3efe9'; return el('span', 'display:inline-block;border-radius:999px;padding:0 7px;font-size:11px;color:' + col + ';background:' + bg + ';white-space:nowrap', kind); }
+  function kindBadge(kind) { var col = kind === '生徒' ? '#2f6f4f' : kind === '一般' ? '#8B5E3C' : kind === '自分' ? '#3a5a8c' : '#a08a74', bg = kind === '生徒' ? '#e3f3ea' : kind === '一般' ? '#f7ebdd' : kind === '自分' ? '#e6edf7' : '#f3efe9'; return el('span', 'display:inline-block;border-radius:999px;padding:0 7px;font-size:11px;color:' + col + ';background:' + bg + ';white-space:nowrap', kind); }
 
   function el(tag, css, text) { var e = document.createElement(tag); if (css) e.style.cssText = css; if (text != null) e.textContent = text; return e; }
   function markOwner() {   /* このタブを開いた端末を、作家の端末にする（N's CAD は、この印がある端末からは送らない） */
@@ -78,13 +78,13 @@
     els.recent = el('div', 'background:#fff;border:1px solid #eadccf;border-radius:12px;padding:6px 10px;margin-bottom:12px'); mount.appendChild(els.recent);
     mount.appendChild(el('p', 'font-size:11px;color:#8a6a4a;line-height:1.7;margin:0',
       '端末の印（4文字）は、N\'s CAD を開くたびに作り直す匿名のランダム文字の先頭だけです（氏名・図形・ファイル名は届きません）。同じ人でも、開き直すと別の印になります。利用登録（2026-11-24〜・最初に開いたとき）をした人は、印の代わりに区分（生徒・一般）とお名前で出ます。お名前は管理画面だけが名簿（admin_guard）から読み、中継に届くのは8字の番号と区分だけです。機能の名前は、ボタンの id など短い英数字そのままで、分かるものだけ日本語名を添えています。' +
-      '作家の端末（上の緑の帯）の操作は、送られないので数えません。いまの人数は、右下に出る「利用中」と同じ数です。時間帯は日本時間で、「開いた」は、その日に N\'s CAD の画面を開いた端末の数（同じ端末は1日1回）です。'));
+      '作家の端末（上の緑の帯）の操作は、「自分」の印で直近の操作・登録した人ごとの表に出ますが、ランキング・人数・時間帯には数えません。いまの人数は、右下に出る「利用中」と同じ数です。時間帯は日本時間で、「開いた」は、その日に N\'s CAD の画面を開いた端末の数（同じ端末は1日1回）です。'));
     return true;
   }
   function ownerBanner() {
     if (!els.owner) return; var on = isOwner();
     els.owner.style.background = on ? '#eef6ee' : '#fdf0e3'; els.owner.style.borderColor = on ? '#b9d9b9' : '#ecc9a0'; els.owner.style.color = on ? '#2f5f2f' : '#8a4a1a';
-    els.ownerText.textContent = on ? '✔ この端末は「作家の端末」として除外しています（この端末での N\'s CAD の操作は、GA4 にも、このモニタにも送られません）。' : '⚠ この端末は除外していません（この端末での N\'s CAD の操作は、数えられます）。';
+    els.ownerText.textContent = on ? '✔ この端末は「作家の端末」として除外しています（この端末での N\'s CAD の操作は、GA4 には送られません。このモニタには「自分」の印で出ますが、回数・人数には入りません）。' : '⚠ この端末は除外していません（この端末での N\'s CAD の操作は、数えられます）。';
     els.ownerBtn.textContent = on ? '除外をやめる' : 'この端末を除外する';
   }
   function status() {
@@ -124,7 +124,8 @@
     d.recent.slice(0, 30).forEach(function (r) {
       var row = el('div', 'display:grid;grid-template-columns:5.5em 4.2em 12em 1fr;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed #f0e6da;align-items:baseline');
       row.appendChild(el('span', 'color:#8a6a4a;font-variant-numeric:tabular-nums', clock(r.t))); row.appendChild(el('span', 'color:#a08a74', ago(r.t, d.now)));
-      if (r.p) { var w = who(r.p, r.c), cell = el('span', 'display:flex;gap:4px;align-items:baseline;min-width:0'); cell.appendChild(kindBadge(w.kind)); cell.appendChild(el('span', 'color:#5C3D2E;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', w.name)); row.appendChild(cell); if (!w.known) unknown = true; }
+      if (r.o) { var me = r.p ? who(r.p, r.c) : { name: '（未登録）', known: true }, mc = el('span', 'display:flex;gap:4px;align-items:baseline;min-width:0'); mc.appendChild(kindBadge('自分')); mc.appendChild(el('span', 'color:#3a5a8c;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', me.name)); row.appendChild(mc); if (!me.known) unknown = true; }   /* 作家の端末（2026-11-24 事業主「自分の操作も名前で出す」）。中継は回数・人数に入れていない */
+      else if (r.p) { var w = who(r.p, r.c), cell = el('span', 'display:flex;gap:4px;align-items:baseline;min-width:0'); cell.appendChild(kindBadge(w.kind)); cell.appendChild(el('span', 'color:#5C3D2E;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', w.name)); row.appendChild(cell); if (!w.known) unknown = true; }
       else row.appendChild(el('span', 'color:#a08a74;font-family:monospace', r.id + ' 未登録')); var ja = nameOf(r.k); row.appendChild(el('span', 'color:#5C3D2E', ja ? ja + '　' + r.k : r.k)); els.recent.appendChild(row);
     });
     if (unknown) loadPeople(false);
@@ -132,13 +133,13 @@
   /* 登録した人ごとの今日の利用（中継の people：番号ごとの今日・直近1時間の回数）。生徒／一般の人数と回数を上に出す */
   function renderPeople(d) {
     var box = els.people; if (!box) return; box.textContent = ''; var ps = d.people || {}, ids = Object.keys(ps).filter(function (k) { return ps[k].today > 0; });
-    var tot = { '生徒': [0, 0], '一般': [0, 0], '区分なし': [0, 0] }; ids.forEach(function (k) { var w = who(k, ps[k].c); tot[w.kind][0]++; tot[w.kind][1] += ps[k].today; });
+    var tot = { '生徒': [0, 0], '一般': [0, 0], '区分なし': [0, 0] }; ids.forEach(function (k) { if (ps[k].o) return; var w = who(k, ps[k].c); tot[w.kind][0]++; tot[w.kind][1] += ps[k].today; });   /* 自分（作家の端末）は数えない */
     box.appendChild(el('div', 'font-size:14px;font-weight:700;color:#5C3D2E;margin-bottom:6px', '登録した人ごとの今日の利用（生徒・一般）'));
     box.appendChild(el('div', 'font-size:12px;color:#5C3D2E;margin-bottom:8px', '生徒 ' + tot['生徒'][0] + '人・' + tot['生徒'][1] + '回 ／ 一般 ' + tot['一般'][0] + '人・' + tot['一般'][1] + '回' + (tot['区分なし'][0] ? ' ／ 区分なし ' + tot['区分なし'][0] + '人' : '')));
     if (peopleErr) box.appendChild(el('div', 'font-size:11px;color:#b3541e;margin-bottom:6px', peopleErr + '。番号のまま出します。'));
     if (!ids.length) { box.appendChild(el('div', 'font-size:12px;color:#8a6a4a', '今日は、登録した人の操作はまだありません（登録前の端末は、下の「直近の操作」に「未登録」で出ます）。')); return; }
     ids.sort(function (a, b) { return ps[b].last - ps[a].last; }).forEach(function (k) {
-      var e = ps[k], w = who(k, e.c), row = el('div', 'display:grid;grid-template-columns:3.6em 1fr 5em 5em 5.5em;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed #f0e6da;align-items:baseline');
+      var e = ps[k], w = who(k, e.c); if (e.o) w = { name: w.name, kind: '自分' }; var row = el('div', 'display:grid;grid-template-columns:3.6em 1fr 5em 5em 5.5em;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed #f0e6da;align-items:baseline');
       row.appendChild(kindBadge(w.kind)); row.appendChild(el('span', 'color:#5C3D2E;font-weight:700', w.name)); row.appendChild(el('span', 'color:#5C3D2E;text-align:right', '今日 ' + e.today + '回'));
       row.appendChild(el('span', 'color:#8a6a4a;text-align:right', '1時間 ' + e.h1 + '回')); row.appendChild(el('span', 'color:#a08a74;text-align:right', ago(e.last, d.now))); box.appendChild(row);
     });
