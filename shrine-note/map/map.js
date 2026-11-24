@@ -19,7 +19,7 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isNarrow = () => innerWidth < 880;
 
 // ---------- データ読み込み ----------
-const [shrineData, deityData, staysData, specData, foodsData, hmImg, enData] = await Promise.all([
+const [shrineData, deityData, staysData, specData, foodsData, hmImg, enData, selData] = await Promise.all([
   fetch('../shrines.json').then((r) => r.json()),
   fetch('../deities.json').then((r) => r.json()),
   // 宿の候補（楽天トラベル・アフィリエイト）。無くても地図は動く
@@ -31,6 +31,8 @@ const [shrineData, deityData, staysData, specData, foodsData, hmImg, enData] = a
   new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = 'data/heightmap.png'; }),
   // 英語版の訳文（日本語の記述の範囲だけを訳したもの）。無くても日本語で動く
   fetch('../i18n/en.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+  // 「この社を選んだ理由」（掲載基準①②③の根拠と理由）。無くても地図は動く
+  fetch('../selection.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
 ]).catch((e) => { fail('データの読み込みに失敗しました。' + e); throw e; });
 
 // ---- 言語（日本語／English）----
@@ -53,6 +55,7 @@ const shrines = shrineData.shrines;
 const deities = Object.fromEntries(deityData.deities.map((d) => [d.id, d]));
 const staysMap = Object.fromEntries(((staysData && staysData.stays) || []).map((x) => [x.shrine_id, x.hotels || []]));
 const specMap = Object.fromEntries(((specData && specData.specialties) || []).map((x) => [x.shrine_id, x]));
+const selMap = (selData && selData.shrines) || {};
 const foodsMap = Object.fromEntries(((foodsData && foodsData.foods) || []).map((x) => [x.shrine_id, x]));
 const srcMap = Object.fromEntries((shrineData.sources || []).map((s) => [s.id, s]));
 Object.assign(srcMap, Object.fromEntries((deityData.sources || []).map((s) => [s.id, s])));
@@ -1218,6 +1221,23 @@ function foodsHTML(id) {
 }
 // 名産・お取り寄せ（楽天市場のアフィリエイト）。「行ってみたい店（候補）」の枠（foodsHTML・広告ではない）とは別枠。金額・画像は載せない。データが無い神社には何も出さない
 const SPEC_HOST = 'https://hb.afl.rakuten.co.jp/';
+// 「この社を選んだ理由」：掲載基準①②③ごとの根拠と、選んだ理由・確かめきれていない点（selection.json。台帳が正本）
+function selectionHTML(id) {
+  const x = selMap[id];
+  if (!x) return '';
+  const o = EN ? x.en : null;
+  if (EN && !o) return '';
+  const crit = [['A1', TX('① 参拝の体制', '① Visiting arrangements')], ['A2', TX('② 公的な裏づけのある由緒', '② History backed by public records')], ['A3', TX('③ 古事記・日本書紀とのつながり', '③ Link to the Kojiki and Nihon Shoki')]];
+  const open = (EN ? o.open : x.open) || [];
+  return `<h3 class="chh sub">${TX('この社を選んだ理由', 'Why this shrine is listed')}</h3>
+    <div class="selbox">
+      <p class="selreason">${esc(EN ? o.reason : x.reason)}</p>
+      <dl>${crit.map(([k, lab]) => `<dt>${lab}</dt><dd>${esc(EN ? o[k] : x[k].text)}${refs(x[k].src)}</dd>`).join('')}</dl>
+      ${open.length ? `<details><summary>${TX('確かめきれていない点（' + open.length + '件）', 'Not yet confirmed (' + open.length + ')')}</summary><ul>${open.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></details>` : ''}
+      <p class="meta">${TX('3つの基準の説明は', 'About the three criteria: ')}<a href="${EN ? '../criteria-en.html' : '../criteria.html'}">${TX('掲載基準', 'Listing criteria')}</a>${TX('。社格は目安であり、神社の優劣を示すものではありません。', '. Shrine rank is only a guide; it does not rank shrines against each other.')}</p>
+    </div>`;
+}
+
 function specialtiesHTML(id) {
   const x = specMap[id];
   const list = ((x && x.items) || []).filter((h) => h && h.url && String(h.url).startsWith(SPEC_HOST));
@@ -1316,7 +1336,8 @@ function shrineHTML(s0) {
   (s.highlights || []).forEach((h) => take(h));
   take(s.summary, s.address, s.access, s.hours, s.parking, s.goshuin);
   (s.deity_refs || []).forEach((r) => used.push(...(r.src || [])));
-  const ds = s.deity_ids.map((id) => deities[id]).filter(Boolean);
+  if (selMap[s.id]) ['A1', 'A2', 'A3'].forEach((k) => used.push(...((selMap[s.id][k] || {}).src || [])));
+  const ds =s.deity_ids.map((id) => deities[id]).filter(Boolean);
   // 1 はじまり
   const nameSpans = (() => { let k = 0; return s.name.split(' ').map((w) => { const inner = [...w].map((ch) => `<span style="--k:${k++}">${esc(ch)}</span>`).join(''); k++; return EN ? `<span class="wd" style="display:inline-block;white-space:nowrap">${inner}</span>` : inner; }).join(EN ? ' ' : ''); })();   // 英語の名前は、単語ごとにまとめて、単語の間だけで折り返す（空白も保つ）
   const c1 = `<h2 class="nm" aria-label="${esc(s.name)}">${nameSpans}</h2>
@@ -1339,6 +1360,7 @@ function shrineHTML(s0) {
   const hl = (s.highlights || []);
   const same = (s.deity_ids || []).flatMap((id) => shrines.filter((o) => o.id !== s.id && o.deity_ids.includes(id)).map((o) => [o, id]));
   const c4 = `<h3 class="chh">${U('highlights', '見どころ')}</h3>` + (hl.length ? hl.map((h, k) => rvs(`<div class="spot">${item(h)}</div>`, k + 1)).join('') : rvs(`<div class="spot"><p>${EN ? 'No highlights recorded yet.' : '見どころの記録は準備中です。'}<span class="badge todo">${U('toConfirm', '要確認')}</span></p></div>`, 1))
+    + (selMap[s.id] && (!EN || selMap[s.id].en) ? rvs(selectionHTML(s.id), hl.length + 2) : '')
     + (same.length ? rvs(`<h3 class="chh sub">${U('samedeity', '同じ神様を祀る社へ')}</h3><ul class="linklist">` + same.map(([o, id]) => `<li><button type="button" data-shrine="${esc(o.id)}">${esc(shName(o))}<small>${EN ? esc(dName(deities[id] || { id })) : esc(deities[id]?.name || '') + 'を祀る'}</small></button></li>`).join('') + `</ul>`, hl.length + 2) : '');
   // 5 行き方
   const row = (k, f) => f ? `<dt>${k}</dt><dd>${typeof f === 'string' ? esc(f) : esc(f.text) + refs(f.src) + stBadge(f.status)}</dd>` : `<dt>${k}</dt><dd><span class="badge todo">${U('toConfirm', '要確認')}</span></dd>`;

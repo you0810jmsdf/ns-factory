@@ -93,6 +93,16 @@ body.open .hint { display: none; }
 .row dt { color: var(--muted); font-size: 12.5px; }
 .row dd { margin: 0; color: var(--ink-soft); }
 .prbox.stays { border-style: solid; }
+.selbox { border: 1px solid var(--line-strong); border-radius: 8px; padding: 10px 12px; margin: 8px 0; background: rgba(24,36,27,0.55); }
+.selbox .selreason { margin: 0 0 6px; color: var(--ink); }
+.selbox dl { margin: 6px 0 0; }
+.selbox dt { font: 12px var(--sans); color: var(--gold); margin-top: 10px; }
+.selbox dd { margin: 2px 0 0; font-size: 14px; line-height: 1.8; color: var(--ink-soft); }
+.selbox details { margin: 10px 0 0; }
+.selbox summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font: 13px var(--sans); color: var(--muted); }
+.selbox ul { margin: 0 0 4px; padding-left: 1.2em; }
+.selbox li { font-size: 13px; line-height: 1.7; color: var(--ink-soft); }
+.selbox .meta { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
 .staylist { list-style: none; padding: 0; margin: 6px 0; }
 .staylist li { margin: 6px 0; padding: 8px 10px; background: rgba(49,67,50,0.4); border: 1px solid var(--line); border-radius: 8px; }
 .staylist a { display: block; min-height: 24px; font: 14px var(--serif); }
