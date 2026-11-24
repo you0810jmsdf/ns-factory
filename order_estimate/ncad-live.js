@@ -41,7 +41,8 @@
     }).catch(function (e) { peopleErr = '登録者の名簿を読めません（' + (e && e.message || e) + '）'; }).then(function () { peopleBusy = false; if (last) render(); });
   }
   var KIND_JA = { s: '生徒', g: '一般', student: '生徒', general: '一般' };
-  function who(pid, c) { var p = people[pid]; return { name: p && p.name ? p.name : '番号 ' + pid, kind: KIND_JA[c] || (p && KIND_JA[p.kind]) || '区分なし', known: !!p }; }
+  /* 名前の出し方（2026-11-24 事業主「番号だと誰かわからん」）：取り消した登録も名簿から名前を引いて「（取り消し済み）」を添える。名簿に無い番号は、そうと分かる書き方にする */
+  function who(pid, c) { var p = people[pid]; return { name: p && p.name ? p.name + (p.revoked ? '（取り消し済み）' : '') : p ? '名前なしの登録（番号 ' + pid + '）' : '名簿にない番号（' + pid + '）', kind: KIND_JA[c] || (p && KIND_JA[p.kind]) || '区分なし', known: !!p }; }
   function kindBadge(kind) { var col = kind === '生徒' ? '#2f6f4f' : kind === '一般' ? '#8B5E3C' : kind === '自分' ? '#3a5a8c' : '#a08a74', bg = kind === '生徒' ? '#e3f3ea' : kind === '一般' ? '#f7ebdd' : kind === '自分' ? '#e6edf7' : '#f3efe9'; return el('span', 'display:inline-block;border-radius:999px;padding:0 7px;font-size:11px;color:' + col + ';background:' + bg + ';white-space:nowrap', kind); }
 
   function el(tag, css, text) { var e = document.createElement(tag); if (css) e.style.cssText = css; if (text != null) e.textContent = text; return e; }
