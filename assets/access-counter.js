@@ -44,8 +44,15 @@
     badge.style.top = top + 'px';
   }
 
-  function addBadge(pv, uu, hasUu) {
+  // リフィル印刷ツール（refill-extras.js を読むページ）と入口 tools/index.html では、数字を事業主の端末にだけ出す
+  // （2026-11-24 事業主決定「リフィルツールだけ隠す」。少ない数字が見えると印象を下げるため。数えることは続ける）。
+  function ownerOnlyPage() {
+    return pageKey().replace(/^\/+/, '') === 'tools/index.html' || !!document.querySelector('script[src*="refill-extras.js"]');
+  }
+
+  function addBadge(pv, uu, hasUu, internal) {
     if (!SHOW_BADGE) return;
+    if (!internal && ownerOnlyPage()) return;
     if (document.getElementById('access-counter')) return;
     const badge = document.createElement('div');
     badge.id = 'access-counter';
@@ -99,7 +106,7 @@
       if (!res.ok) return;
       const data = await res.json();
       const row = data && data.ok && (data.counts || []).find(c => c.page === pageKey());
-      if (row) addBadge(row.pv, row.uu, true);
+      if (row) addBadge(row.pv, row.uu, true, true);
     } catch (_) {}
   }
 
