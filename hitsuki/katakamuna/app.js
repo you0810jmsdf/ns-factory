@@ -1,5 +1,5 @@
 (function () {
-  // 80首の本体は utahi/（原文80首アーカイブ）に一本化しているため、
+  // 80首の本体は utahi/（80首アーカイブ）に一本化しているため、
   // このページでは首の一覧・詳細は描画しない。
   const { persons, glossary, phonetics } = window.KATAKAMNA_DATA;
   const goods = window.KATAKAMNA_GOODS || { shopUrl: '', items: [] };
