@@ -1,6 +1,8 @@
 /* N's CAD 利用モニタ（管理画面の「📡 N's CAD 利用モニタ」タブ・2026-10-28 事業主「他人がどの機能をよく使うかリアルタイムモニタしたい」）。
  * N's CAD が機能を使うたびに送る（匿名の印＋機能名）を、Cloudflare の中継（leather-cad-presence）が持っている。ここは /monitor を数秒ごとに読んで、ランキングと直近の操作を出すだけ。
  * 「自分は除く」：このタブを開いた端末には、作家の端末の印（localStorage nsf_ga_optout=1）を自動でつける。N's CAD はその印がある端末からは、GA4 にも中継にも送らない（以後その端末は数えない）。
+ * 2026-11-24（事業主「生徒とそれ以外を区分したい」）：利用登録した端末は、中継に利用者番号（8字）と区分（s＝受講生／g＝それ以外）を添えて送る。
+ *   番号をお名前に置き換える名簿は、admin_guard GAS の ncadPeople（管理パスワード必須）から読む。お名前・メールは中継には載らない（中継の /monitor は誰でも読めるため）。
  * 使い方：window.NCADLive.start()（タブを開いたとき）／stop()（ほかのタブへ移ったとき）。表示先は #ncadLiveMount。 */
 (function () {
   'use strict';
@@ -27,6 +29,20 @@
   }
   var RELEASE_URL = '../nscad/data/release-notes.json', releases = null, relLoading = false, relErr = false;   /* N's CAD の公開日（公開版の更新履歴）。日ごとにまとめて、日別の推移に重ねる */
   var timer = null, running = false, win = 'm5', last = null, err = '', paused = false, mount = null, els = {}, inflight = false;
+  /* 利用登録の名簿（番号 → お名前・区分）。管理画面のログインで覚えた管理パスワード（sessionStorage nsf_admin_key）で、admin_guard から読む。5分ごと・知らない番号が出たら1分おいて読み直す */
+  var GUARD_URL = 'https://script.google.com/macros/s/AKfycbwzqQnnPluysWrt6rr53eq3LoOE3adXvmkiTVp-vvnr0bbrO1FMh25C9jJYtpX4qIr5/exec', PEOPLE_MS = 300000, PEOPLE_RETRY_MS = 60000;
+  var people = {}, peopleAt = 0, peopleBusy = false, peopleErr = '';
+  function adminKey() { try { return sessionStorage.getItem('nsf_admin_key') || ''; } catch (e) { return ''; } }
+  function loadPeople(force) {
+    var now = Date.now(); if (peopleBusy || (!force && now - peopleAt < (peopleErr ? PEOPLE_RETRY_MS : PEOPLE_MS))) return; var key = adminKey(); if (!key) { peopleErr = '管理パスワードが読めません（管理画面にログインし直してください）'; return; }
+    peopleBusy = true; peopleAt = now;
+    fetch(GUARD_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'ncadPeople', adminKey: key }) }).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j || j.ok !== true || !Array.isArray(j.people)) throw new Error(j && j.error || '形が違います'); var m = {}; j.people.forEach(function (x) { if (x && /^[0-9a-f]{8}$/.test(x.pid)) m[x.pid] = x; }); people = m; peopleErr = '';
+    }).catch(function (e) { peopleErr = '登録者の名簿を読めません（' + (e && e.message || e) + '）'; }).then(function () { peopleBusy = false; if (last) render(); });
+  }
+  var KIND_JA = { s: '生徒', g: '一般', student: '生徒', general: '一般' };
+  function who(pid, c) { var p = people[pid]; return { name: p && p.name ? p.name : '番号 ' + pid, kind: KIND_JA[c] || (p && KIND_JA[p.kind]) || '区分なし', known: !!p }; }
+  function kindBadge(kind) { var col = kind === '生徒' ? '#2f6f4f' : kind === '一般' ? '#8B5E3C' : '#a08a74', bg = kind === '生徒' ? '#e3f3ea' : kind === '一般' ? '#f7ebdd' : '#f3efe9'; return el('span', 'display:inline-block;border-radius:999px;padding:0 7px;font-size:11px;color:' + col + ';background:' + bg + ';white-space:nowrap', kind); }
 
   function el(tag, css, text) { var e = document.createElement(tag); if (css) e.style.cssText = css; if (text != null) e.textContent = text; return e; }
   function markOwner() {   /* このタブを開いた端末を、作家の端末にする（N's CAD は、この印がある端末からは送らない） */
@@ -57,10 +73,11 @@
     mount.appendChild(els.tabs);
     els.rank = el('div', 'background:#fff;border:1px solid #eadccf;border-radius:12px;padding:12px 14px;margin-bottom:14px'); mount.appendChild(els.rank);
     els.hours = el('div', 'background:#fff;border:1px solid #eadccf;border-radius:12px;padding:12px 14px;margin-bottom:14px'); mount.appendChild(els.hours);
+    els.people = el('div', 'background:#fff;border:1px solid #eadccf;border-radius:12px;padding:12px 14px;margin-bottom:14px'); mount.appendChild(els.people);   /* 登録した人ごと（生徒／一般）の今日の利用 */
     var rh = el('div', 'font-size:14px;font-weight:700;color:#5C3D2E;margin:0 0 6px', '直近の操作（新しい順）'); mount.appendChild(rh);
     els.recent = el('div', 'background:#fff;border:1px solid #eadccf;border-radius:12px;padding:6px 10px;margin-bottom:12px'); mount.appendChild(els.recent);
     mount.appendChild(el('p', 'font-size:11px;color:#8a6a4a;line-height:1.7;margin:0',
-      '端末の印（4文字）は、N\'s CAD を開くたびに作り直す匿名のランダム文字の先頭だけです（氏名・図形・ファイル名は届きません）。同じ人でも、開き直すと別の印になります。機能の名前は、ボタンの id など短い英数字そのままで、分かるものだけ日本語名を添えています。' +
+      '端末の印（4文字）は、N\'s CAD を開くたびに作り直す匿名のランダム文字の先頭だけです（氏名・図形・ファイル名は届きません）。同じ人でも、開き直すと別の印になります。利用登録（2026-11-24〜・最初に開いたとき）をした人は、印の代わりに区分（生徒・一般）とお名前で出ます。お名前は管理画面だけが名簿（admin_guard）から読み、中継に届くのは8字の番号と区分だけです。機能の名前は、ボタンの id など短い英数字そのままで、分かるものだけ日本語名を添えています。' +
       '作家の端末（上の緑の帯）の操作は、送られないので数えません。いまの人数は、右下に出る「利用中」と同じ数です。時間帯は日本時間で、「開いた」は、その日に N\'s CAD の画面を開いた端末の数（同じ端末は1日1回）です。'));
     return true;
   }
@@ -103,10 +120,27 @@
     renderHours(d);
     els.recent.textContent = '';
     if (!d.recent.length) els.recent.appendChild(el('div', 'font-size:12px;color:#8a6a4a;padding:8px 0', 'まだ操作の記録がありません。'));
+    var unknown = false; renderPeople(d);
     d.recent.slice(0, 30).forEach(function (r) {
-      var row = el('div', 'display:grid;grid-template-columns:5.5em 4.2em 3.6em 1fr;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed #f0e6da;align-items:baseline');
+      var row = el('div', 'display:grid;grid-template-columns:5.5em 4.2em 12em 1fr;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed #f0e6da;align-items:baseline');
       row.appendChild(el('span', 'color:#8a6a4a;font-variant-numeric:tabular-nums', clock(r.t))); row.appendChild(el('span', 'color:#a08a74', ago(r.t, d.now)));
-      row.appendChild(el('span', 'color:#a08a74;font-family:monospace', r.id)); var ja = nameOf(r.k); row.appendChild(el('span', 'color:#5C3D2E', ja ? ja + '　' + r.k : r.k)); els.recent.appendChild(row);
+      if (r.p) { var w = who(r.p, r.c), cell = el('span', 'display:flex;gap:4px;align-items:baseline;min-width:0'); cell.appendChild(kindBadge(w.kind)); cell.appendChild(el('span', 'color:#5C3D2E;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', w.name)); row.appendChild(cell); if (!w.known) unknown = true; }
+      else row.appendChild(el('span', 'color:#a08a74;font-family:monospace', r.id + ' 未登録')); var ja = nameOf(r.k); row.appendChild(el('span', 'color:#5C3D2E', ja ? ja + '　' + r.k : r.k)); els.recent.appendChild(row);
+    });
+    if (unknown) loadPeople(false);
+  }
+  /* 登録した人ごとの今日の利用（中継の people：番号ごとの今日・直近1時間の回数）。生徒／一般の人数と回数を上に出す */
+  function renderPeople(d) {
+    var box = els.people; if (!box) return; box.textContent = ''; var ps = d.people || {}, ids = Object.keys(ps).filter(function (k) { return ps[k].today > 0; });
+    var tot = { '生徒': [0, 0], '一般': [0, 0], '区分なし': [0, 0] }; ids.forEach(function (k) { var w = who(k, ps[k].c); tot[w.kind][0]++; tot[w.kind][1] += ps[k].today; });
+    box.appendChild(el('div', 'font-size:14px;font-weight:700;color:#5C3D2E;margin-bottom:6px', '登録した人ごとの今日の利用（生徒・一般）'));
+    box.appendChild(el('div', 'font-size:12px;color:#5C3D2E;margin-bottom:8px', '生徒 ' + tot['生徒'][0] + '人・' + tot['生徒'][1] + '回 ／ 一般 ' + tot['一般'][0] + '人・' + tot['一般'][1] + '回' + (tot['区分なし'][0] ? ' ／ 区分なし ' + tot['区分なし'][0] + '人' : '')));
+    if (peopleErr) box.appendChild(el('div', 'font-size:11px;color:#b3541e;margin-bottom:6px', peopleErr + '。番号のまま出します。'));
+    if (!ids.length) { box.appendChild(el('div', 'font-size:12px;color:#8a6a4a', '今日は、登録した人の操作はまだありません（登録前の端末は、下の「直近の操作」に「未登録」で出ます）。')); return; }
+    ids.sort(function (a, b) { return ps[b].last - ps[a].last; }).forEach(function (k) {
+      var e = ps[k], w = who(k, e.c), row = el('div', 'display:grid;grid-template-columns:3.6em 1fr 5em 5em 5.5em;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed #f0e6da;align-items:baseline');
+      row.appendChild(kindBadge(w.kind)); row.appendChild(el('span', 'color:#5C3D2E;font-weight:700', w.name)); row.appendChild(el('span', 'color:#5C3D2E;text-align:right', '今日 ' + e.today + '回'));
+      row.appendChild(el('span', 'color:#8a6a4a;text-align:right', '1時間 ' + e.h1 + '回')); row.appendChild(el('span', 'color:#a08a74;text-align:right', ago(e.last, d.now))); box.appendChild(row);
     });
   }
   /* 時間帯別（日本時間）：中継が日ごとに数えた「開いた端末」「押した端末」「押した回数」を、選んだ窓の分だけ24時間に足す。5分・1時間の窓は、今日の分で見る */
@@ -294,7 +328,7 @@
   function schedule() { if (timer) clearTimeout(timer); if (running && !paused) timer = setTimeout(tick, err ? POLL_MS * 2 : POLL_MS); }
   document.addEventListener('visibilitychange', function () { if (running && !paused && document.visibilityState === 'visible') { if (timer) clearTimeout(timer); tick(); } });
   window.NCADLive = {
-    start: function () { if (!build()) return; loadReleases(); if (!isOwner()) markOwner(); running = true; paused = false; if (els.pause) els.pause.textContent = '⏸ 止める'; ownerBanner(); status(); tick(); },
+    start: function () { if (!build()) return; loadReleases(); loadPeople(true); if (!isOwner()) markOwner(); running = true; paused = false; if (els.pause) els.pause.textContent = '⏸ 止める'; ownerBanner(); status(); tick(); },
     stop: function () { running = false; if (timer) { clearTimeout(timer); timer = null; } },
     _state: function () { return { running: running, win: win, paused: paused, last: last, err: err }; }
   };
