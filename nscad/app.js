@@ -108,7 +108,7 @@ const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
 let binderEdits = emptyEdits();
 import { track } from './analytics.js';
 import { createPresence } from './presence.js';
-import { createRegistration, regIsOwner, REG_GATE_ON } from './registration.js';
+import { createRegistration, regIsOwner, REG_GATE_ON, REG_KINDS } from './registration.js';
 import { parseBuild, latestBuild, isNewerBuild, releasesSince } from './update_check.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave, rotateAutosaveGenerations, genKeys } from './autosave.js';
@@ -4343,6 +4343,8 @@ function initDesign() {
     download(name, text, 'application/json', false); $('hint').textContent = t('bugLogSaved', { n: r.log.length }) + (res.status === 'cancelled' || res.status === 'error' ? ' ' + t('bugLogFallback') : ''); if (!repick) openFeedback(true);
   };
   $('regSend').onclick = doRegister; $('regCheck').onclick = doRegCheck; $('regClose').onclick = () => $('regDialog').close(); registration.refresh();
+  $('regLater').onclick = () => { $('regDialog').close(); $('hint').textContent = t('regLaterHint'); };   /* 最初の登録で、サーバーにつながらないときだけ出る「今は使う」（次に開いたとき、また聞く） */
+  $('regDialog').addEventListener?.('cancel', e => { if ($('regDialog').dataset.first === '1') e.preventDefault?.(); });   /* 最初の登録は Esc で閉じない（2026-11-24 事業主決定：最初に開いたとき必須） */
   $('feedbackBtn').onclick = () => openFeedback(false); $('fbClose').onclick = () => $('feedbackDialog').close(); $('fbSend').onclick = submitFeedback; $('fbCtxOn').addEventListener('change', fbShowCtx);
   $('fbMsg').addEventListener('input', () => { $('fbCount').textContent = `${$('fbMsg').value.length} / 500`; }); /* 改善要望：入力中の文字数 */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html', 'ncad-guide'); w?.focus?.(); } }; /* 図解ガイド（日本語）を別タブで開く。何度押しても同じ1つのタブを使う（ブラウザのタブが増え続けないように・事業主指示 2026-10-13） */
@@ -4438,21 +4440,29 @@ function regNowText() {
 }
 function showRegNow() { for (const id of ['regNow', 'lockNow']) { const el = $(id); if (el) el.textContent = regNowText(); } }
 function regMsg(key, vars = {}, cls = '') { const el = $('regStatus'); el.textContent = key ? t(key, vars) : ''; el.className = 'fb-status' + (cls ? ' ' + cls : ''); }
-function openRegistration() {
+/** 利用登録の窓。first＝最初に開いたときの必須の登録（閉じるボタン・Esc なし。2026-11-24 事業主決定：最初に開いたとき必須・一度登録すれば2回目は不要）。 */
+function openRegistration(first = false) {
   showRegNow();
   const s = registration.state(); if (s.email) $('regEmail').value = s.email; if (s.nick) $('regNick').value = s.nick;
+  for (const k of REG_KINDS) $('regKind-' + k).checked = s.kind === k;
+  $('regDialog').dataset.first = first ? '1' : ''; $('regClose').hidden = first; $('regLater').hidden = true;
   $('regConsent').checked = false; $('regCheck').hidden = s.status !== 'pending'; regMsg(s.status === 'pending' ? 'regSent' : '', { email: s.email });
-  $('hint').textContent = t('regNeed'); $('regDialog').showModal();
+  $('hint').textContent = t(first ? 'regFirst' : 'regNeed'); if (!$('regDialog').open) $('regDialog').showModal();
 }
+/** 中継（人数・利用モニタ）へ渡す、登録の印：利用者番号（メールから作った8字の番号・名前やメールではない）と区分。登録済みのときだけ。 */
+const regPresenceInfo = () => { const s = registration.state(); return s.status === 'ok' && s.pid ? { pid: s.pid, kind: s.kind } : null; };
 async function doRegister() {
   const btn = $('regSend'); btn.disabled = true; regMsg('regSending');
-  const r = await registration.register({ email: $('regEmail').value, nick: $('regNick').value, consent: $('regConsent').checked }); btn.disabled = false;
-  if (r.ok) { $('regCheck').hidden = false; regMsg('regSent', { email: registration.state().email }, 'ok'); showRegNow(); return; }
-  regMsg({ email: 'regErrEmail', consent: 'regErrConsent', limit: 'regErrLimit', network: 'regErrNet' }[r.error] || 'regErrServer', {}, 'ng');
+  const kind = REG_KINDS.find(k => $('regKind-' + k).checked) || '';
+  const r = await registration.register({ email: $('regEmail').value, name: $('regNick').value, kind, consent: $('regConsent').checked }); btn.disabled = false;
+  if (r.ok && r.status === 'ok') { regMsg('regOk', {}, 'ok'); syncLockMarks(); showRegNow(); presenceApi?.setReg?.(regPresenceInfo()); if ($('regDialog').dataset.first === '1') { $('regDialog').close(); $('hint').textContent = t('regOk'); } else $('regClose').hidden = false; return; }
+  if (r.ok) { $('regCheck').hidden = false; $('regClose').hidden = false; regMsg('regSent', { email: registration.state().email }, 'ok'); showRegNow(); return; }   /* オーナーのメールだけ：確認メール待ち */
+  regMsg({ email: 'regErrEmail', name: 'regErrName', kind: 'regErrKind', consent: 'regErrConsent', limit: 'regErrLimit', network: 'regErrNet' }[r.error] || 'regErrServer', {}, 'ng');
+  if ($('regDialog').dataset.first === '1' && (r.error === 'network' || r.error === 'server' || r.error === 'limit')) $('regLater').hidden = false;   /* つながらないときに使えなくならないように */
 }
 async function doRegCheck() {
   const r = await registration.check();
-  if (r.status === 'ok') { $('regCheck').hidden = true; regMsg('regOk', {}, 'ok'); syncLockMarks(); showRegNow(); return; }
+  if (r.status === 'ok') { $('regCheck').hidden = true; regMsg('regOk', {}, 'ok'); syncLockMarks(); showRegNow(); presenceApi?.setReg?.(regPresenceInfo()); return; }
   regMsg(r.status === 'pending' ? 'regPending' : r.status === 'error' ? 'regErrNet' : 'regErrNone', {}, r.status === 'pending' ? '' : 'ng');
 }
 /** 書き出したファイルの保存（事業主の希望 2026-10-19「保存場所を指定して保存したい」）：「書き出すとき保存先を選ぶ」（#outAskWhere・既定は入）が入で、ブラウザが保存先の選択（showSaveFilePicker）に対応していれば、保存の窓を開いて、選んだ場所に書く（前回の場所を覚える）。
@@ -4732,10 +4742,11 @@ function initCounting() {
 }
 /** いま開いている人数を、右下の隅に小さく出す（事業主 2026-10-27「アクセス中の人の人数を目立たないところに表示して」）。数えるのは Cloudflare Worker（presence-worker）。
  *  公開版以外では presence.js が何もしないので、要素は隠れたまま。通信が遅い・止まっても CAD は待たず、数字が消えるだけ。 */
+let presenceApi = null;
 function initPresence() {
   const box = $('presence'); if (!box) return;
   const pres = createPresence({ onCount: n => { if (n == null) { box.hidden = true; return; } $('presenceN').textContent = String(n); box.hidden = false; } });
-  if (pres.start()) track.setSink((name, kind) => pres.use(name, kind));   /* 機能の利用モニタ（2026-10-28）：GA4 に送るのと同じ（機能名・kind）を、人数と同じ中継へも渡す。作家の端末（nsf_ga_optout）は、GA4 と同じく送らない */
+  if (pres.start()) { presenceApi = pres; pres.setReg?.(regPresenceInfo()); track.setSink((name, kind) => pres.use(name, kind)); }   /* 登録済みなら、利用モニタに利用者番号と区分を添える（2026-11-24・生徒とそれ以外を分ける） */   /* 機能の利用モニタ（2026-10-28）：GA4 に送るのと同じ（機能名・kind）を、人数と同じ中継へも渡す。作家の端末（nsf_ga_optout）は、GA4 と同じく送らない */
 }
 /** 「革を透かして見る」がオンの間、三面図の立体の革の面（金具以外）を半透明にして描く。 */
 const GHOST_ALPHA = 0.3;
@@ -12780,6 +12791,8 @@ tabLock?.check(); syncMultiTabBar(); if (tabIsPrimary()) offerRestore(); else { 
 autosaveReady = true; startTabWatch();
 window.addEventListener?.('beforeunload', e => { flushPendingAutosave(); if (unsavedNotAutosaved()) { e.preventDefault(); e.returnValue = ''; } });   /* 自動保存に乗っていない未保存の変更（大きすぎ・保存できない）があるときだけ、閉じる・更新・再読み込みの前にブラウザの確認を出す。自動保存が効いていれば出さない */
 showTour();
+if (registration.needsProfile?.()) openRegistration(true);   /* 最初に開いたとき：利用登録（名前・メール・区分）を1回だけ（2026-11-24 事業主決定）。登録済みの端末では出ない */
+registration.refresh?.()?.then?.(() => { presenceApi?.setReg?.(regPresenceInfo()); if (registration.needsProfile?.() && !$('regDialog').open) openRegistration(true); });   /* 取り消された登録は、1日1回の確認で未登録に戻る→また聞く */
 /* 起動の見張り（index.html の boot-watch）を終え、起動にかかった時間の区分だけを匿名で数える（5秒未満・5〜20秒・20〜60秒・60秒以上・見張りの知らせが出たか） */
 try { const bd = globalThis.__ncadBootDone?.(); if (bd) { countUse(bd.ms < 5000 ? 'boot_lt5s' : bd.ms < 20000 ? 'boot_5to20s' : bd.ms < 60000 ? 'boot_20to60s' : 'boot_gt60s'); if (bd.warned) countUse('boot_warned'); } } catch { /* 数えられなくても起動は続ける */ }
 }

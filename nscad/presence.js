@@ -1,6 +1,7 @@
 // いま開いている人数（右下の隅に小さく出す）：公開版（https の GitHub Pages）でだけ動く。
 // 画面を開いている間、約30秒ごとに「開いています」という匿名の印を送り、返ってきた人数を onCount に渡す。
 // 送るのは、画面を開くたびに作り直すランダムな英数字24字だけ（端末には保存しない）。氏名・図形・文字・ファイル名・寸法は送らない。
+// 利用登録が済んだ端末は、利用モニタ（/use）に利用者番号（メールから作った8字の番号）と区分（受講生／それ以外）を添える（2026-11-24）。名前とメールは送らない。
 // 数えるのが目的なので、通信が遅い・止まっても CAD は待たない（3秒で諦め、2回続けて失敗したら数字を消す）。
 export const PRESENCE_URL = 'https://leather-cad-presence.bouncy-xenoposeidon.workers.dev';
 const PRES_HOST = 'you0810jmsdf.github.io', PRES_BASE_KEY = 'ncad_presence_base', PRES_TIMEOUT_MS = 3000, PRES_MIN_SEC = 20, PRES_MAX_SEC = 300;
@@ -9,7 +10,7 @@ const USE_FLUSH_MS = 2000, USE_MAX_QUEUE = 40, USE_KIND_RE = /^[A-Za-z0-9_.:-]{1
 
 /** env（既定は window）で動く人数係。{ start(), stop(), id() }。公開版以外では start() が false を返し、何もしない。 */
 export function createPresence({ env = globalThis, onCount = () => {}, fetchFn = null, rand = Math.random } = {}) {
-  let id = '', timer = null, started = false, fails = 0, inFlight = false, queue = [], useTimer = null;
+  let id = '', timer = null, started = false, fails = 0, inFlight = false, queue = [], useTimer = null, reg = null;
   const base = () => {
     try {
       const loc = env.location; if (!loc) return '';
@@ -43,7 +44,7 @@ export function createPresence({ env = globalThis, onCount = () => {}, fetchFn =
   const toKind = (name, kind) => { const n = String(name || ''), k = typeof kind === 'string' ? kind : ''; if (!/^ncad_[a-z0-9_]{1,30}$/.test(n)) return ''; const s = n === 'ncad_use' ? k : n.replace(/^ncad_/, '') + (k ? ':' + k : ''); return USE_KIND_RE.test(s) ? s : ''; };
   const flushUse = (viaBeacon = false) => {
     if (useTimer != null) { env.clearTimeout(useTimer); useTimer = null; } if (!queue.length || !started || !id) { queue = []; return; }
-    const b = base(), body = JSON.stringify({ id, ks: queue.splice(0, 20) }); if (!b) return;
+    const b = base(), body = JSON.stringify({ id, ks: queue.splice(0, 20), ...(reg ? { p: reg.p, c: reg.c } : {}) }); if (!b) return;
     try { if (viaBeacon && env.navigator?.sendBeacon) env.navigator.sendBeacon(b + '/use', new Blob([body], { type: 'text/plain' })); else (fetchFn || env.fetch.bind(env))(b + '/use', { method: 'POST', headers: { 'content-type': 'text/plain' }, body, cache: 'no-store', keepalive: true }).catch(() => {}); } catch { /* 送れなくても止めない */ }
     if (queue.length) useTimer = env.setTimeout(() => flushUse(), USE_FLUSH_MS);
   };
@@ -60,5 +61,7 @@ export function createPresence({ env = globalThis, onCount = () => {}, fetchFn =
     stop() { if (!started) return; started = false; clear(); env.document?.removeEventListener?.('visibilitychange', onVisibility); env.removeEventListener?.('pagehide', bye); bye(); onCount(null); },
     use(name, kind) { if (!started || !id) return; const k = toKind(name, kind); if (!k) return; if (queue.length < USE_MAX_QUEUE) queue.push(k); if (useTimer == null) useTimer = env.setTimeout(() => flushUse(), USE_FLUSH_MS); },
     id: () => id,
+    /** 利用登録の印（2026-11-24・生徒とそれ以外を分ける）：利用者番号（登録サーバーがメールから作る8字の番号）と区分 s＝受講生／g＝それ以外。利用モニタの /use に添える。名前・メールは送らない。形が違えば外す */
+    setReg(info) { const pid = String(info?.pid || ''), c = info?.kind === 'student' ? 's' : info?.kind === 'general' ? 'g' : ''; reg = /^[0-9a-f]{8}$/.test(pid) ? { p: pid, c } : null; },
   };
 }

@@ -1,5 +1,6 @@
-// 利用登録：印刷・ファイル保存・書き出しの前に、登録（メールの確認リンク）を求める。登録者の利用（いつ・どの機能か）だけを、運営者のサーバー（GAS のスプレッドシート）へ記録する（事業主指示 2026-10-14）。
-// 送るのは、登録のときの「メール・ニックネーム・同意」と、利用のときの「機能名（短い英数字）」だけ。図形・文字・ファイル名・寸法は送らない。
+// 利用登録：2026-11-24〜 最初に開いたとき、名前・メール・区分（受講生／それ以外）を1回だけ登録してもらう（確認メールなし・オーナーのメールだけ確認メール）。
+// 以前（10-14〜）：印刷・ファイル保存・書き出しの前に、登録（メールの確認リンク）を求める。登録者の利用（いつ・どの機能か）だけを、運営者のサーバー（GAS のスプレッドシート）へ記録する（事業主指示 2026-10-14）。
+// 送るのは、登録のときの「メール・名前・区分・同意」と、利用のときの「機能名（短い英数字）」だけ。図形・文字・ファイル名・寸法は送らない。
 // ⛔ ブラウザの中で動くので、プログラムを書き換えられる人は外せる。「普通の利用者に登録を促し、利用を数える」ための仕組み。
 /** 保存・書き出し・印刷のとき、利用登録（メール確認）を求めるか。false の間は、登録していなくても通す（登録済みの人の利用記録は、これまでどおり取る）。有料版の機能のロック（パッチワーク・三つ折り・三面図）には影響しない。
  *  一時解除（2026-10-22 事業主指示：初回の方に確認メールが届かないため）。戻すときは true にして公開する。 */
@@ -13,6 +14,9 @@ export const regOwnerHash = email => { const str = String(email || '').trim().to
 /** 登録の状態 {status, email} が、確認済みのオーナーのものか。 */
 export const regIsOwner = state => !!state && state.status === 'ok' && regOwnerHash(state.email) === OWNER_EMAIL_HASH;
 export const regIsEmail = s => typeof s === 'string' && s.length <= 254 && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/.test(s);
+/** 区分（2026-11-24 事業主決定：生徒とそれ以外を分ける・本人が選ぶ）。student＝教室・講座の受講生／general＝それ以外。 */
+export const REG_KINDS = ['student', 'general'];
+const PID_RE = /^[0-9a-f]{8}$/;
 
 /** 登録の状態と通信をまとめた部品。storage は localStorage 相当、fetchFn は fetch 相当（どちらも差し替え可）。endpoint が空なら登録を求めない。
  *  状態 status：'none'（未登録）・'pending'（確認メール待ち）・'ok'（登録済み）。 */
@@ -31,17 +35,25 @@ export function createRegistration({ endpoint = REG_ENDPOINT, storage = null, fe
   };
   const api = {
     enabled: () => !!endpoint && typeof fetchFn === 'function',
-    state: () => ({ status: st.status, email: st.email || '', nick: st.nick || '' }),
+    state: () => ({ status: st.status, email: st.email || '', nick: st.nick || '', kind: REG_KINDS.includes(st.kind) ? st.kind : '', pid: PID_RE.test(st.pid || '') ? st.pid : '' }),
     allowed: () => !api.enabled() || st.status === 'ok',
-    /** 登録の申し込み。確認メールが送られ、状態は pending になる。 */
-    async register({ email, nick = '', consent = false } = {}) {
-      if (!regIsEmail(String(email || '').trim())) return { ok: false, error: 'email' };
+    /** 最初に開いたとき、登録の窓を出すか（2026-11-24 事業主決定：最初に開いたとき必須・一度登録すれば2回目は不要）。
+     *  未登録、または前の登録（10-14〜11-24）で名前・区分が無いとき true。確認メール待ち（オーナーのメールだけ）は出さない。 */
+    needsProfile: () => api.enabled() && (st.status === 'none' || !st.status || (st.status === 'ok' && (!REG_KINDS.includes(st.kind) || !String(st.nick || '').trim()))),
+    /** 登録。名前・メール・区分・同意を送る。ふつうはその場で登録済み（ok）。オーナーのメールだけは確認メールを待つ（pending）。
+     *  同じメールでの登録し直し（名前・区分の書き直し）は、同じ端末の合言葉で送る（サーバーは行を増やさない）。 */
+    async register({ email, name = '', nick = '', kind = '', consent = false } = {}) {
+      const mail = String(email || '').trim(), cleanName = String(name || nick || '').replace(/\s+/g, ' ').trim().slice(0, 30);
+      if (!regIsEmail(mail)) return { ok: false, error: 'email' };
+      if (!cleanName) return { ok: false, error: 'name' };
+      if (!REG_KINDS.includes(kind)) return { ok: false, error: 'kind' };
       if (consent !== true) return { ok: false, error: 'consent' };
-      const t = token(), cleanNick = String(nick || '').trim().slice(0, 30), mail = String(email).trim();
+      const same = st.token && String(st.email || '').toLowerCase() === mail.toLowerCase(), t = same ? st.token : token();
       try {
-        const res = await post({ action: 'register', token: t, email: mail, nick: cleanNick, consent: true, v: version }), json = await res.json();
+        const res = await post({ action: 'register', token: t, email: mail, name: cleanName, kind, consent: true, v: version }), json = await res.json();
         if (!json || json.ok !== true) return { ok: false, error: json?.error === 'limit' ? 'limit' : 'server' };
-        st = { status: 'pending', token: t, email: mail, nick: cleanNick, checkedAt: 0 }; save(); return { ok: true };
+        const status = json.status === 'ok' ? 'ok' : 'pending';
+        st = { status, token: t, email: mail, nick: cleanName, kind, pid: PID_RE.test(json.pid || '') ? json.pid : '', checkedAt: status === 'ok' ? now() : 0 }; save(); return { ok: true, status };
       } catch { return { ok: false, error: 'network' }; }
     },
     /** 確認メールのリンクを開いたか、サーバーに聞く。ok になれば登録済み。 */
@@ -49,8 +61,9 @@ export function createRegistration({ endpoint = REG_ENDPOINT, storage = null, fe
       if (!st.token) return { status: 'none' };
       try {
         const res = await fetchFn(`${endpoint}?action=status&token=${encodeURIComponent(st.token)}`, { credentials: 'omit' }), json = await res.json(), s = json?.status;
-        if (s === 'ok') { st = { ...st, status: 'ok', checkedAt: now() }; save(); return { status: 'ok' }; }
-        if (s === 'pending') return { status: 'pending' };
+        const more = { ...(PID_RE.test(json?.pid || '') ? { pid: json.pid } : {}), ...(REG_KINDS.includes(json?.kind) ? { kind: json.kind } : {}) };   /* 利用者番号・区分（サーバーが返したら引き継ぐ。前の登録に番号を付けるのもここ） */
+        if (s === 'ok') { st = { ...st, ...more, status: 'ok', checkedAt: now() }; save(); return { status: 'ok' }; }
+        if (s === 'pending') { st = { ...st, ...more }; save(); return { status: 'pending' }; }
         if (s === 'revoked' || s === 'none') { st = { status: 'none' }; save(); return { status: 'none' }; }
         return { status: 'error' };
       } catch { return { status: 'error' }; }
