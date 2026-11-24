@@ -395,6 +395,7 @@
       '#nsfBarNext{background:#fbf7ef;color:#6f4e37;border:1.5px dashed #c9a96e}',
       '#nsfBarPrev,#nsfBarNote{font-size:12px;color:#6b5646}',
       '#nsfBarNote:empty,#nsfBarPrev:empty{display:none}',
+      '#nsfBarIos{flex-basis:100%;font-size:12px;line-height:1.6;color:#6b5646;background:#fbf7ef;border-radius:6px;padding:5px 8px}',
       '@media (min-width:1100px){#nsfActionBar{position:sticky;top:0;z-index:60}}',
       '@media (min-width:601px){body.panel-open #nsfActionBar{margin-left:max(292px,calc(50% - 380px));margin-right:auto}}',
       '@media (max-width:600px){#nsfActionBar{margin:0 12px 8px;padding:6px 8px;gap:6px}#nsfActionBar button{padding:7px 10px}}',
@@ -409,12 +410,16 @@
       + '<button type="button" id="nsfBarPrint">🖨 印刷</button>'
       + '<button type="button" id="nsfBarSettings">⚙ 期間・設定</button>'
       + '<div id="nsfBarNextRow" style="display:none"><button type="button" id="nsfBarNext"></button><span id="nsfBarPrev"></span><span id="nsfBarNote" role="status"></span></div>';
+    // iPhone・iPad の標準の印刷は自動で縮小され、穴やサイズが合わなくなる（2026-11-24 事業主決定・出典 LINE\enriched\2026-09-19-iOSからのリフィル印刷は縮小される問題.md）
+    // → iPhone・iPad で開いたときだけ、操作バーに1行の注記を出す。iPadOS は「Mac」を名乗るのでタッチ点の数で見分ける。
+    const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+    if (isIos) bar.insertAdjacentHTML('beforeend', '<div id="nsfBarIos">📱 iPhone・iPad の標準の印刷は、自動で少し縮小されます。原寸で刷るときは「📄 PDFを作る」→ 共有 → プリンターのメーカーのアプリ（Canon PRINT・Epson Smart Panel など）で印刷してください。</div>');
     preview.parentNode.insertBefore(bar, preview);
     // 更新履歴（HISTORY_ENTRIES の末尾が最新・refill-mobile.js と同じやり方）。refill-mobile.js（10/31の項目）を読み終えてから足して、日付の順を保つ
     const pushHist = () => { try {
       if (typeof HISTORY_ENTRIES !== 'undefined' && Array.isArray(HISTORY_ENTRIES) && !HISTORY_ENTRIES.some(x => x.title === '紙面の上に「PDFを作る・印刷・続きから作る」'))
       HISTORY_ENTRIES.push({ date: '2026-11-24', type: 'improve', title: '紙面の上に「PDFを作る・印刷・続きから作る」',
-        detail: 'PDF・印刷のボタンを、☰を開かなくても押せるように紙面の上に出しました。PDF・印刷のときに作った期間をこの端末に覚えておき、次に開いたとき「▶ 続きから作る」で、前回の翌日から同じ長さの期間を用意します（週間は週単位・月間は月単位でそろえます）。' });
+        detail: 'PDF・印刷のボタンを、☰を開かなくても押せるように紙面の上に出しました。PDF・印刷のときに作った期間をこの端末に覚えておき、次に開いたとき「▶ 続きから作る」で、前回の翌日から同じ長さの期間を用意します（週間は週単位・月間は月単位でそろえます）。iPhone・iPad では、原寸で印刷するための注意をボタンの下に出します。' });
     } catch (e) {} };
     setTimeout(() => {
       const m = $id('nsf-refill-mobile-js');
