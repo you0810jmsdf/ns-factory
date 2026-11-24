@@ -699,6 +699,33 @@ footer {
 .reveal-delay-2 { transition-delay:.2s; }
 .reveal-delay-3 { transition-delay:.3s; }
 
+/* ── Book（著書） ───────────────────────────── */
+.book { background:var(--white); color:var(--near-black); }
+.book-card {
+  display:grid; grid-template-columns:200px 1fr; gap:40px;
+  align-items:center; max-width:820px; margin:0 auto;
+}
+.book-cover img {
+  width:100%; height:auto; display:block;
+  border-radius:6px; box-shadow:0 8px 28px rgba(0,0,0,0.18);
+}
+.book-cover-note { font-size:11px; color:#8e8e93; margin-top:8px; text-align:center; }
+.book-title { font-size:28px; font-weight:600; line-height:1.25; margin-bottom:8px; }
+.book-subtitle { font-size:15px; color:var(--leather); font-weight:600; line-height:1.5; margin-bottom:20px; }
+.book-desc { font-size:15px; line-height:1.75; color:#3a3a3c; margin-bottom:20px; }
+.book-status {
+  display:inline-block; font-size:13px; font-weight:600;
+  padding:6px 14px; border-radius:var(--radius-full);
+  background:var(--leather-pale); color:var(--leather); margin-bottom:20px;
+}
+.book-links { display:flex; flex-wrap:wrap; gap:12px; }
+.book-links .btn-primary { display:inline-block; }
+@media (max-width:768px) {
+  .book-card { grid-template-columns:1fr; gap:28px; text-align:center; }
+  .book-cover img { max-width:180px; margin:0 auto; }
+  .book-links { justify-content:center; }
+}
+
 /* ── Responsive ──────────────────────────────── */
 @media (max-width:768px) {
   section { padding:72px 20px; }
@@ -1162,6 +1189,29 @@ footer {
   </div>
 </section>
 
+<!-- ── Book（著書） ───────────────────────────── -->
+<section class="book" id="book">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">Book</p>
+    <h2 class="section-heading reveal" data-i18n="book.heading">著書</h2>
+    <div class="book-card reveal">
+      <div class="book-cover">
+        <img src="assets/books/komuin-kawashokunin-cover.jpg" width="400" height="640" loading="lazy" alt="『公務員が革職人に？』の表紙">
+        <p class="book-cover-note" data-i18n="book.coverNote">表紙の絵は AI で作ったイメージです</p>
+      </div>
+      <div class="book-body">
+        <h3 class="book-title" data-i18n="book.title">公務員が革職人に？</h3>
+        <p class="book-subtitle" data-i18n="book.subtitle">25年勤めた元海上自衛官が、『好き』を仕事にした記録</p>
+        <p class="book-desc" data-i18n="book.desc">25年勤めた私が、好きな革の仕事で開業するまでの記録と、その数字をまとめた一冊です。売上も、失敗も、続ける理由も、そのまま書きました。</p>
+        <p class="book-status" data-i18n="book.status">Amazon で近日発売（Kindle 版・紙の本）</p>
+        <div class="book-links">
+          <a href="https://note.com/you0810jmsdf/n/n51319b4f75b5" class="btn-primary" target="_blank" rel="noopener" data-i18n="book.note">note で読む</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── Shops ───────────────────────────────────── -->
 <section class="shops" id="shops">
   <div class="section-inner">
@@ -1337,6 +1387,13 @@ window.NSF_I18N_DICT = {
   'comm.c1': '27th Inzai Citizens Academy',
   'comm.c1d': 'Participating as a student in a local learning community, engaging with the issues of Chiba and Inzai while broadening a citizen’s perspective.',
   'comm.c2d': 'A civic group behind the Inzai “Konoyubi Tomare” project (Inzai City registration no. 08-001). As a member, helping discover and nurture local talent and create places where citizens can thrive.',
+  'book.heading': 'Book',
+  'book.coverNote': 'The cover illustration was created with AI',
+  'book.title': 'From Civil Servant to Leather Craftsman?',
+  'book.subtitle': 'A record of how I turned what I love into my work, after 25 years in the Japan Maritime Self-Defense Force',
+  'book.desc': 'The record, with the real numbers, of how I opened my own leather craft business after 25 years of service. Sales, failures, and the reasons I keep going are all written down as they are.',
+  'book.status': 'Coming soon on Amazon (Kindle and paperback, in Japanese)',
+  'book.note': 'Read on note (Japanese)',
   'contact.heading': 'Contact',
   'contact.body': 'Order consultations, collaboration proposals, teaching requests — feel free to get in touch.',
   'contact.base': '<strong>Base</strong>\nInzai City, Chiba, Japan',
