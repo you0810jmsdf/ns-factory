@@ -1,0 +1,2217 @@
+{
+ "_note": "神社を選んだ理由の台帳（掲載基準①②③の根拠と理由）。正本は 広報部\\SNS素材\\神社巡りノート\\Kindle本\\台帳\\。社格は目安で、優劣を示すものではない。",
+ "version": "2026-11-24",
+ "shrines": {
+  "shiogama": {
+   "reason": "国譲りで使者となる武甕槌神と経津主神、海幸山幸の段に出る塩土老翁神を、同じ境内の三つの本殿に祀っています。開閉門の時間・御朱印・駐車場が公式サイトに載り、参拝の準備を確かめられます。ただし公式の塩竈の伝承は記紀の話ではなく、社格を示す資料も確認できていません。",
+   "A1": {
+    "text": "公式サイトに、開閉門の時間、御朱印（志波彦神社と両社分で500円）、駅や高速道路からのアクセス、無料駐車場（約350台）が載っています。参拝の準備は公式で確認できます。",
+    "src": [
+     "sg3",
+     "sg4"
+    ]
+   },
+   "A2": {
+    "text": "公式は、平安初期の『弘仁式』に鹽竈神の祭りの費用の記載があると説明します。『延喜式』にも同様の記載があります。社殿は国の重要文化財です。社格を示す資料は、確認できていない。",
+    "src": [
+     "sg2",
+     "fx_018_1"
+    ]
+   },
+   "A3": {
+    "text": "武甕槌神と経津主神は日本書紀の国譲り（第九段）に並んで登場し、武甕槌神は古事記の国譲りにも出ます。塩土老翁神は海幸山幸の段などに出ます。公式の塩竈の伝承自体は、記紀の話ではありません。",
+    "src": [
+     "sg2",
+     "sg1"
+    ]
+   },
+   "open": [
+    "塩土老翁神を古事記の塩椎神と同じ神とみるのは通説的な理解で、テキストに明記は無い。",
+    "経津主神が古事記に見えないことは検索による確認で、要確認。",
+    "公式の伝承（塩土老翁神が二神を先導する話）は、古典テキストでは確認できていない。"
+   ],
+   "en": {
+    "reason": "Three deities are enshrined in three main halls within the same precincts: Takemikazuchi-no-Ōkami and Futsunushi-no-Ōkami, who serve as envoys in the transfer of the land, and Shiotsuchi-no-Oji-no-Kami, who appears in the 海幸山幸 episode. The official site lists the gate hours, goshuin, and parking, so you can check your visit preparations there. Note that the official Shiogama tradition is not a story from the Kojiki or Nihon Shoki, and no source showing the shrine's rank has been confirmed.",
+    "A1": "The official site lists the gate opening and closing times, goshuin (500 yen for this shrine and 志波彦神社 together), access from stations and expressways, and free parking (about 350 spaces). You can check the preparations for your visit on the official site.",
+    "A2": "The official site explains that the 弘仁式 of the early Heian period records the costs of the festivals of the Shiogama deity. The Engishiki has a similar entry. The shrine buildings are Important Cultural Properties of Japan. No source showing the shrine's rank has been confirmed.",
+    "A3": "Takemikazuchi-no-Ōkami and Futsunushi-no-Ōkami appear side by side in the transfer of the land (国譲り, Section 9) of the Nihon Shoki, and Takemikazuchi-no-Ōkami also appears in the Kojiki's account of the transfer of the land. Shiotsuchi-no-Oji-no-Kami appears in episodes such as the 海幸山幸 episode. The Shiogama tradition recorded by the official site is not itself a story from the Kojiki or the Nihon Shoki.",
+    "open": [
+     "Viewing Shiotsuchi-no-Oji-no-Kami as the same deity as 塩椎神 in the Kojiki is the common understanding, but no text states this.",
+     "That Futsunushi-no-Ōkami does not appear in the Kojiki was confirmed only by a search and still needs checking.",
+     "The official tradition (the story in which Shiotsuchi-no-Oji-no-Kami guides the two deities) has not been confirmed in the classical texts."
+    ]
+   }
+  },
+  "katori": {
+   "reason": "祭神の経津主神は、日本書紀の国譲りに使者として登場する神で、古事記には見当たらないとされます（要確認）。下総国の一之宮（国ごとに数えられる主要な神社の呼び名）で、公式サイトに御朱印や祈祷の受付時間、無料駐車場が示されています。社格は目安で、境内の開閉時間は確認できていません。",
+   "A1": {
+    "text": "公式サイトに、授与所・御朱印の受付（8:30〜17:00）、祈祷や宝物の受付時間、無料駐車場の案内が載っています。境内そのものの開閉時間は、確認できていません。",
+    "src": [
+     "k2",
+     "k4"
+    ]
+   },
+   "A2": {
+    "text": "公式は、下総国の一之宮（国ごとに数えられる主要な神社の呼び名）で、旧官幣大社、昭和17年に勅祭社（天皇の使いが遣わされる祭りの社）になったと記します。延喜式の名神大社かは、公式では確認できていません。",
+    "src": [
+     "k1"
+    ]
+   },
+   "A3": {
+    "text": "祭神の経津主神は、日本書紀の国譲り（第九段）に使者として登場します。古事記には見当たらないとされ、要確認です。公式は別名を伊波比主命とします。",
+    "src": [
+     "k1"
+    ]
+   },
+   "open": [
+    "式内名神大社・別表神社の格付けは事典のみで、公式などの裏づけを確認できていない。",
+    "境内の開閉時間が公式で確認できていない。",
+    "経津主神が古事記に見えないことは検索による確認で、要確認。"
+   ],
+   "en": {
+    "reason": "The enshrined deity Futsunushi-no-Ōkami appears as an envoy in the transfer of the land in the Nihon Shoki, and he is said not to appear in the Kojiki (this still needs checking). This is the Ichinomiya of Shimōsa Province (the name for a principal shrine counted for each province), and the official site gives reception hours for goshuin and prayer rites and information on free parking. Rank is only a guide, and the opening and closing times of the precincts have not been confirmed.",
+    "A1": "The official site lists the reception hours for the amulet office and goshuin (8:30–17:00), the reception hours for prayer rites and the treasure hall, and free parking. The opening and closing times of the precincts themselves have not been confirmed.",
+    "A2": "The official site states that this is the Ichinomiya of Shimōsa Province (the name for a principal shrine counted for each province) and a former Kanpei Taisha, and that it became a Chokusai-sha (a shrine to which the Emperor sends an envoy) in 1942 (Shōwa 17). Whether it is a Myōjin Taisha in the Engishiki has not been confirmed from the official site.",
+    "A3": "The enshrined deity Futsunushi-no-Ōkami appears as an envoy in the transfer of the land (Section 9) of the Nihon Shoki. He is said not to appear in the Kojiki, which still needs checking. The official site gives another name, 伊波比主命.",
+    "open": [
+     "The ranking as a Shikinai Myōjin Taisha and a Beppyō Jinja (a category of shrines) rests only on reference dictionaries; no support from the official site or similar sources has been confirmed.",
+     "The opening and closing times of the precincts have not been confirmed on the official site.",
+     "That Futsunushi-no-Ōkami does not appear in the Kojiki was confirmed only by a search and still needs checking."
+    ]
+   }
+  },
+  "awa": {
+   "reason": "天の岩屋戸と天孫降臨の場面に布刀玉命として登場する天太玉命を祀る、安房国の一之宮です。公式は『延喜式』神名帳に載る名神大社と記し、授与所とご祈祷の受付時間も示しています。社格は目安で、境内の拝観時間と最寄り駅からの行き方は確認できていません。",
+   "A1": {
+    "text": "公式サイトに、神符守札授与・御朱印は8:30〜16:30、ご祈祷は9:00〜16:00と載ります。境内の拝観時間と、最寄り駅からの行き方は、確認できていません。",
+    "src": [
+     "a2"
+    ]
+   },
+   "A2": {
+    "text": "公式は、延喜式の名神大社（『延喜式』神名帳に載る神社の区分）で、明治期に官幣大社、昭和21年に別表神社になったと記します。創始は皇紀元年と伝わるとし、伝承として読みます。",
+    "src": [
+     "a1"
+    ]
+   },
+   "A3": {
+    "text": "祭神の天太玉命は、古事記の天の岩屋戸と天孫降臨に布刀玉命として登場します。天富命は記紀に出ず古語拾遺にのみ見え、天比理乃咩命も記紀には見えません。",
+    "src": [
+     "a1",
+     "a3"
+    ]
+   },
+   "open": [
+    "最寄り駅・所要時間が、公式のテキストで確認できていない。",
+    "境内の拝観時間が確認できていない。",
+    "駐車場（無料・約50台）は観光サイトのみの情報で、公式の出典が無い。",
+    "天富命の房総開拓は古語拾遺に記載があるが、史実の裏づけは別の検討が要る。",
+    "天比理乃咩命は記紀・古語拾遺の取得範囲で確認できず、洲崎神社の社伝に基づく。"
+   ],
+   "en": {
+    "reason": "This is the Ichinomiya of Awa Province, dedicated to Ame-no-Futodama-no-Mikoto, who appears as 布刀玉命 in the episode of the heavenly rock cave and in the descent of the heavenly grandchild. The official site describes it as a Myōjin Taisha listed in the register of deities of the Engishiki, and it also gives the hours of the amulet office and prayer rites. Rank is only a guide, and the visiting hours of the precincts and the route from the nearest station have not been confirmed.",
+    "A1": "The official site lists 8:30–16:30 for amulet distribution and goshuin, and 9:00–16:00 for prayer rites. The hours when the precincts are open to visitors and how to get there from the nearest station have not been confirmed.",
+    "A2": "The official site states that this is a Myōjin Taisha in the Engishiki (a category of shrines listed in the register of deities, 神名帳, of the Engishiki), that it became a Kanpei Taisha in the Meiji period, and that it became a Beppyō Jinja (a category of shrines) in 1946 (Shōwa 21). It says the founding is traditionally placed in the first year of the Imperial calendar (皇紀元年), which should be read as a tradition.",
+    "A3": "The enshrined deity Ame-no-Futodama-no-Mikoto appears in the Kojiki under the name 布刀玉命, in the episode of the heavenly rock cave (天の岩屋戸) and in the descent of the heavenly grandchild (天孫降臨). Ame-no-Tomi-no-Mikoto does not appear in the Kojiki or the Nihon Shoki and is found only in the 古語拾遺. Ame-no-Hirinome-no-Mikoto does not appear in the Kojiki or the Nihon Shoki either.",
+    "open": [
+     "The nearest station and travel time have not been confirmed in the official text.",
+     "The visiting hours of the precincts have not been confirmed.",
+     "Parking (free, about 50 spaces) comes only from a tourism site, with no official source.",
+     "The 古語拾遺 records Ame-no-Tomi-no-Mikoto's development of Bōsō, but historical support for it needs separate study.",
+     "Ame-no-Hirinome-no-Mikoto could not be confirmed within the range of the Kojiki, Nihon Shoki, and 古語拾遺 consulted, and rests on the shrine tradition of 洲崎神社."
+    ]
+   }
+  },
+  "utsunomiyafutaarayama": {
+   "reason": "古事記では崇神天皇の御子、日本書紀では夢占いで東国を治めた皇子として出る豊城入彦命を祀る、下野国の一之宮です。公式は『延喜式』神名帳に「名神大」と載ると説明し、ご祈祷の受付時間や御朱印の初穂料も示します。社格は目安です。",
+   "A1": {
+    "text": "公式サイトに、ご祈祷の受付（8:30〜15:50・予約不要）、御朱印の初穂料500円、駅や高速道路からのアクセス、駐車場の料金が載っています。開閉門の現行時間と御朱印の受付時間は、確認できていません。",
+    "src": [
+     "p1b",
+     "p1c"
+    ]
+   },
+   "A2": {
+    "text": "公式は、下野国の一之宮で、延長5年（927）完成の『延喜式』神名帳に「名神大」と載る、栃木県内唯一の名神大社と説明します。創建は崇神天皇の御代に遡ると伝えます。",
+    "src": [
+     "p1a"
+    ]
+   },
+   "A3": {
+    "text": "祭神の豊城入彦命は、古事記では崇神天皇の御子、日本書紀では夢占いで東国を治めた皇子として出ます。相殿の事代主神は国譲りに、大物主神は国作りや崇神の段に登場します。",
+    "src": [
+     "p1a",
+     "p1z1",
+     "p1z2"
+    ]
+   },
+   "open": [
+    "開閉門・社務所の現行の通常時間が、公式本文で確認できていない（2023年の暫定時間のみ）。",
+    "御朱印の受付時間が確認できていない。",
+    "奈良別王（奈良別君）の記紀での確認は、未実施で要確認。",
+    "「大国さま」「恵比須さま」の呼び方は公式の説明で、記紀の本文にはない。"
+   ],
+   "en": {
+    "reason": "This is the Ichinomiya of Shimotsuke Province, dedicated to Toyokiirihiko-no-Mikoto, who appears in the Kojiki as a child of Emperor Sujin and in the Nihon Shoki as a prince who governed eastern Japan after a dream divination. The official site explains that the Engishiki register of deities lists it as 'Myōjin Taisha', and it gives the reception hours for prayer rites and the offering for goshuin. Rank is only a guide.",
+    "A1": "The official site lists the reception hours for prayer rites (8:30–15:50, no reservation needed), the 500-yen offering for goshuin, access from stations and expressways, and parking fees. The current gate hours and the goshuin reception hours have not been confirmed.",
+    "A2": "The official site explains that this is the Ichinomiya of Shimotsuke Province and the only Myōjin Taisha in Tochigi Prefecture, listed as 'Myōjin Taisha' in the register of deities of the Engishiki, completed in 927 (Engi 5). It says the founding goes back to the reign of Emperor Sujin.",
+    "A3": "The enshrined deity Toyokiirihiko-no-Mikoto appears in the Kojiki as a child of Emperor Sujin, and in the Nihon Shoki as a prince who governed eastern Japan after a dream divination. Kotoshironushi-no-Kami, enshrined alongside him, appears in the transfer of the land, and Ōmononushi-no-Kami appears in the building of the land and in the Emperor Sujin section.",
+    "open": [
+     "The current regular opening hours of the gates and shrine office have not been confirmed in the official text (only the provisional hours of 2023).",
+     "The goshuin reception hours have not been confirmed.",
+     "Whether 奈良別王 (奈良別君) can be confirmed in the Kojiki and Nihon Shoki has not been checked and needs checking.",
+     "The ways of calling the deities '大国さま' and '恵比須さま' come from the official explanation and are not in the main texts of the Kojiki or Nihon Shoki."
+    ]
+   }
+  },
+  "hikawa": {
+   "reason": "須佐之男命と稲田姫命が八岐大蛇の段で結ばれ、大国主神も祀られています。公式は武蔵国一宮とされる古社で、明治元年に勅祭の社（天皇の使いが遣わされる祭りの社）と定められたと記し、駅からのアクセスや駐車場も示します。社格は目安で、楼門の開閉時間は確認できていません。",
+   "A1": {
+    "text": "公式サイトに、駅からのアクセス、住所、三つの駐車場の台数と時間が載っています。楼門の開閉時間と御朱印の初穂料は、検索要約でしか見ておらず、確認できていません。",
+    "src": [
+     "hi3"
+    ]
+   },
+   "A2": {
+    "text": "公式は、武蔵国一宮とされる古社で、明治元年に勅祭の社（天皇の使いが遣わされる祭りの社）と定められ、明治4年に官幣大社に列せられたと記します。延喜式での扱いは、確認できていません。",
+    "src": [
+     "hi1"
+    ]
+   },
+   "A3": {
+    "text": "祭神の須佐之男命と稲田姫命（古事記は櫛名田比売）は、八岐大蛇の段で結ばれます。大己貴命は大国主神の別名で、三柱とも記紀に登場します。",
+    "src": [
+     "hi1"
+    ]
+   },
+   "open": [
+    "楼門の開閉時間・御朱印の初穂料は検索要約のみで、ページ本文で確認できていない。",
+    "社名「氷川」の由来は出雲説と湧水説があり、どちらかに決められる資料が無い。"
+   ],
+   "en": {
+    "reason": "Susanoo-no-Mikoto and Inada-hime-no-Mikoto, who are united in the episode of the 八岐大蛇, are enshrined here together with Ōkuninushi-no-Ōkami. The official site describes the shrine as an old shrine regarded as the Ichinomiya of Musashi Province, designated a Chokusai-sha (a shrine to which the Emperor sends an envoy) in 1868, and it gives access from the station and parking information. Rank is only a guide, and the opening and closing times of the tower gate have not been confirmed.",
+    "A1": "The official site lists access from the station, the address, and the number of spaces and the hours for three parking lots. The opening and closing times of the tower gate (楼門) and the offering for goshuin were seen only in a search summary and have not been confirmed.",
+    "A2": "The official site states that this is an old shrine regarded as the Ichinomiya of Musashi Province, that in 1868 (Meiji 1) it was designated a Chokusai-sha (a shrine to which the Emperor sends an envoy), and that in 1871 (Meiji 4) it was ranked as a Kanpei Taisha. Its treatment in the Engishiki has not been confirmed.",
+    "A3": "The enshrined deities Susanoo-no-Mikoto and Inada-hime-no-Mikoto (櫛名田比売 in the Kojiki) are united in the episode of the 八岐大蛇. 大己貴命 is another name of Ōkuninushi-no-Ōkami, and all three deities appear in the Kojiki and the Nihon Shoki.",
+    "open": [
+     "The opening and closing times of the tower gate and the offering for goshuin come only from a search summary and have not been confirmed in the page text.",
+     "There are two explanations for the origin of the name 'Hikawa', one linked to Izumo and one to spring water, and no source settles which is correct."
+    ]
+   }
+  },
+  "kanda": {
+   "reason": "国作りを共にした大己貴命（古事記の大国主神）と少彦名命を祀り、三之宮の平将門命は平安時代の人物で記紀には出ません。公式は明治時代に准勅祭社（勅祭社に準じる名称）と定められたと記します。社格は目安で、授与や昇殿参拝の案内は公式にありますが、御朱印の案内は確認できていません。",
+   "A1": {
+    "text": "公式のお知らせに、御神札・御守の授与は令和8年末まで9時〜18時、昇殿参拝は予約不要と載ります。アクセスも公式にあります。御朱印の案内ページと初穂料は、確認できていません。",
+    "src": [
+     "o1n",
+     "o1o",
+     "o1p",
+     "o1m"
+    ]
+   },
+   "A2": {
+    "text": "公式は、明治時代に「准勅祭社」（勅祭社に準じる名称）「東京府社」と定められ、社殿は昭和9年竣功で国登録有形文化財と記します。勅祭社や別表神社かは、確認できていません。",
+    "src": [
+     "o1k",
+     "o1l"
+    ]
+   },
+   "A3": {
+    "text": "祭神の大己貴命は古事記の大国主神にあたり、少彦名命と国作りを共にします。三之宮の平将門命は平安時代の人物で、記紀には出ません。少彦名命の親神は資料で異なります。",
+    "src": [
+     "o1k",
+     "k",
+     "ns1"
+    ]
+   },
+   "open": [
+    "御朱印の専用案内ページ・初穂料・頒布場所・受付時間が確認できていない。",
+    "昇殿参拝の受付時間帯と、境内の開閉時刻が確認できていない。",
+    "参拝者駐車場は台数が「若干数」とだけあり、料金が確認できていない。",
+    "勅祭社・別表神社かが、公式サイトで確認できていない。",
+    "少彦名命の親神は、公式が高皇産霊神の御子、古事記が神産巣日神之御子とし、資料により異なる。"
+   ],
+   "en": {
+    "reason": "Here are enshrined 大己貴命 (Ōkuninushi-no-Ōkami in the Kojiki) and Sukunahikona-no-Kami, who built the land together. Taira no Masakado-no-Mikoto, in the third shrine (三之宮), was a figure of the Heian period and does not appear in the Kojiki or the Nihon Shoki. The official site states that the shrine was designated a Jun-Chokusai-sha (a title modeled on Chokusai-sha) in the Meiji period. Rank is only a guide; the official site gives information on amulets and on worship inside the hall, but the goshuin information has not been confirmed.",
+    "A1": "The official notice says that amulets and talismans are available from 9:00 to 18:00 through the end of 2026 (Reiwa 8), and that worship inside the shrine hall (昇殿参拝) needs no reservation. Access information is also on the official site. The goshuin information page and the offering for goshuin have not been confirmed.",
+    "A2": "The official site states that in the Meiji period the shrine was designated a Jun-Chokusai-sha (准勅祭社, a title modeled on Chokusai-sha) and a Tokyo-fu-sha (東京府社), and that the shrine buildings were completed in 1934 (Shōwa 9) and are a Registered Tangible Cultural Property of Japan. Whether it is a Chokusai-sha or a Beppyō Jinja has not been confirmed.",
+    "A3": "The enshrined deity 大己貴命 corresponds to Ōkuninushi-no-Ōkami in the Kojiki and builds the land together with Sukunahikona-no-Kami. Taira no Masakado-no-Mikoto, in the third shrine (三之宮), was a figure of the Heian period and does not appear in the Kojiki or the Nihon Shoki. Sources differ on the parent of Sukunahikona-no-Kami.",
+    "open": [
+     "The dedicated goshuin information page, the offering, where goshuin are given, and the reception hours have not been confirmed.",
+     "The reception hours for worship inside the shrine hall and the opening and closing times of the precincts have not been confirmed.",
+     "For the visitors' parking lot, the official site gives only a 'small number' of spaces, and the fee has not been confirmed.",
+     "Whether it is a Chokusai-sha or a Beppyō Jinja has not been confirmed on the official site.",
+     "The parent of Sukunahikona-no-Kami differs by source: the official site says he is a child of 高皇産霊神, while the Kojiki says he is a child of 神産巣日神."
+    ]
+   }
+  },
+  "kashima": {
+   "reason": "古事記では建御雷神、日本書紀では武甕槌神として国譲りに登場する武甕槌大神を祀る、常陸国の一之宮です。公式によると境内は門や柵が無く24時間参拝でき、授与所と御祈祷の受付は8:30〜16:30です。社格は目安で、御朱印の授与場所と時間は確認できていません。",
+   "A1": {
+    "text": "公式に、境内は門や柵が無く24時間参拝でき、授与所・御祈祷受付は8:30〜16:30と載ります。駅からの徒歩時間と駐車場の案内もあります。御朱印の授与場所と時間は、確認できていません。",
+    "src": [
+     "s2",
+     "s3",
+     "fx_k2"
+    ]
+   },
+   "A2": {
+    "text": "公式は、常陸国の一之宮で勅祭社と記します。『延喜式』神名帳に「名神大」とあることは神名帳の翻刻で確認しましたが、公式ページでは確認できていません。",
+    "src": [
+     "s1",
+     "fx_k3"
+    ]
+   },
+   "A3": {
+    "text": "祭神の武甕槌大神は、古事記では建御雷神として神生みと国譲りに登場し、日本書紀では武甕槌神として国譲り（第九段）に出ます。",
+    "src": [
+     "s1"
+    ]
+   },
+   "open": [
+    "御朱印の授与場所・時間が確認できていない。",
+    "延喜式の名神大社の記載は、翻刻で確認したもので、公式ページでは確認できていない。"
+   ],
+   "en": {
+    "reason": "This is the Ichinomiya of Hitachi Province, dedicated to Takemikazuchi-no-Ōkami, who appears in the transfer of the land as 建御雷神 in the Kojiki and as 武甕槌神 in the Nihon Shoki. According to the official site, the precincts have no gates or fences and are open for worship 24 hours a day, and the amulet office and prayer-rite reception are open 8:30–16:30. Rank is only a guide, and where and when goshuin are given has not been confirmed.",
+    "A1": "The official site states that the precincts have no gates or fences and are open for worship 24 hours a day, and that the amulet office and prayer-rite reception are open 8:30–16:30. It also gives the walking time from the station and parking information. Where and when goshuin are given has not been confirmed.",
+    "A2": "The official site states that this is the Ichinomiya of Hitachi Province and a Chokusai-sha. That the register of deities of the Engishiki lists it as 'Myōjin Taisha' was confirmed in a transcription of the register, but not on an official page.",
+    "A3": "The enshrined deity Takemikazuchi-no-Ōkami appears as 建御雷神 in the Kojiki, in the birth of the deities and in the transfer of the land, and as 武甕槌神 in the transfer of the land (Section 9) of the Nihon Shoki.",
+    "open": [
+     "Where and when goshuin are given has not been confirmed.",
+     "The listing as a Myōjin Taisha in the Engishiki was confirmed in a transcription and has not been confirmed on an official page."
+    ]
+   }
+  },
+  "nukisaki": {
+   "reason": "日本書紀の国譲りに使者として出る経津主神を祀る、上野国の一之宮です（古事記には登場しません）。総門は24時間、楼門は6:00〜17:00と公式に示され、本殿・拝殿・楼門は国指定重要文化財です。もう一柱の姫大神は、公式が神名も由緒も伝わっていないと記します。社格は目安です。",
+   "A1": {
+    "text": "公式の案内に、総門は24時間、楼門は6:00〜17:00、社務所は8:00〜17:00、御朱印は16:30までと載ります。アクセスもあります。御朱印帳の額と、駐車場の通常期の扱いは、確認できていません。",
+    "src": [
+     "j1i",
+     "nf088d",
+     "nf088e"
+    ]
+   },
+   "A2": {
+    "text": "公式は、上野国の一之宮で、明治時代の社格は国幣中社と記します。『延喜式』神名帳に名神大社として載り（翻刻で確認）、本殿・拝殿・楼門は国指定重要文化財です。",
+    "src": [
+     "j1h",
+     "nf085b",
+     "nf088a",
+     "nf088b",
+     "nf088c"
+    ]
+   },
+   "A3": {
+    "text": "祭神の経津主神は、日本書紀の国譲りに使者として出ますが、古事記には登場しません。姫大神は、公式が神名も由緒も伝わっていないと記し、記紀の神とは結びつけません。",
+    "src": [
+     "j1h"
+    ]
+   },
+   "open": [
+    "姫大神の神名・由緒は、公式も伝わっていないとしている。",
+    "新規の御朱印帳の額が公式の中で異なる（1,500円と2,000円）。",
+    "駐車場の通常期の扱いが確認できていない。",
+    "御朱印の種類が確認できていない。",
+    "延喜式・六国史の記事は中文維基文庫の翻刻による確認で、刊本・写本は未見。",
+    "経津主神が古事記に見えないことは、検索による確認で要確認。"
+   ],
+   "en": {
+    "reason": "This is the Ichinomiya of Kōzuke Province, dedicated to Futsunushi-no-Ōkami, who appears as an envoy in the transfer of the land in the Nihon Shoki (he does not appear in the Kojiki). The official site gives the hours of the main gate (24 hours) and the tower gate (6:00–17:00), and the main hall, worship hall, and tower gate are nationally designated Important Cultural Properties. For the other deity, Himegami (the Princess Deity), the official site states that neither her name nor her history has been handed down. Rank is only a guide.",
+    "A1": "The official guide gives the hours: main gate (総門) 24 hours, tower gate (楼門) 6:00–17:00, shrine office 8:00–17:00, and goshuin until 16:30. Access is also given. The price of the goshuin book and how parking is handled in ordinary periods have not been confirmed.",
+    "A2": "The official site states that this is the Ichinomiya of Kōzuke Province and that its Meiji-period rank was Kokuhei Chūsha. It is listed as a Myōjin Taisha in the register of deities of the Engishiki (confirmed in a transcription), and the main hall, worship hall, and tower gate are nationally designated Important Cultural Properties.",
+    "A3": "The enshrined deity Futsunushi-no-Ōkami appears as an envoy in the transfer of the land in the Nihon Shoki, but he does not appear in the Kojiki. For Himegami (the Princess Deity), the official site states that neither the name nor the history of the deity has been handed down, so she is not linked to any deity of the Kojiki or the Nihon Shoki.",
+    "open": [
+     "The official site itself states that neither the name nor the history of Himegami (the Princess Deity) has been handed down.",
+     "The price of a new goshuin book differs within the official site (1,500 yen and 2,000 yen).",
+     "How parking is handled in ordinary periods has not been confirmed.",
+     "The types of goshuin have not been confirmed.",
+     "The entries in the Engishiki and the 六国史 were checked from transcriptions on Chinese Wikisource; printed editions and manuscripts have not been seen.",
+     "That Futsunushi-no-Ōkami does not appear in the Kojiki was confirmed only by a search and still needs checking."
+    ]
+   }
+  },
+  "tamasaki": {
+   "reason": "海幸山幸の段で姉の産んだ御子を養い、のちに神武天皇の母となる玉依姫命を祀る、上総国の一宮です。公式の由緒ページは、『延喜式』神名帳に名神大社として載ると記します。社格は目安で、ご祈祷の受付時間や御朱印は確認できておらず、祭神は考証が続くと公式も注記しています。",
+   "A1": {
+    "text": "公式サイトに、JR上総一ノ宮駅から徒歩8分というアクセスと住所が載り、駐車場もあるとされます。ご祈祷の受付時間、御朱印、駐車場の台数と料金は、確認できていません。",
+    "src": [
+     "ta5"
+    ]
+   },
+   "A2": {
+    "text": "公式の由緒ページは、『延喜式』神名帳に上総国の名神大社として載ると記し、上総国一宮とも説明します。創建は公式も千葉県も明らかでないとし、807年は祭の創始の伝えです。",
+    "src": [
+     "ta2",
+     "ta1",
+     "fx_ta1",
+     "fx_ta2"
+    ]
+   },
+   "A3": {
+    "text": "祭神の玉依姫命は、古事記・日本書紀の海幸山幸の段で、姉の産んだ御子を養い、のち神武天皇の母となる神として登場します。公式は祭神の考証が続くと注記しています。",
+    "src": [
+     "ta3",
+     "ta1"
+    ]
+   },
+   "open": [
+    "ご祈祷の受付時間が、公式ページ本文で確認できていない。",
+    "御朱印の情報が公式で確認できていない。",
+    "駐車場の台数・料金が確認できていない。",
+    "祭神は古社記に鵜茅葺不合命の神名も併記され、考証が続くと公式が記す。",
+    "公式トップの「玉依姫命とその一族の神々」の具体の神名が確認できていない。",
+    "神社そのものの創建は、公式も千葉県も明らかでないとしている。"
+   ],
+   "en": {
+    "reason": "This is the Ichinomiya of Kazusa Province, dedicated to Tamayori-hime-no-Mikoto, who in the Umisachi–Yamasachi episode raises the child born to her elder sister and later becomes the mother of Emperor Jimmu. The official history page states that the Engishiki register of deities lists the shrine as a Myōjin Taisha. Rank is only a guide, and the reception hours for prayer rites and the goshuin information have not been confirmed; the official site also notes that research on the enshrined deity is ongoing.",
+    "A1": "The official site gives the address and access (an 8-minute walk from JR Kazusa-Ichinomiya Station) and says that parking is available. The reception hours for prayer rites, the goshuin information, and the number of parking spaces and fees have not been confirmed.",
+    "A2": "The official history page states that the shrine is listed in the register of deities of the Engishiki as a Myōjin Taisha of Kazusa Province, and it also describes the shrine as the Ichinomiya of Kazusa Province. Neither the official site nor Chiba Prefecture says when it was founded; 807 is the traditional date of the start of the festival.",
+    "A3": "The enshrined deity Tamayori-hime-no-Mikoto appears in the Umisachi–Yamasachi episode of the Kojiki and the Nihon Shoki as the deity who raised the child born to her elder sister and later became the mother of Emperor Jimmu. The official site notes that research on the enshrined deities is ongoing.",
+    "open": [
+     "The reception hours for prayer rites have not been confirmed in the text of the official page.",
+     "The goshuin information has not been confirmed on the official site.",
+     "The number of parking spaces and the fees have not been confirmed.",
+     "The official site notes that an old shrine record also lists the deity name 鵜茅葺不合命 for the enshrined deity, and that research is ongoing.",
+     "The specific deity names behind 'Tamayori-hime-no-Mikoto and the deities of her family' on the official top page have not been confirmed.",
+     "Neither the official site nor Chiba Prefecture says when the shrine itself was founded."
+    ]
+   }
+  },
+  "futarasan": {
+   "reason": "大国主神（大己貴命）、宗像三女神の一柱の田心姫、古事記の阿遲鉏高日子根神にあたる味耜高彦根命の三神を祀る社です。公式サイトに神苑の開門時間と本社の駐車場の料金・利用時間が載り、神橋は重要文化財・世界遺産として紹介されています。社格を示す資料と、御朱印・駅からの行き方は確認できていません。",
+   "A1": {
+    "text": "公式サイトに、神苑の開門時間、本社の駐車場の料金と利用時間、住所と電話が載っています。御朱印、駅からのアクセス、神苑の入苑料は、確認できていません。",
+    "src": [
+     "v1g",
+     "v1m",
+     "fu2",
+     "v1h"
+    ]
+   },
+   "A2": {
+    "text": "公式ページは、神橋を重要文化財・世界遺産と紹介します。二荒山神社・東照宮・輪王寺は世界遺産『日光の社寺』とされます（観光案内記事）。社格を示す資料は、確認できていない。",
+    "src": [
+     "v1j",
+     "fu8"
+    ]
+   },
+   "A3": {
+    "text": "祭神の大己貴命は大国主神の別名で国作り・国譲りに、田心姫は宗像三女神の一柱として誓約の段に、味耜高彦根命は古事記の阿遲鉏高日子根神として登場します。",
+    "src": [
+     "fu1"
+    ]
+   },
+   "open": [
+    "創建・歴史の記述は観光案内記事（ニッポンドットコム）によるもので、公式で確認できていない。",
+    "記紀で味耜高彦根命の母が田心姫と明記されるかは、テキストでは確認できていない。",
+    "御朱印の授与時間・初穂料が確認できていない。",
+    "駅からの所要時間・乗り方が確認できていない。",
+    "神苑の入苑料と本社拝殿の拝観時間が確認できていない。",
+    "神苑の開門時間は令和3年ごろの案内で、現行かは確認できていない。"
+   ],
+   "en": {
+    "reason": "Three deities are enshrined here: Ōkuninushi-no-Ōkami (大己貴命), 田心姫, one of the Three Munakata Goddesses, and Ajisukitakahikone-no-Mikoto, who appears in the Kojiki as 阿遲鉏高日子根神. The official site gives the opening hours of the shrine garden and the fee and hours of the main shrine's parking lot, and it introduces the 神橋 bridge as an Important Cultural Property and a World Heritage site. No source showing the shrine's rank, goshuin, or the route from the station has been confirmed.",
+    "A1": "The official site lists the hours when the shrine garden gate opens, the fee and hours of the main shrine's parking lot, and the address and telephone number. Goshuin, access from the station, and the garden admission fee have not been confirmed.",
+    "A2": "An official page introduces the 神橋 bridge as an Important Cultural Property and a World Heritage site. This shrine, 東照宮, and 輪王寺 are part of the World Heritage 'Shrines and Temples of Nikkō' (according to a tourism article). No source showing the shrine's rank has been confirmed.",
+    "A3": "The enshrined deity 大己貴命 is another name of Ōkuninushi-no-Ōkami and appears in the building of the land and the transfer of the land. 田心姫, one of the Three Munakata Goddesses, appears in the oath episode (誓約の段), and Ajisukitakahikone-no-Mikoto appears in the Kojiki as 阿遲鉏高日子根神.",
+    "open": [
+     "The founding and history come from a tourism article (nippon.com) and have not been confirmed on the official site.",
+     "Whether the Kojiki and the Nihon Shoki clearly name 田心姫 as the mother of Ajisukitakahikone-no-Mikoto has not been confirmed in the texts.",
+     "The hours when goshuin are given and the offering for goshuin have not been confirmed.",
+     "The travel time and route from the station have not been confirmed.",
+     "The garden admission fee and the visiting hours of the main shrine's worship hall have not been confirmed.",
+     "The garden's gate hours come from a notice from around 2021 (Reiwa 3), and whether they are current has not been confirmed."
+    ]
+   }
+  },
+  "kehi": {
+   "reason": "古事記で応神天皇と名を取り替える伊奢沙和気大神につながる神を祀っています。公式トップに、開閉門と授与の時間、敦賀駅から徒歩約15分であること、無料駐車場が示されています。朱印の種類と初穂料は確かめきれていません。",
+   "A1": {
+    "text": "公式トップに、開閉門は4〜9月5:00〜17:00・10〜3月6:00〜17:00、授与8:45〜16:45、敦賀駅から徒歩約15分、無料駐車場100台と示されています。朱印の種類と初穂料は未確認です。",
+    "src": [
+     "j1l"
+    ]
+   },
+   "A2": {
+    "text": "公式によると、延喜式（平安時代の神社の一覧）に名神大社（特に重んじられた社）として載り、明治28年に官幣大社（当時の社格の一つ）となりました。大鳥居は重要文化財です。",
+    "src": [
+     "j1k"
+    ]
+   },
+   "A3": {
+    "text": "主祭神の伊奢沙別命は、古事記では応神天皇と名を取り替える伊奢沙和気大神として、日本書紀では一書に去来紗別神として出ます。仲哀天皇・神功皇后なども記紀に登場します。",
+    "src": [
+     "j1k"
+    ]
+   },
+   "open": [
+    "朱印の種類・初穂料は公式で確認できていない",
+    "玉姫命は記紀の検索範囲で見当たらない",
+    "日本書紀の神功皇后紀の原文は未取得で、書紀側の対応は未確認"
+   ],
+   "en": {
+    "reason": "The shrine honors a deity linked to the Kojiki scene in which the great deity exchanges names with Emperor Ōjin. The official top page gives the gate and sacred-item hours, a walk of about 15 minutes from Tsuruga Station, and free parking. The types of goshuin and the offering fee have not been confirmed.",
+    "A1": "The official top page gives the gate hours as 5:00–17:00 from April to September and 6:00–17:00 from October to March, and the hours for receiving sacred items as 8:45–16:45. It also says the shrine is about 15 minutes on foot from Tsuruga Station and has free parking for 100 cars. The types of goshuin and the offering fee have not been confirmed.",
+    "A2": "According to the official site, the shrine is listed in the Engishiki (a Heian-period register of shrines) as a Myōjin Taisha (a shrine held in especially high regard), and it became a Kanpei Taisha (a shrine rank of that time) in 1895 (Meiji 28). The great torii gate is an Important Cultural Property.",
+    "A3": "The chief deity, Izasawake-no-Mikoto, appears in the Kojiki as 伊奢沙和気大神, who exchanges names with Emperor Ōjin, and in one variant account of the Nihon Shoki as 去来紗別神. Emperor Chūai, Empress Jingū and others also appear in the Kojiki and Nihon Shoki.",
+    "open": [
+     "The types of goshuin and the offering fee could not be confirmed on the official site.",
+     "Tamahime-no-Mikoto could not be found within the searched range of the Kojiki and Nihon Shoki.",
+     "The original text of the Jingū chapter of the Nihon Shoki has not been obtained, so the matching account on the Nihon Shoki side is unconfirmed."
+    ]
+   }
+  },
+  "atsuta": {
+   "reason": "草薙神剣を通して、須佐之男命の大蛇退治、日本武尊の東征、宮簀媛の場面まで、記紀の物語が一続きにたどれる社です。公式は24時間の参拝、ご祈祷の受付時間、約400台の無料駐車場を案内しています。御朱印は、公式の取得ページでは確かめきれていません。",
+   "A1": {
+    "text": "公式は、24時間参拝でき、ご祈祷の受付は8:30〜16:00、熱田駅から徒歩8分、無料駐車場は約400台と案内します。御朱印は、公式の取得ページでは確認できていません。",
+    "src": [
+     "at6",
+     "at5",
+     "at8"
+    ]
+   },
+   "A2": {
+    "text": "公式は、延喜式（平安時代の神社の一覧）の名神大社（特に重んじられた社）・勅祭社（天皇の使いを迎える社）と説明します。日本書紀にも「熱田社」の名が見えます。",
+    "src": [
+     "at2",
+     "at10"
+    ]
+   },
+   "A3": {
+    "text": "主祭神の熱田大神は、草薙神剣を御霊代とする天照大神です。草薙剣は素戔嗚が八岐大蛇の尾から得た剣で、日本武尊の東征と宮簀媛の場面にもつながります。",
+    "src": [
+     "at1",
+     "k",
+     "atd1",
+     "atd2"
+    ]
+   },
+   "open": [
+    "御朱印の授与は公式の取得ページで確認できていない",
+    "建稲種命は記紀本文の検索範囲に見当たらない（古事記下巻は未確認）"
+   ],
+   "en": {
+    "reason": "Through the sacred sword 草薙神剣, this shrine lets you follow the Kojiki and Nihon Shoki stories in one line: Susanoo-no-Mikoto defeating the serpent, the eastern campaign of Yamato Takeru-no-Mikoto, and Miyazu-hime-no-Mikoto. The official site gives 24-hour visiting, prayer-rite hours and about 400 free parking spaces. Goshuin could not be confirmed on the official page for obtaining them.",
+    "A1": "The official site states that the shrine can be visited 24 hours a day, that prayer rites are accepted 8:30–16:00, that it is an 8-minute walk from Atsuta Station, and that free parking has about 400 spaces. Goshuin could not be confirmed on the official page for obtaining them.",
+    "A2": "The official site describes it as a Myōjin Taisha (a shrine held in especially high regard) listed in the Engishiki (a Heian-period register of shrines) and as a Chokusai-sha (a shrine that receives an imperial envoy). The name “熱田社” (Atsuta Shrine) also appears in the Nihon Shoki.",
+    "A3": "The chief deity, the great deity of Atsuta, is Amaterasu-Ōmikami, whose spirit-vessel is the sacred sword 草薙神剣. The sword is the one Susanoo-no-Mikoto obtained from the tail of the great serpent 八岐大蛇. It also connects to the eastern campaign of Yamato Takeru-no-Mikoto and the scene with Miyazu-hime-no-Mikoto.",
+    "open": [
+     "The handing out of goshuin could not be confirmed on the official page for obtaining them.",
+     "Takeinadane-no-Mikoto could not be found within the searched range of the main texts of the Kojiki and Nihon Shoki (the lower volume of the Kojiki has not been checked)."
+    ]
+   }
+  },
+  "sengen": {
+   "reason": "木花之佐久夜毘売命は、古事記で邇邇藝命と結ばれ、火の中で御子を産む神です。公式は開門の時間、御朱印や祈祷の受付時間、富士宮駅から徒歩約10分であること、駐車場が有料であることを案内しています。御朱印の初穂料は確かめきれていません。",
+   "A1": {
+    "text": "公式は、開門を季節により5:00〜20:00などとし、御朱印は8:30〜16:30、祈祷受付は8:30〜15:50、富士宮駅から徒歩約10分、駐車場は有料と案内します。初穂料は未確認です。",
+    "src": [
+     "v2a",
+     "v2c",
+     "v2b"
+    ]
+   },
+   "A2": {
+    "text": "公式は、駿河国一宮で、延喜の制で名神大社（特に重んじられた社）、明治29年に官幣大社とします。本殿は国の重要文化財で、造営年は資料で1604年と1606年に分かれます。",
+    "src": [
+     "v2d",
+     "v2e",
+     "fx_013_1",
+     "fx_013_2",
+     "fx_013_3"
+    ]
+   },
+   "A3": {
+    "text": "木花之佐久夜毘売命は、古事記で大山津見神の娘として邇邇藝命と結ばれ、火の中で御子を産みます。日本書紀では鹿葦津姫・木花開耶姫の名で登場します。",
+    "src": [
+     "v2d"
+    ]
+   },
+   "open": [
+    "御朱印の初穂料は公式本文で確認できていない",
+    "本殿などの造営年が資料により異なる（1604年と1606年）"
+   ],
+   "en": {
+    "reason": "Konohanasakuya-hime-no-Mikoto is the deity who, in the Kojiki, marries 邇邇藝命 and gives birth in the midst of fire. The official site gives the opening hours, goshuin and prayer reception hours, a walk of about 10 minutes from Fujinomiya Station, and the fact that parking is paid. The goshuin offering fee has not been confirmed.",
+    "A1": "The official site gives the opening hours as 5:00–20:00 and so on, depending on the season, goshuin hours as 8:30–16:30 and prayer reception as 8:30–15:50. It says the shrine is about a 10-minute walk from Fujinomiya Station and that parking is paid. The offering fee has not been confirmed.",
+    "A2": "The official site describes it as Ichinomiya of Suruga Province, a Myōjin Taisha (a shrine held in especially high regard) under the Engi-era system, and a Kanpei Taisha from 1896 (Meiji 29). The main hall is a nationally designated Important Cultural Property. Sources differ on when it was built, giving 1604 and 1606.",
+    "A3": "In the Kojiki, Konohanasakuya-hime-no-Mikoto is a daughter of Ōyamatsumi-no-Kami who marries 邇邇藝命 and gives birth to her children in the midst of fire. In the Nihon Shoki she appears under the names 鹿葦津姫 and 木花開耶姫.",
+    "open": [
+     "The goshuin offering fee could not be confirmed in the main text of the official site.",
+     "The construction year of the main hall and other buildings differs by source (1604 and 1606)."
+    ]
+   }
+  },
+  "mishima": {
+   "reason": "国譲りで同意する事代主神と、娘二人を邇邇藝命に差し出す大山津見神という、記紀の二つの場面につながる二柱を祀っています。公式は祈祷の受付時間、三島駅から徒歩約15分であること、乗用車約55台の駐車場を案内しています。御朱印の受付時間と初穂料は確かめきれていません。",
+   "A1": {
+    "text": "公式は、祈祷の受付を8:30頃〜16:00（予約不可）、JR三島駅から徒歩約15分、駐車場は乗用車約55台と案内します。御朱印は客殿で受け付けますが、時間と初穂料は未確認です。",
+    "src": [
+     "k1l",
+     "k1n",
+     "k1m"
+    ]
+   },
+   "A2": {
+    "text": "公式は、延喜の制（平安時代の神社の一覧）で名神大社、明治4年に官幣大社とします。本殿・幣殿・拝殿は国の重要文化財です。伊豆国一宮とする記述は確認できていません。",
+    "src": [
+     "k1k",
+     "k1m"
+    ]
+   },
+   "A3": {
+    "text": "祭神の大山祇命は、古事記の大山津見神として娘二人を邇邇藝命に差し出します。事代主神は国譲りで同意する神です。「積羽八重」の形は記紀本文に見当たりません。",
+    "src": [
+     "k1k"
+    ]
+   },
+   "open": [
+    "伊豆国一宮とされる点は公式ページで確認できていない",
+    "授与所の時間と、御朱印の受付時間・初穂料は公式で明記を確認できていない",
+    "公式の「積羽八重事代主神」の形は、記紀の取得済みテキストに見当たらない"
+   ],
+   "en": {
+    "reason": "The shrine honors two deities tied to two scenes in the Kojiki and Nihon Shoki: Kotoshironushi-no-Kami, who agrees in the Transfer of the Land, and Ōyamatsumi-no-Kami, who offers his two daughters to 邇邇藝命. The official site gives prayer reception hours, a walk of about 15 minutes from Mishima Station, and parking for about 55 passenger cars. The goshuin hours and offering fee have not been confirmed.",
+    "A1": "The official site gives prayer reception as around 8:30–16:00 (reservations are not possible), says the shrine is about a 15-minute walk from JR Mishima Station, and says parking has room for about 55 passenger cars. Goshuin is handled at the guest hall (客殿), but the hours and the offering fee have not been confirmed.",
+    "A2": "The official site states that it is a Myōjin Taisha (a shrine held in especially high regard) under the Engi-era register of shrines (Heian period) and that it became a Kanpei Taisha in 1871. The main hall, offering hall and worship hall are Important Cultural Properties. A description of it as Ichinomiya of Izu Province has not been confirmed.",
+    "A3": "The enshrined 大山祇命 (Ōyamatsumi-no-Kami) is the Kojiki’s 大山津見神, who offers his two daughters to 邇邇藝命. Kotoshironushi-no-Kami is the deity who agrees in the Transfer of the Land. The form “積羽八重” does not appear in the main texts of the Kojiki and Nihon Shoki.",
+    "open": [
+     "That it is Ichinomiya of Izu Province could not be confirmed on the official pages.",
+     "The amulet office hours, and the goshuin reception hours and offering fee, could not be confirmed as clearly stated by the official site.",
+     "The official site’s form “積羽八重事代主神” does not appear in the obtained texts of the Kojiki and Nihon Shoki."
+    ]
+   }
+  },
+  "masumida": {
+   "reason": "邇邇藝命と並んで古事記に名が出る天火明命を祀ります。日本書紀の一書では、その子が尾張連らの遠祖とされています。公式は、毎日9:00〜17:00の開門と、予約不要の祈祷受付（9:00〜16:00）を示しています。御朱印の受付時間と初穂料は確かめきれていません。",
+   "A1": {
+    "text": "公式は、毎日9:00〜17:00に開き、祈祷の受付は9:00〜16:00で予約不要、JR尾張一宮駅から徒歩8分、専用駐車場ありと案内します。御朱印の時間と初穂料は未確認です。",
+    "src": [
+     "w129",
+     "w127",
+     "w128",
+     "w130"
+    ]
+   },
+   "A2": {
+    "text": "延喜式神名帳（平安時代の神社の一覧）に「真墨田神社」が名神大として載ります（字は現社名と異なる）。舞楽面12面は重要文化財で、本殿・渡殿は登録有形文化財です。",
+    "src": [
+     "w19",
+     "w125",
+     "w133",
+     "w134"
+    ]
+   },
+   "A3": {
+    "text": "公式は、祭神を天火明命と記します。古事記では天忍穂耳命の子として邇邇藝命と並び、日本書紀の一書では子の天香山が尾張連らの遠祖とされます。",
+    "src": [
+     "w123",
+     "k",
+     "ns2"
+    ]
+   },
+   "open": [
+    "御朱印の受付時間・初穂料は公式サイトで確認できていない",
+    "駐車場の台数と料金は公式で確認できていない",
+    "祭神の詳しい説明ページは確認できていない",
+    "日本書紀の一書の番号は要確認",
+    "摂社・服織神社の祭神と天火明命が母子として説明されているかは未確認",
+    "延喜式の転写に判読不能字がある"
+   ],
+   "en": {
+    "reason": "The shrine honors 天火明命 (Hikohoakari-no-Mikoto), whose name appears in the Kojiki alongside 邇邇藝命. In one variant account of the Nihon Shoki, his child is said to be a distant ancestor of the 尾張連 and others. The official site gives daily opening hours of 9:00–17:00 and prayer reception of 9:00–16:00 with no reservation needed. The goshuin hours and offering fee have not been confirmed.",
+    "A1": "The official site says the shrine is open daily 9:00–17:00, that prayer reception is 9:00–16:00 with no reservation needed, that it is an 8-minute walk from JR Owari-Ichinomiya Station, and that a dedicated parking lot is available. The goshuin hours and the offering fee have not been confirmed.",
+    "A2": "The shrine register of the Engishiki (a Heian-period register of shrines) lists “真墨田神社” as a Myōjin Taisha (a shrine held in especially high regard); its characters differ from the present name. The 12 court dance masks are Important Cultural Properties, and the main hall and connecting corridor are Registered Tangible Cultural Properties.",
+    "A3": "The official site gives the enshrined deity as 天火明命 (Hikohoakari-no-Mikoto). In the Kojiki, he appears alongside 邇邇藝命 as a child of 天忍穂耳命. In one variant account of the Nihon Shoki, his child 天香山 is said to be a distant ancestor of the 尾張連 and others.",
+    "open": [
+     "The goshuin reception hours and offering fee could not be confirmed on the official site.",
+     "The number of parking spaces and the parking fee could not be confirmed officially.",
+     "A detailed explanation page on the enshrined deity could not be found.",
+     "The number of the variant account in the Nihon Shoki needs to be checked.",
+     "It is unconfirmed whether the deity of the auxiliary shrine 服織神社 and 天火明命 are described as mother and child.",
+     "The transcription of the Engishiki contains a character that cannot be read."
+    ]
+   }
+  },
+  "suwashimosha": {
+   "reason": "古事記の国譲りで建御雷神に追われ、科野国の州羽海に至った建御名方神を祀る、春宮と秋宮からなる社です。公式によると各宮社は閉門せず、授与所は秋宮が8:30〜17:00、春宮が8:30〜16:30です。下社の駐車場は確かめきれていません。",
+   "A1": {
+    "text": "公式は、各宮社は閉門せず、授与所は秋宮8:30〜17:00・春宮8:30〜16:30とします。個人の祈祷は予約不要で9:00〜16:00（本宮と秋宮の案内）。駐車場は未確認です。",
+    "src": [
+     "o1z",
+     "o1za",
+     "o1ze"
+    ]
+   },
+   "A2": {
+    "text": "公式は、信濃國一之宮とし、延喜式神名帳の信濃第一の南方刀美神社を諏訪大社全体の記載と説明します（下社だけかは不明）。秋宮・春宮の幣拝殿は国の重要文化財です。",
+    "src": [
+     "o1x",
+     "o1zc",
+     "o1zd",
+     "nf087c",
+     "nf087f"
+    ]
+   },
+   "A3": {
+    "text": "建御名方神は、古事記の国譲りで建御雷神に追われ、科野国の州羽海に至ります。八重事代主神は古事記の事代主神にあたります。日本書紀には建御名方神の名が確認できません。",
+    "src": [
+     "o1x",
+     "o1zf",
+     "k"
+    ]
+   },
+   "open": [
+    "下社の駐車場の台数・料金・時間は公式で確認できていない",
+    "秋宮の駅からの距離・徒歩時間、バス・車の駐車先は公式で確認できていない",
+    "御朱印の受付時間・初穂料・授与場所は公式で個別には確認できていない",
+    "春宮での御祈祷の受付は公式で確認できていない",
+    "日本書紀に建御名方神の名は確認できない",
+    "建築年が出典ごとに異なる"
+   ],
+   "en": {
+    "reason": "This shrine honors Takeminakata-no-Kami, who in the Kojiki’s Transfer of the Land is chased by 建御雷神 and reaches the 州羽海 of 科野国. It is made up of two shrines, Harumiya and Akimiya. The official site says each shrine never closes its gates, and the amulet office is open 8:30–17:00 at Akimiya and 8:30–16:30 at Harumiya. Parking at Shimosha has not been confirmed.",
+    "A1": "The official site says each shrine never closes its gates and that the amulet office is open 8:30–17:00 at Akimiya and 8:30–16:30 at Harumiya. Individual prayer rites need no reservation and run 9:00–16:00 (as guided for Honmiya and Akimiya). Parking has not been confirmed.",
+    "A2": "The official site describes it as Ichinomiya of Shinano Province and explains that 南方刀美神社, listed first among the Shinano shrines in the Engishiki shrine register, refers to Suwa Taisha as a whole (it is unclear whether it means Shimosha alone). The offering-and-worship halls of Akimiya and Harumiya are Important Cultural Properties.",
+    "A3": "In the Kojiki’s Transfer of the Land, Takeminakata-no-Kami is chased by 建御雷神 and reaches the 州羽海 of 科野国. 八重事代主神 corresponds to the Kojiki’s Kotoshironushi-no-Kami. The name of Takeminakata-no-Kami cannot be found in the Nihon Shoki.",
+    "open": [
+     "The number of parking spaces, the fee and the hours at Shimosha could not be confirmed on the official site.",
+     "The distance and walking time from the station to Akimiya, and where to park for buses and cars, could not be confirmed on the official site.",
+     "The goshuin reception hours, offering fee and place of issue could not be confirmed individually on the official site.",
+     "Reception of prayer rites at Harumiya could not be confirmed on the official site.",
+     "The name of Takeminakata-no-Kami cannot be confirmed in the Nihon Shoki.",
+     "The construction years differ by source."
+    ]
+   }
+  },
+  "nangu": {
+   "reason": "金山毗古神は、古事記で伊邪那美命の苦しみの中から生まれた神で、この社の主祭神です。公式は、季節ごとの開門時間と祈祷の受付時間、無料駐車場を案内しています。延喜式（平安時代の神社の一覧）などでの記載は、確かめきれていません。",
+   "A1": {
+    "text": "公式は、開門を冬期6:00〜17:30・夏期5:00〜18:00、祈祷の受付を9:00〜16:00、JR垂井駅から徒歩20分とし、無料駐車場があると案内します。御朱印の時間と初穂料は未確認です。",
+    "src": [
+     "j1n",
+     "j1o",
+     "j1p"
+    ]
+   },
+   "A2": {
+    "text": "公式は美濃国一の宮とし、崇神天皇の代の鎮座を伝えます。楼門や回廊などと太刀「銘三条」が重要文化財です。延喜式などの社格を示す資料は、確認できていません。",
+    "src": [
+     "j1m",
+     "j1n",
+     "j1q"
+    ]
+   },
+   "A3": {
+    "text": "金山彦大神は、古事記で伊邪那美命の苦しみの中から生まれた金山毗古神、日本書紀の一書で金山彦として出ます。相殿の彦火火出見尊も記紀に登場します。",
+    "src": [
+     "j1m"
+    ]
+   },
+   "open": [
+    "御朱印の授与時間・初穂料は公式サイトの確認範囲で見つけられなかった",
+    "延喜式・名神大社などの社格を示す資料は、確認できていない",
+    "見野命は記紀本文の検索範囲に見当たらない",
+    "神武天皇の東征を助けた話は社伝で、記紀の記述ではない"
+   ],
+   "en": {
+    "reason": "金山毗古神 is the deity born, in the Kojiki, from the suffering of 伊邪那美命, and he is the chief deity of this shrine. The official site gives the gate hours for each season, prayer reception hours and free parking. Mention in the Engishiki (a Heian-period register of shrines) and similar sources has not been confirmed.",
+    "A1": "The official site gives the gate hours as 6:00–17:30 in winter and 5:00–18:00 in summer, prayer reception as 9:00–16:00, and a 20-minute walk from JR Tarui Station. It says free parking is available. The goshuin hours and the offering fee have not been confirmed.",
+    "A2": "The official site describes it as Ichinomiya of Mino Province and says the shrine was founded in the reign of 崇神天皇. The tower gate, corridors and other buildings, and the long sword inscribed 三条, are Important Cultural Properties. Materials showing a shrine rank, such as the Engishiki, have not been confirmed.",
+    "A3": "The chief deity, Kanayamahiko-no-Ōkami, appears in the Kojiki as 金山毗古神, born from the suffering of 伊邪那美命, and in a variant account of the Nihon Shoki as 金山彦. Hikohohodemi-no-Mikoto, enshrined alongside, also appears in the Kojiki and Nihon Shoki.",
+    "open": [
+     "The goshuin hours and offering fee could not be found within the range checked on the official site.",
+     "Materials showing a shrine rank, such as the Engishiki or Myōjin Taisha status, have not been confirmed.",
+     "見野命 could not be found within the searched range of the main texts of the Kojiki and Nihon Shoki.",
+     "The story of helping the eastern campaign of 神武天皇 comes from shrine tradition and is not in the Kojiki or Nihon Shoki."
+    ]
+   }
+  },
+  "suwa": {
+   "reason": "建御名方神は、古事記の国譲りで建御雷神と力比べをして敗れ、科野国の州羽海で降伏した神で、この上社本宮に祀られています。公式は、各宮社が閉門しないこと、授与所の8:30〜17:00、宝物殿の9:00〜16:00を案内しています。御朱印の時間と駐車場は確かめきれていません。",
+   "A1": {
+    "text": "公式は、各宮社は閉門せず、授与所は8:30〜17:00、宝物殿は9:00〜16:00（大人500円）とします。最寄り駅は上諏訪・下諏訪・茅野。御朱印の時間と駐車場は未確認です。",
+    "src": [
+     "su3",
+     "su4",
+     "su6",
+     "su7"
+    ]
+   },
+   "A2": {
+    "text": "公式は、延喜式神名帳（平安時代の神社の一覧）に南方刀美神社として信濃國四十八座の第一、明治4年に国幣中社とします。四脚門と布橋は国の重要文化財です。",
+    "src": [
+     "su1",
+     "su2",
+     "su3",
+     "fx_su1"
+    ]
+   },
+   "A3": {
+    "text": "建御名方神は、古事記の国譲りで建御雷神と力比べをして敗れ、科野国の州羽海で降伏します。日本書紀には建御名方神の名が見えません。",
+    "src": [
+     "sud1",
+     "k"
+    ]
+   },
+   "open": [
+    "御朱印の授与時間と場所は公式で確認できていない",
+    "駐車場の台数・料金は公式の取得ページで確認できていない",
+    "駅からのバス・徒歩の所要時間は公式で確認できていない",
+    "日本書紀に建御名方神の名は見えない",
+    "公式の祈願の内容は書紀本文にない（持統天皇5年の条）"
+   ],
+   "en": {
+    "reason": "This is the Honmiya of the Kamisha, which honors Takeminakata-no-Kami, who in the Kojiki’s Transfer of the Land loses a contest of strength with 建御雷神 and surrenders at the 州羽海 of 科野国. The official site says each shrine never closes its gates, and gives the amulet office hours of 8:30–17:00 and the treasure hall hours of 9:00–16:00. The goshuin hours and parking have not been confirmed.",
+    "A1": "The official site says each shrine never closes its gates, the amulet office is open 8:30–17:00, and the treasure hall is open 9:00–16:00 (500 yen for adults). The nearest stations are Kamisuwa, Shimosuwa and Chino. The goshuin hours and parking have not been confirmed.",
+    "A2": "The official site says that in the Engishiki (a Heian-period register of shrines) it is listed as 南方刀美神社, first of the 48 shrines of Shinano, and that it became a Kokuhei Chūsha (a mid-rank state shrine) in 1871. The four-legged gate (四脚門) and the 布橋 bridge are national Important Cultural Properties.",
+    "A3": "In the Kojiki’s Transfer of the Land, Takeminakata-no-Kami competes in strength with 建御雷神, loses, and surrenders at the 州羽海 of 科野国. His name does not appear in the Nihon Shoki.",
+    "open": [
+     "The goshuin hours and place of issue could not be confirmed on the official site.",
+     "The number of parking spaces and the fee could not be confirmed on the official page that was obtained.",
+     "The travel time by bus or on foot from the stations could not be confirmed on the official site.",
+     "The name of Takeminakata-no-Kami does not appear in the Nihon Shoki.",
+     "The prayer described by the official site is not in the main text of the Nihon Shoki (the entry for the fifth year of 持統天皇)."
+    ]
+   }
+  },
+  "toga": {
+   "reason": "公式が大己貴命と呼ぶ祭神は、古事記の大国主神にあたり、国作りと国譲りに出る神です。公式は、お守りや御朱印などの受付8:30〜16:30、三河一宮駅から徒歩約5分、里宮の無料駐車場を案内しています。境内の開閉門時間は確かめきれていません。",
+   "A1": {
+    "text": "公式は、お守り・御朱印などの受付を8:30〜16:30（年中無休）、三河一宮駅から徒歩約5分、里宮の無料駐車場は表門約30台・西門約170台と案内します。開閉門時間は未確認です。",
+    "src": [
+     "n2a",
+     "n2c",
+     "n2d"
+    ]
+   },
+   "A2": {
+    "text": "公式は、平安時代に延喜式内社（平安時代の神社の一覧に載る社）となり、三河国の一之宮、明治4年に国幣小社筆頭とします。大鳥居は豊川市の有形文化財です。",
+    "src": [
+     "n2b",
+     "n2e"
+    ]
+   },
+   "A3": {
+    "text": "公式の大己貴命は、古事記の大国主神にあたります（別名の一つが大穴牟遅神）。日本書紀の一書には国作大己貴命の名があり、国作りと国譲りの神として出ます。",
+    "src": [
+     "n2b",
+     "k",
+     "ns1"
+    ]
+   },
+   "open": [
+    "境内の開閉門の時間と、奥宮の受付時間は公式で確認できていない",
+    "御朱印の初穂料と、奥宮での授与場所・時間は公式で確認できていない",
+    "奥宮の駐車場の台数は公式で確認できていない",
+    "このデータが対象とするのは里宮で、奥宮は別の所在地にある",
+    "神が本宮山に留まった経緯は土地の伝えで、記紀には無い"
+   ],
+   "en": {
+    "reason": "The deity the official site calls 大己貴命 corresponds to the Kojiki’s Ōkuninushi-no-Ōkami, who appears in the building of the land and the Transfer of the Land. The official site gives reception hours of 8:30–16:30 for amulets and goshuin, a walk of about 5 minutes from Mikawa-Ichinomiya Station, and free parking at the Satomiya. The gate opening and closing hours inside the grounds have not been confirmed.",
+    "A1": "The official site says amulets, goshuin and similar items are handled 8:30–16:30 (open year-round), that the shrine is about a 5-minute walk from Mikawa-Ichinomiya Station, and that the free parking at the Satomiya (the village shrine) holds about 30 cars at the front gate and about 170 at the west gate. The gate opening and closing hours have not been confirmed.",
+    "A2": "The official site says it became a Shikinai-sha (a shrine listed in the Heian-period Engishiki register) in the Heian period, that it is Ichinomiya of Mikawa Province, and that in 1871 it ranked first among the Kokuhei Shōsha (small state shrines). The great torii gate is a Tangible Cultural Property of Toyokawa City.",
+    "A3": "The official site’s 大己貴命 corresponds to the Kojiki’s Ōkuninushi-no-Ōkami (one of his other names is 大穴牟遅神). A variant account in the Nihon Shoki has the name 国作大己貴命, and he appears as the deity of building the land and of the Transfer of the Land.",
+    "open": [
+     "The gate opening and closing hours of the grounds, and the reception hours at the Okumiya (inner shrine), could not be confirmed on the official site.",
+     "The goshuin offering fee, and the place and hours of issue at the Okumiya, could not be confirmed on the official site.",
+     "The number of parking spaces at the Okumiya could not be confirmed on the official site.",
+     "This data covers the Satomiya; the Okumiya stands at a different location.",
+     "How the deity came to remain on Mt. 本宮山 is a local tradition and is not in the Kojiki or Nihon Shoki."
+    ]
+   }
+  },
+  "konojinja": {
+   "reason": "天火明命にあたる彦火明命を主祭神とし、豊受大神・天照大神など古事記に名が出る神々も祀っています。公式は、開門時間、神楽付祈祷が予約制であること、乗用車終日800円の駐車料金を示しています。授与所の終わりの時刻は、公式の中で表記が食い違っています。",
+   "A1": {
+    "text": "公式は、開門を2〜11月8:00〜17:00、12〜1月8:00〜16:30とし、神楽付祈祷は予約制です。駐車は乗用車終日800円。授与所の終わりの時刻は、公式の中で表記が食い違っています。",
+    "src": [
+     "s04_1",
+     "s04_6",
+     "s04_11"
+    ]
+   },
+   "A2": {
+    "text": "宮津市は、延喜式（平安時代の神社の一覧）に「名神大」と載り、古くから丹後一宮とされた社と述べます。宮司家に伝わる『海部氏系図』は、国宝に指定されています。",
+    "src": [
+     "s04_15",
+     "s04_17",
+     "fx_033_1"
+    ]
+   },
+   "A3": {
+    "text": "公式の彦火明命は、古事記の天火明命にあたる神です。豊受大神・天照大神・海神・天水分神も古事記に見えます。丹後に遷った話は、記紀本文では確認できません。",
+    "src": [
+     "s04_2",
+     "s04_15",
+     "k",
+     "ns2"
+    ]
+   },
+   "open": [
+    "授与所の終わりの時刻が、公式トップと総合案内で食い違っている",
+    "彦火明命と古事記の天火明命の対応は、公式と宮津市の説明による",
+    "公式の「海神」が大綿津見神かどうかは要確認",
+    "吉佐宮・元伊勢の話や冠島への降臨は、記紀本文に見えない",
+    "日本書紀の一書の番号は要確認",
+    "駐車場の台数は公式に記載が無い"
+   ],
+   "en": {
+    "reason": "The chief deity is Hikohoakari-no-Mikoto, who corresponds to the Kojiki’s 天火明命, and the shrine also honors Toyouke-no-Ōmikami, Amaterasu-Ōmikami and other deities named in the Kojiki. The official site gives the gate hours, notes that prayer with kagura is by reservation, and lists parking at 800 yen per passenger car for the day. The closing time of the amulet office is written inconsistently within the official site.",
+    "A1": "The official site gives the gate hours as 8:00–17:00 from February to November and 8:00–16:30 from December to January, and says prayer rites with kagura (sacred dance) are by reservation. Parking is 800 yen per passenger car for the whole day. The closing time of the amulet office is written inconsistently within the official site.",
+    "A2": "Miyazu City says it is listed in the Engishiki (a Heian-period register of shrines) as a Myōjin Taisha (a shrine held in especially high regard) and has long been regarded as Ichinomiya of Tango Province. The 『海部氏系図』, handed down in the head priest’s family, is designated a National Treasure.",
+    "A3": "The official site’s Hikohoakari-no-Mikoto is the deity corresponding to the Kojiki’s 天火明命. Toyouke-no-Ōmikami, Amaterasu-Ōmikami, Watatsumi-no-Kami (the sea deity) and Ame-no-Mikumari-no-Kami also appear in the Kojiki. The story of moving to Tango is not confirmed in the main texts of the Kojiki and Nihon Shoki.",
+    "open": [
+     "The closing time of the amulet office differs between the official top page and the general guide.",
+     "The correspondence between Hikohoakari-no-Mikoto and the Kojiki’s 天火明命 rests on the explanations of the official site and Miyazu City.",
+     "Whether the official site’s “海神” is 大綿津見神 needs to be checked.",
+     "The stories of 吉佐宮 and 元伊勢, and of the descent to 冠島, are not found in the main texts of the Kojiki and Nihon Shoki.",
+     "The number of the variant account in the Nihon Shoki needs to be checked.",
+     "The official site does not state the number of parking spaces."
+    ]
+   }
+  },
+  "hirota": {
+   "reason": "日本書紀 巻第九に、神功皇后に天照大神が荒魂を廣田国で祭らせる場面があり、その荒御魂を祀るのが廣田神社です。公式サイトに授与品・御朱印やご祈祷の時間、バスと車での行き方が載っています。廣田国を西宮と結ぶのは公式の説明で、書紀の本文には書かれていません。",
+   "A1": {
+    "text": "公式サイトに、授与品・御朱印は午前8時30分〜午後4時30分、ご祈祷は毎日9時30分〜15時（予約不要）、バスと車での行き方、住所が載っています。境内の開閉門時間は確認できていません。",
+    "src": [
+     "m2e",
+     "m2g",
+     "m2f",
+     "m2i"
+    ]
+   },
+   "A2": {
+    "text": "公式は、延喜年間に官幣名神大社に列し、明治4年（1871）に兵庫県内で唯一の官幣大社（旧社格の最上位）になったと記します。ここに挙げた根拠は公式の記述のみで、他の資料との照合はしていません。",
+    "src": [
+     "m2b"
+    ]
+   },
+   "A3": {
+    "text": "御主神は天照大御神の荒御魂です。日本書紀 巻第九に、新羅からの帰途、神功皇后に天照大神が荒魂を廣田国で祭らせる場面があります。書紀は廣田国を西宮と結びつけておらず、結ぶのは公式の説明です。",
+    "src": [
+     "m2a",
+     "m2c"
+    ]
+   },
+   "open": [
+    "境内の開閉門時間は、公式で確認できていない",
+    "廣田国を現在の西宮と結ぶのは公式の説明で、日本書紀の本文は結んでいない"
+   ],
+   "en": {
+    "reason": "In the Nihon Shoki, volume 9, there is a scene in which Amaterasu has Empress Jingū enshrine her Aramitama (rough spirit) in the land of Hirota (廣田国). Hirota Jinja enshrines that Aramitama. The official site lists the hours for amulets, goshuin and prayer rites, and directions by bus and by car. The link between the land of Hirota and Nishinomiya is the official site's explanation; the text of the Nihon Shoki does not make it.",
+    "A1": "The official site lists the hours for amulets and goshuin (8:30–16:30), prayer rites every day from 9:30 to 15:00 (no reservation needed), directions by bus and by car, and the address. The hours when the grounds open and close could not be confirmed.",
+    "A2": "The official site states that the shrine was ranked as a Kanpei Myōjin Taisha during the Engi era, and that in 1871 it became the only Kanpei Taisha in Hyōgo Prefecture (the highest of the former shrine ranks). The only source cited here is the official site's own account; it has not been checked against other materials.",
+    "A3": "The main deity is the Aramitama (rough spirit) of Amaterasu-Ōmikami. In the Nihon Shoki, volume 9, there is a scene on Empress Jingū's return from Silla in which Amaterasu has the Aramitama enshrined in the land of Hirota (廣田国). The Nihon Shoki does not link the land of Hirota to Nishinomiya; that link comes from the official explanation.",
+    "open": [
+     "The hours when the grounds open and close could not be confirmed on the official site.",
+     "Linking the land of Hirota (廣田国) to present-day Nishinomiya is the official explanation; the text of the Nihon Shoki does not make that link."
+    ]
+   }
+  },
+  "hiyoshi": {
+   "reason": "東本宮の大山咋神は、古事記 上巻に日枝山に坐す神として出る名と一致し、西本宮の大己貴神は日本書紀での大国主神の別名です。公式サイトに参拝時間、ご祈祷と授与所の時間、御朱印の初穂料、電車での行き方、駐車場が載っています。ただし公式は古事記を引いておらず、大山咋神と日枝山の結びつきは神名の照合によるものです。",
+   "A1": {
+    "text": "公式サイトに、参拝時間（午前9時〜午後4時、本宮の開門は季節で異なる）、ご祈祷と授与所の時間、入苑協賛料、御朱印500円、電車での行き方、駐車場が載っています。",
+    "src": [
+     "k2j",
+     "k2l",
+     "k2m",
+     "k2k"
+    ]
+   },
+   "A2": {
+    "text": "公式は、戦後の社格制度の廃止まで官幣大社だったと記します。延喜式神名帳に名神大社（特に重んじられた大社）として載ることも翻刻で確認でき、西・東本宮の本殿は国宝です。",
+    "src": [
+     "k2l",
+     "fx_019_4",
+     "fx_019_1",
+     "fx_019_2"
+    ]
+   },
+   "A3": {
+    "text": "東本宮の大山咋神は、古事記 上巻に近淡海国の日枝山に坐す神と出て、名が一致します。西本宮の大己貴神は日本書紀での大国主神の別名です。ただし公式の取得ページは古事記を引いていません。",
+    "src": [
+     "k",
+     "ns1",
+     "ns2",
+     "fx_019_3",
+     "k2i"
+    ]
+   },
+   "open": [
+    "公式の取得ページは古事記を引いておらず、大山咋神と日枝山の結びつきは、神名と古事記の記述が一致するという照合による",
+    "西本宮の祭神は、公式は大己貴神、文化庁の解説は大物主神と記し、表記が異なる。三輪山の神と大国主神の関係も資料で異なる（確信度：中）",
+    "大山咋神は日本書紀の確認範囲に見えない（要確認）"
+   ],
+   "en": {
+    "reason": "Ōyamakui-no-Kami of the East Main Shrine matches the god who dwells on 日枝山 in the Kojiki, volume 1, and 大己貴神 of the West Main Shrine is another name for Ōkuninushi-no-Ōkami in the Nihon Shoki. The official site lists visiting hours, prayer rite and amulet office hours, the goshuin fee, directions by train, and parking. However, the official site does not cite the Kojiki, so the link between Ōyamakui-no-Kami and 日枝山 rests on matching the deity's name.",
+    "A1": "The official site lists visiting hours (9:00–16:00; the opening time of the main shrine gate varies by season), prayer rite and amulet office hours, the garden entry contribution, goshuin at 500 yen, directions by train, and parking.",
+    "A2": "The official site states that the shrine was a Kanpei Taisha until the shrine ranking system was abolished after the war. A transcription also confirms that it is listed in the Engishiki shrine register as a Myōjin Taisha (a major shrine held in especially high regard), and the main halls of the West and East Main Shrines are National Treasures.",
+    "A3": "Ōyamakui-no-Kami of the East Main Shrine appears in the Kojiki, volume 1, as the god who dwells on 日枝山 in 近淡海国, and the names match. Ōnamuchi (大己貴神) of the West Main Shrine is another name for Ōkuninushi-no-Ōkami in the Nihon Shoki. However, the official page retrieved does not cite the Kojiki.",
+    "open": [
+     "The official page retrieved does not cite the Kojiki; the link between Ōyamakui-no-Kami and 日枝山 comes from matching the deity's name with the Kojiki's account.",
+     "For the deity of the West Main Shrine, the official site writes 大己貴神, while the Agency for Cultural Affairs' commentary writes 大物主神, so the notation differs. The relationship between the deity of Mount Miwa and Ōkuninushi-no-Ōkami also differs between sources (confidence: medium).",
+     "Ōyamakui-no-Kami does not appear within the range of the Nihon Shoki checked (needs confirmation)."
+    ]
+   }
+  },
+  "niutsuhime": {
+   "reason": "丹生都比売大神の名は古事記・日本書紀の確認範囲に見えず、記紀との距離をそのまま示せる社です。公式は日本書紀に出る稚日女尊と同じ神とみなしますが、書紀に丹生の名はなく、神社の伝承として扱います。公式サイトにはご祈祷と受付の時間、バスと車での行き方、無料駐車場が載っています。",
+   "A1": {
+    "text": "公式サイトに、ご祈祷（午前9時〜午後3時）、ご朱印・お守り（午前8時45分〜午後4時30分）の受付、バスと車での行き方、無料駐車場（約60台）が載っています。ご朱印の初穂料は確認できていません。",
+    "src": [
+     "k2x",
+     "k2zb",
+     "k2z",
+     "k2v"
+    ]
+   },
+   "A2": {
+    "text": "公式は、大正13年に官幣大社（当時の最高位の社格）に列し、平成16年に世界遺産「紀伊山地の霊場と参詣道」に登録されたと記します。紀伊国一之宮も公式の説明で、第三者の資料との照合はしていません。",
+    "src": [
+     "k2v",
+     "k2x"
+    ]
+   },
+   "A3": {
+    "text": "祭神の丹生都比売大神の名は、古事記・日本書紀の確認範囲に見えません。公式は稚日女尊（日本書紀に出る神）と同じ神とみなしますが、書紀に丹生の名はなく、神社の伝承として扱います。",
+    "src": [
+     "k2v",
+     "k2w",
+     "k",
+     "ns1",
+     "usns9"
+    ]
+   },
+   "open": [
+    "丹生都比売大神と稚日女尊の同定は公式の伝承で、記紀の記述ではない（要確認）",
+    "高野御子大神は記紀に見えない",
+    "大食都比売大神と古事記の大気都比売神の同一視は、公式が明記していない（要確認）",
+    "ご朱印の初穂料は、公式の取得ページで確認できていない"
+   ],
+   "en": {
+    "reason": "The name of Niutsuhime-no-Ōkami does not appear within the range of the Kojiki and Nihon Shoki checked, so this is a shrine that shows its distance from the Kojiki and Nihon Shoki as it is. The official site regards her as the same deity as 稚日女尊, who appears in the Nihon Shoki, but the Nihon Shoki does not contain the name 丹生, so it is treated as a shrine tradition. The official site lists the hours for prayer rites and reception, directions by bus and by car, and free parking.",
+    "A1": "The official site lists prayer rites (9:00–15:00), reception for goshuin and amulets (8:45–16:30), directions by bus and by car, and free parking (about 60 spaces). The goshuin fee could not be confirmed.",
+    "A2": "The official site states that the shrine was ranked as a Kanpei Taisha (the highest shrine rank at the time) in Taishō 13, and that in Heisei 16 it was registered as part of the World Heritage site \"Sacred Sites and Pilgrimage Routes in the Kii Mountain Range.\" That it is the Ichinomiya of Kii Province is also the official explanation, and it has not been checked against third-party materials.",
+    "A3": "The name of the enshrined deity, Niutsuhime-no-Ōkami, does not appear within the range of the Kojiki and Nihon Shoki checked. The official site regards her as the same deity as 稚日女尊 (a deity who appears in the Nihon Shoki), but the Nihon Shoki does not contain the name 丹生, so this is treated as a shrine tradition.",
+    "open": [
+     "Identifying Niutsuhime-no-Ōkami with 稚日女尊 is the official tradition, not an account in the Kojiki or Nihon Shoki (needs confirmation).",
+     "Takanomiko-no-Ōkami does not appear in the Kojiki or Nihon Shoki.",
+     "The official site does not explicitly state that Ōgetsuhime-no-Ōkami (大食都比売大神) is the same deity as 大気都比売神 in the Kojiki (needs confirmation).",
+     "The goshuin fee could not be confirmed on the official page retrieved."
+    ]
+   }
+  },
+  "kumanohayatama": {
+   "reason": "祭神の名は記紀の本文に確認できませんが、公式は伊弉諾・伊弉冉と同じ神とみなし、日本書紀 巻第一の一書には伊奘諾尊の唾から「速玉之男」が成る場面があります。公式サイトに開門時間、ご祈祷の時間、新宮ICやJR新宮駅からの行き方、無料駐車場が載っています。速玉之男と速玉大神が同じ神かは、確かめきれていません。",
+   "A1": {
+    "text": "公式サイトに、開門（午前6時〜午後5時）、授与所、ご祈祷（午前9時〜午後4時）、新宮ICやJR新宮駅からの行き方、無料駐車場が載っています。御朱印の受付場所・時間・初穂料は確認できていません。",
+    "src": [
+     "s05_1",
+     "s05_3",
+     "s05_5",
+     "s05_4"
+    ]
+   },
+   "A2": {
+    "text": "文化庁の解説は、貞観元年（859）から延喜7年に従一位まで神階が上がったと記し、延喜式神名帳に大社として載ります。境内は2004年に世界遺産に登録され、木造坐像4躯は国宝です。",
+    "src": [
+     "s05_12",
+     "s05_14",
+     "s05_11",
+     "s05_7"
+    ]
+   },
+   "A3": {
+    "text": "祭神の熊野速玉大神・夫須美大神の名は記紀の本文に確認できず、伊弉諾・伊弉冉との同一視は公式の説明です。日本書紀 巻第一の一書に伊奘諾尊の唾から「速玉之男」が成る場面がありますが、同じ神かは未確認です。",
+    "src": [
+     "s05_2",
+     "s05_3",
+     "ns1"
+    ]
+   },
+   "open": [
+    "速玉之男と速玉大神が同じ神かは確認できていない（要確認）",
+    "公式の年表の神名帳の年（901年）は、延喜式の成立年と合わず要確認",
+    "公式の年表の「国宝に指定」の年と文化庁の重要文化財指定の年が合わず、同じ指定か確認できていない",
+    "公式が神倉山を書紀の天磐盾とみなす点は、書紀本文が神倉山と書いていない"
+   ],
+   "en": {
+    "reason": "The names of the enshrined deities cannot be confirmed in the main text of the Kojiki or Nihon Shoki, but the official site regards them as the same as Izanagi and Izanami. A variant account in the Nihon Shoki, volume 1, has a scene in which 速玉之男 is born from the spittle of Izanagi-no-Mikoto. The official site lists the gate hours, prayer rite hours, directions from Shingū IC and JR Shingū Station, and free parking. Whether 速玉之男 and Hayatama-no-O-no-Kami are the same deity has not been confirmed.",
+    "A1": "The official site lists the gate hours (6:00–17:00), the amulet office, prayer rites (9:00–16:00), directions from Shingū IC and JR Shingū Station, and free parking. Where and when goshuin are issued, and the goshuin fee, could not be confirmed.",
+    "A2": "The Agency for Cultural Affairs' commentary states that the shrine's divine rank rose from 859 up to Junior First Rank by Engi 7, and the shrine is listed in the Engishiki shrine register as a Taisha. The precinct was registered as a World Heritage site in 2004, and the four wooden seated statues are National Treasures.",
+    "A3": "The names of the enshrined deities, Hayatama-no-O-no-Kami and Kumano-Fusumi-no-Ōkami, cannot be confirmed in the main text of the Kojiki or Nihon Shoki, and identifying them with Izanagi and Izanami is the official explanation. In a variant account in the Nihon Shoki, volume 1, 速玉之男 is born from the spittle of Izanagi-no-Mikoto, but it is not confirmed whether this is the same deity.",
+    "open": [
+     "It has not been confirmed whether 速玉之男 and Hayatama-no-O-no-Kami are the same deity (needs confirmation).",
+     "The year given for the shrine register in the official chronology (901) does not match the year the Engishiki was completed (needs confirmation).",
+     "The year given for the National Treasure designation in the official chronology does not match the year of the Agency for Cultural Affairs' Important Cultural Property designation, and it has not been confirmed whether they are the same designation.",
+     "The official site regards Kamikura-yama as the Ame-no-Iwatate of the Nihon Shoki, but the main text of the Nihon Shoki does not write Kamikura-yama."
+    ]
+   }
+  },
+  "sumiyoshi": {
+   "reason": "住吉三神は古事記 上巻の禊の場面に「墨江之三前大神」と出て、神功皇后は中巻の神懸かりの場面に登場します。公式サイトに開門時間、南海電車・阪堺電車での行き方、駐車場が載っています。全国の住吉神社の大もとの社（総本社）と公式は記しますが、その社数は由緒と公式FAQで数が異なります。",
+   "A1": {
+    "text": "公式サイトに、開門（4〜9月6時、10〜3月6時30分）と閉門、南海電車・阪堺電車での行き方、駐車場（約200台）と料金が載っています。御朱印の初穂料・受付時間は確認できていません。",
+    "src": [
+     "sm3",
+     "fx_024_2",
+     "fx_024_4"
+    ]
+   },
+   "A2": {
+    "text": "公式は、延喜式の名神大社（特に重んじられた大社）、二十二社、摂津国一之宮、旧官幣大社に列したと記します。本殿4棟は1810年の造営で、昭和28年に国宝に指定されたと公式は述べます。",
+    "src": [
+     "sm2",
+     "fx_024_1"
+    ]
+   },
+   "A3": {
+    "text": "住吉三神は、古事記 上巻の禊の場面で「墨江之三前大神」と記され、日本書紀では住吉大神と記されます。神功皇后は古事記 中巻で、神懸かりして三柱の大神の名を知る場面に出ます。",
+    "src": [
+     "sm4",
+     "fx_024_1"
+    ]
+   },
+   "open": [
+    "総本社の社数は、由緒（約2300社余）と公式FAQ（およそ2000社以上）で数が異なる"
+   ],
+   "en": {
+    "reason": "In the Kojiki, volume 1, the Three Sumiyoshi Deities appear in the purification (misogi) scene as 墨江之三前大神, and Empress Jingū appears in volume 2 in the scene where she is possessed by a deity. The official site lists the gate hours, directions by the Nankai and Hankai lines, and parking. The official site describes the shrine as the head shrine (sōhonsha) of Sumiyoshi shrines across the country, but the number of those shrines differs between its history page and its FAQ.",
+    "A1": "The official site lists the gate hours (opening at 6:00 from April to September and 6:30 from October to March) and the closing time, directions by the Nankai and Hankai lines, and parking (about 200 spaces) with fees. The goshuin fee and hours could not be confirmed.",
+    "A2": "The official site states that the shrine is listed as a Myōjin Taisha in the Engishiki (a major shrine held in especially high regard), as one of the Twenty-Two Shrines (二十二社), as the Ichinomiya of Settsu Province, and as a former Kanpei Taisha. It also states that the four main halls were built in 1810 and designated National Treasures in Shōwa 28.",
+    "A3": "In the Kojiki, volume 1, the Three Sumiyoshi Deities appear in the purification (misogi) scene as 墨江之三前大神, and in the Nihon Shoki they are called Sumiyoshi no Ōkami. Empress Jingū appears in the Kojiki, volume 2, in the scene where, possessed by a deity, she learns the names of three great deities.",
+    "open": [
+     "The number of branch shrines differs between the history page (over 2,300) and the official FAQ (roughly 2,000 or more)."
+    ]
+   }
+  },
+  "hiraoka": {
+   "reason": "天児屋根命は記紀の天の岩屋戸と天孫降臨の場面に出て、武甕槌命・経津主命は国譲りの使者の神です。公式サイトにご祈祷の受付時間と初穂料、近鉄枚岡駅からの行き方、駐車場が載っています。社格は目安ですが、公式の記述のみで、第三者での照合は済んでいません。",
+   "A1": {
+    "text": "公式サイトに、ご祈祷の受付（午前9時〜午後3時半・予約不要）と初穂料、近鉄枚岡駅からの行き方、約40台の駐車場が載っています。授与所の時間と境内の開閉門時間は確認できていません。",
+    "src": [
+     "o3c",
+     "o3e",
+     "o3d",
+     "o3a"
+    ]
+   },
+   "A2": {
+    "text": "公式は、延喜式神名帳で名神大社（特に重んじられた大社）に列し、中世に河内国一之宮、明治4年に官幣大社になったと記します。公式の記述のみで、神社庁など第三者での照合は未了です。",
+    "src": [
+     "o3b"
+    ]
+   },
+   "A3": {
+    "text": "祭神の天児屋根命は、記紀の天の岩屋戸と天孫降臨の場面に出ます。武甕槌命・経津主命は国譲りの使者の神で、経津主神は日本書紀のみに見えます。比売御神は記紀に特定の神として出ません。",
+    "src": [
+     "o3b",
+     "ns1"
+    ]
+   },
+   "open": [
+    "駐車場の料金・営業時間、通常日の御朱印の受付時間・初穂料は、公式で確認できていない",
+    "社格は公式の記述のみで、第三者での照合は未了",
+    "比売御神は記紀に特定の神として出ず、春日大社の比売神と同一かを公式は明言していない"
+   ],
+   "en": {
+    "reason": "Ame-no-Koyane-no-Mikoto appears in the Heavenly Rock Cave scene and the descent of the heavenly grandson in the Kojiki and Nihon Shoki, and Takemikazuchi-no-Ōkami and Futsunushi-no-Ōkami are the envoy deities of the transfer of the land. The official site lists the reception hours and fee for prayer rites, directions from Hiraoka Station on the Kintetsu line, and parking. Shrine rank is only a guide, and the rank here rests only on the official site's account, which has not been checked against third parties.",
+    "A1": "The official site lists the reception hours for prayer rites (9:00–15:30, no reservation needed) and the fee, directions from Hiraoka Station on the Kintetsu line, and parking for about 40 cars. The amulet office hours and the hours when the grounds open and close could not be confirmed.",
+    "A2": "The official site states that the shrine is listed as a Myōjin Taisha (a major shrine held in especially high regard) in the Engishiki shrine register, became the Ichinomiya of Kawachi Province in the medieval period, and became a Kanpei Taisha in Meiji 4. This rests only on the official site's account; checking against third parties such as the Jinja Honchō (Association of Shinto Shrines) has not been done.",
+    "A3": "Ame-no-Koyane-no-Mikoto appears in the Heavenly Rock Cave scene and the descent of the heavenly grandson in the Kojiki and Nihon Shoki. Takemikazuchi-no-Ōkami and Futsunushi-no-Ōkami are deities who served as envoys in the transfer of the land, and Futsunushi appears only in the Nihon Shoki. Himegami (the Princess Deity) does not appear as a specific deity in either.",
+    "open": [
+     "The parking fees and hours, and the goshuin reception hours and fee on regular days, could not be confirmed on the official site.",
+     "The shrine rank rests only on the official site's account; checking against third parties has not been done.",
+     "Himegami does not appear as a specific deity in the Kojiki or Nihon Shoki, and the official site does not state whether she is the same as Kasuga Taisha's Himegami."
+    ]
+   }
+  },
+  "tsubaki": {
+   "reason": "猿田彦大神は、古事記・日本書紀の天孫降臨で天孫を道案内する国つ神として出て、瓊々杵尊や天之鈿女命・木花咲耶姫命も同じ神話の神です。公式サイトに参拝・ご祈祷・授与所の時間、鈴鹿ICからの行き方、無料駐車場が載っています。社格は目安ですが、公式サイトでは確認できず、事典類のみです。",
+   "A1": {
+    "text": "公式サイトに、参拝時間（季節で異なる）、ご祈祷（午前8時〜午後4時・予約不要）、授与所（午前8時〜午後4時30分）、鈴鹿ICからの行き方、無料駐車場（約500台）が載っています。",
+    "src": [
+     "l1s",
+     "l1t",
+     "l1w"
+    ]
+   },
+   "A2": {
+    "text": "公式サイトでは社格を確認できていません。事典（Wikipedia）は旧社格を県社、伊勢国一宮・式内社（延喜式神名帳に載る社）とし、日本歴史地名大系も神名帳の鈴鹿郡「椿大神社」とします。",
+    "src": [
+     "l1v",
+     "nf083a"
+    ]
+   },
+   "A3": {
+    "text": "祭神の猿田彦大神は、古事記・日本書紀の天孫降臨で、天孫を道案内する国つ神として出ます。相殿の瓊々杵尊、配祀の天之鈿女命・木花咲耶姫命も、同じ天孫降臨の神話に出る神です。",
+    "src": [
+     "l1r",
+     "l1u",
+     "k",
+     "ns2"
+    ]
+   },
+   "open": [
+    "社格は公式サイトで確認できず、事典類のみ（公式での確認は未了）",
+    "御朱印の初穂料・種類は、公式で確認できていない",
+    "大安寺伽藍縁起の「東椿社」を当社とする説と、椿岸神社（四日市市）とする説があり、比定が分かれる",
+    "行満大明神は記紀に見えない。栲幡千千姫は日本書紀のみで、古事記には名が出ない"
+   ],
+   "en": {
+    "reason": "Sarutahiko-no-Kami appears in the descent of the heavenly grandson in the Kojiki and Nihon Shoki as an earthly deity who guides the heavenly grandson, and Ninigi-no-Mikoto, Ame-no-Uzume-no-Mikoto and Konohanasakuya-hime-no-Mikoto are deities of the same myth. The official site lists visiting, prayer rite and amulet office hours, directions from Suzuka IC, and free parking. Shrine rank is only a guide, and here it could not be confirmed on the official site; only encyclopedias give it.",
+    "A1": "The official site lists visiting hours (which vary by season), prayer rites (8:00–16:00, no reservation needed), the amulet office (8:00–16:30), directions from Suzuka IC, and free parking (about 500 spaces).",
+    "A2": "The shrine's rank could not be confirmed on the official site. An encyclopedia (Wikipedia) gives its former rank as Kensha (prefectural shrine) and describes it as the Ichinomiya of Ise Province and a Shikinai-sha (a shrine listed in the Engishiki shrine register). The 日本歴史地名大系 (a historical place-name dictionary) also identifies it with 椿大神社 in Suzuka District in the register.",
+    "A3": "The enshrined deity Sarutahiko-no-Kami appears in the descent of the heavenly grandson in the Kojiki and Nihon Shoki as an earthly deity who guides the heavenly grandson. Ninigi-no-Mikoto (enshrined together in the same hall), and Ame-no-Uzume-no-Mikoto and Konohanasakuya-hime-no-Mikoto (enshrined as accompanying deities), are also deities who appear in the same descent myth.",
+    "open": [
+     "The shrine rank could not be confirmed on the official site and rests only on encyclopedias (confirmation on the official site has not been done).",
+     "The goshuin fee and types could not be confirmed on the official site.",
+     "There is a view that identifies the \"Higashi-Tsubaki shrine\" (東椿社) in the Daianji Garan Engi with this shrine, and another that identifies it with Tsubakigishi Jinja (Yokkaichi City), so the identification is divided.",
+     "行満大明神 does not appear in the Kojiki or Nihon Shoki. Takuhatachijihime-no-Mikoto appears only in the Nihon Shoki; her name does not appear in the Kojiki."
+    ]
+   }
+  },
+  "kasuga": {
+   "reason": "武甕槌命・経津主命は国譲りの使者として、天児屋命は天の岩屋戸と天孫降臨の場面で記紀に出ます。公式サイトの基本情報に、御本社の開門時間、バスでの行き方、駐車場と料金が載っています。比売神に当たる記紀の神は確認できておらず、社格は目安ですが、それを示す資料も確認できていません。",
+   "A1": {
+    "text": "公式サイトの基本情報に、御本社の開門（3〜10月6:30〜17:30、11〜2月7:00〜17:00）、バスでの行き方、駐車場（100台）と料金が載っています。御朱印の初穂料は確認できていません。",
+    "src": [
+     "fx_023_1",
+     "ka2-1"
+    ]
+   },
+   "A2": {
+    "text": "公式は、神護景雲2年（768）に称徳天皇の勅命で本殿が創営され、20年ごとの式年造替が60回続くと記します。御本殿4棟は国宝です。社格（一宮・官幣大社など）を示す資料は、確認できていません。",
+    "src": [
+     "ka2-2",
+     "fx_023_2",
+     "fx_023_3"
+    ]
+   },
+   "A3": {
+    "text": "武甕槌命・経津主命は国譲りの使者として、天児屋命は天の岩屋戸と天孫降臨の場面で記紀に出ます（経津主神は日本書紀のみ）。比売神は、記紀に特定の神として確認できていません。",
+    "src": [
+     "ka2-2",
+     "fx_023_4",
+     "fx_023_5",
+     "fx_023_6"
+    ]
+   },
+   "open": [
+    "約1300年前に鹿島から武甕槌命を迎えたという伝えは、史料での裏付けが要確認",
+    "比売神に当たる記紀の神は要確認（延喜式の祝詞も比売神にだけ神名を書かない）",
+    "御朱印の初穂料、バスの運行本数は、公式で確認できていない"
+   ],
+   "en": {
+    "reason": "Takemikazuchi-no-Ōkami and Futsunushi-no-Ōkami appear in the Kojiki and Nihon Shoki as envoys in the transfer of the land, and Ame-no-Koyane-no-Mikoto appears in the Heavenly Rock Cave scene and the descent of the heavenly grandson. The official site's basic information lists the main shrine's gate hours, directions by bus, and parking with fees. The deity in the Kojiki and Nihon Shoki corresponding to Himegami could not be confirmed, and shrine rank is only a guide, but no material showing it could be confirmed either.",
+    "A1": "The official site's basic information lists the opening hours of the main shrine gate (6:30–17:30 from March to October, 7:00–17:00 from November to February), directions by bus, and parking (100 spaces) with fees. The goshuin fee could not be confirmed.",
+    "A2": "The official site states that the main hall was founded in 768 (Jingo-keiun 2) by imperial order of Empress Shōtoku, and that the rebuilding held every 20 years (式年造替) has been carried out 60 times. The four main halls are National Treasures. No material showing the shrine's rank (such as Ichinomiya or Kanpei Taisha) could be confirmed.",
+    "A3": "Takemikazuchi-no-Ōkami and Futsunushi-no-Ōkami appear in the Kojiki and Nihon Shoki as envoys in the transfer of the land, and Ame-no-Koyane-no-Mikoto appears in the Heavenly Rock Cave scene and the descent of the heavenly grandson (Futsunushi appears only in the Nihon Shoki). Himegami (the Princess Deity) could not be confirmed as a specific deity in either.",
+    "open": [
+     "The tradition that Takemikazuchi-no-Ōkami was welcomed from Kashima about 1,300 years ago needs confirmation against historical sources.",
+     "The deity in the Kojiki and Nihon Shoki corresponding to Himegami needs confirmation (the Engishiki norito also does not write a deity's name only for Himegami).",
+     "The goshuin fee and the number of bus services could not be confirmed on the official site."
+    ]
+   }
+  },
+  "kifune": {
+   "reason": "高龗神は日本書紀 巻第一の一書に、斬られた火の神の一段が成る神として出て、磐長姫命・玉依姫命も記紀に出ます。公式サイトに本宮の参拝時間（5〜11月）、授与所の時間、叡山電車とバスでの行き方、駐車場が載っています。高龗神と古事記の闇淤加美神が同じ神かは、確かめきれていません。",
+   "A1": {
+    "text": "公式サイトに、本宮の参拝時間（5〜11月は6:00〜20:00）、授与所9:00〜17:00、叡山電車とバスでの行き方、駐車場（1,000円／2時間）が載っています。12〜4月の時間は確認できていません。",
+    "src": [
+     "x2a1",
+     "x2a4",
+     "x2a5",
+     "x2a3"
+    ]
+   },
+   "A2": {
+    "text": "公式サイトに社格の記載はありません。事典（コトバンク）が、延喜式神名帳に「貴布禰神社 名神大」とある式内社（名神大社）で、旧官幣中社と記すのみで、公式での確認は未了です。",
+    "src": [
+     "x2a6"
+    ]
+   },
+   "A3": {
+    "text": "祭神の高龗神は、日本書紀 巻第一の一書に、斬られた火の神の一段が成る神として出ます。古事記に「高龗」の表記はなく、同じ場面の闇淤加美神と同一かは要確認です。磐長姫命・玉依姫命は記紀に出ます。",
+    "src": [
+     "x2a2",
+     "x2a5"
+    ]
+   },
+   "open": [
+    "12〜4月の本宮の参拝時間は、公式で確認できていない",
+    "御朱印の受付時間・初穂料は、公式で確認できていない",
+    "社格は事典のみの確認で、公式サイトには記載が無い",
+    "高龗神と古事記の闇淤加美神の同一は、断定できない（要確認）。貴船の玉依姫と古事記の玉依毘売命の同一も、公式の記述以上は確認できない"
+   ],
+   "en": {
+    "reason": "Takaokami-no-Kami appears in a variant account in the Nihon Shoki, volume 1, as a deity born from a part of the fire god's body after he was cut down, and Iwanagahime-no-Mikoto and Tamayori-hime-no-Mikoto also appear in the Kojiki and Nihon Shoki. The official site lists the main shrine's visiting hours (May to November), amulet office hours, and directions by Eizan Electric Railway and bus, and parking. Whether Takaokami-no-Kami is the same deity as 闇淤加美神 in the Kojiki has not been confirmed.",
+    "A1": "The official site lists the main shrine's visiting hours (6:00–20:00 from May to November), amulet office hours of 9:00–17:00, directions by Eizan Electric Railway and bus, and parking (1,000 yen per 2 hours). The hours from December to April could not be confirmed.",
+    "A2": "The official site does not state the shrine's rank. Only an encyclopedia (Kotobank) says it is a Shikinai-sha (Myōjin Taisha) listed in the Engishiki shrine register as 「貴布禰神社 名神大」, and a former Kanpei Chūsha; this has not been confirmed on the official site.",
+    "A3": "The enshrined deity Takaokami-no-Kami appears in a variant account in the Nihon Shoki, volume 1, as a deity born from a part of the fire god's body after he was cut down. The Kojiki does not use the spelling 高龗, and whether he is the same deity as 闇淤加美神 in the same scene needs confirmation. Iwanagahime-no-Mikoto and Tamayori-hime-no-Mikoto appear in the Kojiki and Nihon Shoki.",
+    "open": [
+     "The main shrine's visiting hours from December to April could not be confirmed on the official site.",
+     "The goshuin reception hours and fee could not be confirmed on the official site.",
+     "The shrine rank was confirmed only in an encyclopedia and is not stated on the official site.",
+     "It cannot be asserted that Takaokami-no-Kami and 闇淤加美神 in the Kojiki are the same deity (needs confirmation). Beyond the official site's account, it also cannot be confirmed that Kifune's Tamayori-hime and 玉依毘売命 in the Kojiki are the same."
+    ]
+   }
+  },
+  "kumanonachi": {
+   "reason": "主祭神の熊野夫須美大神の名は記紀の本文に見えず、伊邪那美命との同一視は公式などの説明で、記紀に出るのは大己貴神・天照大神です。神武東征の熊野の場面は記紀にありますが、那智の名は出ません。公式サイトにご祈祷や社務所の受付時間、バスと車での行き方、駐車場が載っています。",
+   "A1": {
+    "text": "公式サイトに、社務所の受付（概ね8:00〜16:30）、ご祈祷（9:00〜11:00・12:30〜15:00）、バスと車での行き方、駐車場（30台・通行料800円）が載っています。御朱印の初穂料と授与時間は確認できていません。",
+    "src": [
+     "s06_5",
+     "s06_6",
+     "s06_4",
+     "s06_7"
+    ]
+   },
+   "A2": {
+    "text": "文化庁は、第一殿から第五殿などを江戸時代の重要文化財（第四殿は1851年建築・1995年指定）とし、世界遺産の構成資産とも記します。旧官幣中社は事典のみで、確認できていません。",
+    "src": [
+     "s06_12",
+     "s06_14",
+     "s06_16"
+    ]
+   },
+   "A3": {
+    "text": "主祭神の熊野夫須美大神の名は記紀の本文に見えず、伊邪那美命との同一視は公式と観光庁の解説文DBの説明です。大己貴神・天照大神は記紀に出ます。神武東征の熊野の場面も記紀にありますが、那智の名は出ません。",
+    "src": [
+     "s06_3",
+     "s06_15",
+     "ns1",
+     "ns3",
+     "p2w"
+    ]
+   },
+   "open": [
+    "ペットの扱いは公式FAQの記述に日付が無く、現在の扱いは要確認。境内の撮影の方針も確認できていない",
+    "熊野夫須美大神と伊邪那美命の同一視は記紀の記述ではない。家都御子大神の表記は本宮大社と1字異なり、同じ神かは要確認",
+    "社格（旧官幣中社）は事典のみで、神社庁・自治体・公式では確認できていない",
+    "バスの便数・運賃は、公式で確認できていない"
+   ],
+   "en": {
+    "reason": "The name of the chief deity, Kumano-Fusumi-no-Ōkami, does not appear in the main text of the Kojiki or Nihon Shoki, and identifying her with Izanami-no-Mikoto is the explanation of the official site and others; the deities that appear in the Kojiki and Nihon Shoki are 大己貴神 and Amaterasu-Ōmikami. The scene of Emperor Jimmu's eastern expedition in Kumano appears in both, but the name Nachi does not. The official site lists the reception hours for prayer rites and the shrine office, directions by bus and by car, and parking.",
+    "A1": "The official site lists the shrine office's reception hours (generally 8:00–16:30), prayer rites (9:00–11:00 and 12:30–15:00), directions by bus and by car, and parking (30 spaces, access toll of 800 yen). The goshuin fee and issuing hours could not be confirmed.",
+    "A2": "The Agency for Cultural Affairs lists the First through Fifth Halls and others as Edo-period Important Cultural Properties (the Fourth Hall was built in 1851 and designated in 1995), and also describes them as components of the World Heritage site. The former rank (Kanpei Chūsha) comes only from an encyclopedia and has not been confirmed.",
+    "A3": "The name of the chief deity, Kumano-Fusumi-no-Ōkami, does not appear in the main text of the Kojiki or Nihon Shoki; identifying her with Izanami-no-Mikoto is the explanation given by the official site and the Japan Tourism Agency's explanatory-text database. Ōkuninushi-no-Ōkami (大己貴神) and Amaterasu-Ōmikami appear in the Kojiki and Nihon Shoki. The scene of Emperor Jimmu's eastern expedition in Kumano also appears in both, but the name Nachi does not.",
+    "open": [
+     "The official FAQ's entry on pets has no date, so the current policy needs confirmation. The policy on photography in the grounds also could not be confirmed.",
+     "Identifying Kumano-Fusumi-no-Ōkami with Izanami-no-Mikoto is not an account in the Kojiki or Nihon Shoki. The notation of 家都御子大神 differs by one character from the Hongū Taisha, and whether they are the same deity needs confirmation.",
+     "The shrine rank (former Kanpei Chūsha) comes only from an encyclopedia and could not be confirmed by the Jinja Honchō, the municipality, or the official site.",
+     "The number of bus services and the fares could not be confirmed on the official site."
+    ]
+   }
+  },
+  "otori": {
+   "reason": "祭神の日本武尊は、古事記・日本書紀の東征の場面に登場します。公式サイトには開門・閉門の時間、授与所の時間、アクセス、無料駐車場が載っており、参拝の段取りを立てやすい社です。白鳥が降りた話は社伝で、記紀の本文では確かめられていません。",
+   "A1": {
+    "text": "公式サイトに、開門5時30分・閉門18時、授与所の時間、アクセス、無料駐車場が載っています。御朱印の案内もありますが、初穂料は確認できていません。",
+    "src": [
+     "m2m",
+     "m2q",
+     "m2n"
+    ]
+   },
+   "A2": {
+    "text": "公式と堺市が、延喜式神名帳に載る和泉国唯一の名神大社（特に重んじられた古い社）で一の宮（国の筆頭格の社）と記します。本殿などは堺市の指定文化財です。",
+    "src": [
+     "m2j",
+     "m2p"
+    ]
+   },
+   "A3": {
+    "text": "祭神の日本武尊は、古事記の倭建命、日本書紀の日本武尊として東征の場面に登場します。白鳥が降りた話は社伝で、記紀の本文では確認できていません。",
+    "src": [
+     "m2j",
+     "m2l"
+    ]
+   },
+   "open": [
+    "御朱印の初穂料は、公式の取得ページで確認できていない",
+    "白鳥が大鳥の地に降りたという部分は社伝で、記紀の本文には確認できていない",
+    "もう一柱の大鳥連祖神は、記紀に独立した神として登場する根拠を確認できていない",
+    "郵便番号は公式で確認できていない"
+   ],
+   "en": {
+    "reason": "The deity Yamato Takeru-no-Mikoto appears in the eastern campaign scenes of both the Kojiki and the Nihon Shoki. The official site lists the gate hours, the amulet office hours, access, and free parking, so it is easy to plan a visit. The white-bird story comes from the shrine's tradition and has not been confirmed in the main text of the two books.",
+    "A1": "The official site lists the gate hours (opens 5:30, closes 18:00), the amulet office hours, access, and free parking. It also has a goshuin guide, but the offering fee has not been confirmed.",
+    "A2": "The official site and Sakai City describe it as the only Myōjin Taisha (a shrine given special regard in ancient times) of Izumi Province listed in the Engishiki shrine register, and as the Ichinomiya (the foremost shrine of the province). The main hall and other buildings are designated cultural properties of Sakai City.",
+    "A3": "The deity Yamato Takeru-no-Mikoto appears in the eastern campaign scenes of the Kojiki (written 倭建命) and the Nihon Shoki (written 日本武尊). The story of a white bird descending comes from the shrine's own tradition and has not been confirmed in the main text of either book.",
+    "open": [
+     "The goshuin offering fee has not been confirmed on the official goshuin page.",
+     "The part about a white bird descending to the Ōtori area comes from the shrine's tradition and has not been confirmed in the main text of the Kojiki or Nihon Shoki.",
+     "No basis has been confirmed for Ōtori-no-Muraji-no-Oyagami appearing as an independent deity in the Kojiki or Nihon Shoki.",
+     "The postal code has not been confirmed on the official site."
+    ]
+   }
+  },
+  "fushimi": {
+   "reason": "稲荷神社の総本宮にあたり、祭神の宇迦之御魂神は、古事記では須佐之男命の子として、日本書紀では一書に倉稲魂命として登場します。公式サイトで電車・バス・車での行き方が分かります。参拝時間や御朱印の授与時間は、公式では確かめきれていません。",
+   "A1": {
+    "text": "公式サイトに、電車・バス・車での交通アクセスと所在地が載っています。参拝時間、通常期の御朱印の授与時間と初穂料、駐車場の台数・料金は確認できていません。",
+    "src": [
+     "fs4",
+     "fs6",
+     "fs5"
+    ]
+   },
+   "A2": {
+    "text": "公式の社殿年表に、延喜式神名帳（927年）で稲荷神社三座が名神大社（特に重んじられた古い社）と載るとあります。本殿は重要文化財です。",
+    "src": [
+     "fs3",
+     "fs8",
+     "fx_k3"
+    ]
+   },
+   "A3": {
+    "text": "宇迦之御魂神は古事記で須佐之男命の子として名が挙がり、日本書紀では倉稲魂命として一書に登場します。佐田彦大神は、公式が猿田彦大神とする神です。",
+    "src": [
+     "fs1",
+     "fs8"
+    ]
+   },
+   "open": [
+    "参拝時間は、公式の各ページで確認できていない",
+    "通常期の御朱印の授与時間・初穂料は確認できていない",
+    "駐車場の台数・料金は、公式のアクセスページで確認できていない",
+    "大宮能売大神・田中大神・四大神は、公式で記紀の神との対応が示されていない",
+    "社殿年表の表記（明神大社）と神名帳の本文（名神大）に違いがある"
+   ],
+   "en": {
+    "reason": "Fushimi Inari Taisha is the head shrine of the Inari shrines. Ukanomitama-no-Kami appears in the Kojiki as a child of Susanoo-no-Mikoto, and in one variant account of the Nihon Shoki as Ukanomitama-no-Mikoto (written 倉稲魂命). The official site explains how to get here by train, bus, or car, but the visiting hours and the goshuin hours have not been confirmed on the official site.",
+    "A1": "The official site lists access by train, bus, and car, and the address. Visiting hours, the goshuin hours and offering fee for ordinary periods, and the number of parking spaces and fees have not been confirmed.",
+    "A2": "The official shrine-building chronology says that the Engishiki shrine register (927) lists the three Inari shrine seats as Myōjin Taisha (shrines given special regard in ancient times). The main hall is an Important Cultural Property.",
+    "A3": "Ukanomitama-no-Kami is named in the Kojiki as a child of Susanoo-no-Mikoto, and appears in one variant account (isshō) of the Nihon Shoki as Ukanomitama-no-Mikoto (written 倉稲魂命). 佐田彦大神 is the deity the official site identifies as Sarutahiko-no-Kami.",
+    "open": [
+     "Visiting hours have not been confirmed on the official pages.",
+     "The goshuin hours and offering fee for ordinary periods have not been confirmed.",
+     "The number of parking spaces and fees have not been confirmed on the official access page.",
+     "The official site does not show which deities of the Kojiki or Nihon Shoki correspond to 大宮能売大神, 田中大神, and 四大神.",
+     "The shrine-building chronology writes 明神大社, while the text of the shrine register reads 名神大, so the two differ."
+    ]
+   }
+  },
+  "isonokami": {
+   "reason": "祭神の布都御魂大神は、古事記では建御雷神が降した刀の名、日本書紀では韴霊という剣の名と重なります。公式の参拝案内に、拝殿の参拝時間、ご祈祷の受付時間、アクセス、無料駐車場の台数が載っています。延喜式での社格は確認できていません。",
+   "A1": {
+    "text": "公式の参拝案内に、拝殿の参拝時間、授与所・ご祈祷の受付時間、アクセス、無料駐車場4か所の台数が載っています。ご朱印は楼門内の授与所で受け付けています。",
+    "src": [
+     "k2d",
+     "k2e",
+     "k2f",
+     "k2g"
+    ]
+   },
+   "A2": {
+    "text": "公式は、明治4年に官幣大社（国が祭祀を支えた格の社）に列したと記します。拝殿は国宝、楼門は重要文化財です。延喜式での社格は、確認できていません。",
+    "src": [
+     "k2a",
+     "k2c",
+     "fx_012_1"
+    ]
+   },
+   "A3": {
+    "text": "布都御魂は、古事記では建御雷神が降した刀の名、日本書紀では韴霊という剣の名です。書紀の一書は、大蛇を斬った剣が石上にあると記します。",
+    "src": [
+     "k2z1",
+     "ns3",
+     "ns1",
+     "k2b"
+    ]
+   },
+   "open": [
+    "ご朱印だけの受付時間と初穂料は、公式の取得ページに個別の記載がない",
+    "布留御魂大神・布都斯魂大神の名そのものは、記紀の確認範囲に見えず、公式の伝承として扱う",
+    "延喜式での社格を示す資料は、確認できていない",
+    "宇摩志麻治命の日本書紀での名は要確認"
+   ],
+   "en": {
+    "reason": "The deity Futsunomitama-no-Ōkami shares its name with the sword that Takemikazuchi-no-Kami sent down in the Kojiki, and with the sword 韴霊 in the Nihon Shoki. The official visitor guide gives the worship hours of the worship hall, the reception hours for prayer rites, access, and the number of free parking spaces. Its rank in the Engishiki has not been confirmed.",
+    "A1": "The official visitor guide lists the worship hours of the worship hall, the reception hours of the amulet office and prayer rites, access, and the number of spaces in the four free parking lots. Goshuin are handled at the amulet office inside the Rōmon (tower gate).",
+    "A2": "The official site states that the shrine was ranked as a Kanpei Taisha (a shrine supported by the state) in 1871. The worship hall is a National Treasure and the Rōmon is an Important Cultural Property. Its rank in the Engishiki has not been confirmed.",
+    "A3": "Futsunomitama is the name of the sword that Takemikazuchi-no-Kami sent down in the Kojiki, and the name of the sword 韴霊 in the Nihon Shoki. A variant account (isshō) in the Nihon Shoki says that the sword that cut the great serpent is at Isonokami.",
+    "open": [
+     "The official goshuin page gives no separate reception hours or offering fee for goshuin alone.",
+     "The names Furunomitama-no-Ōkami and Futsushimitama-no-Ōkami themselves do not appear within the range checked in the Kojiki and Nihon Shoki, so they are treated as the shrine's own tradition.",
+     "No source showing its rank in the Engishiki has been confirmed.",
+     "The name of Umashimaji-no-Mikoto in the Nihon Shoki needs to be checked."
+    ]
+   }
+  },
+  "tosa": {
+   "reason": "土佐国の一宮（国の筆頭格の社）で、味鋤高彦根神は古事記の阿遅鉏高日子根神、日本書紀の味耜高彦根神として登場します。公式にご祈願の受付時間とアクセスが載っています。名神大社かどうかは資料で書き方が分かれ、社格は目安としてご覧ください。",
+   "A1": {
+    "text": "公式に、アクセスと所在地、ご祈願の受付時間（9時〜16時）が載っています。境内の参拝時間、御朱印の通常の受付と初穂料、駐車場は確認できていません。",
+    "src": [
+     "j3p",
+     "j3n",
+     "j3o",
+     "nf089a"
+    ]
+   },
+   "A2": {
+    "text": "公式は、延喜の制で式内大社（延喜式に載る社）に列したと記し、鼓楼と楼門は国の重要文化財です。名神の注記は延喜式の翻刻に見えず、事典と書き方が分かれます。",
+    "src": [
+     "j3l",
+     "j3m",
+     "nf085b",
+     "nf089c",
+     "nf089b"
+    ]
+   },
+   "A3": {
+    "text": "味鋤高彦根神は古事記で阿遅鉏高日子根神、日本書紀で味耜高彦根神です。一言主神は雄略天皇の場面に登場しますが、舞台は大和の葛城山です。",
+    "src": [
+     "j3l",
+     "j3m",
+     "j3x2",
+     "j3x4"
+    ]
+   },
+   "open": [
+    "境内の参拝時間は、公式で確認できていない",
+    "御朱印の通常の受付時間と初穂料は、公式で確認できていない",
+    "駐車場の台数・料金は、公式で確認できていない",
+    "名神大社かどうかは、資料によって書き方が分かれる",
+    "楼門の修理工期は変更されている可能性があり、要確認",
+    "主祭神の扱いが公式文書の間で異なる",
+    "土佐との結びつきは、記紀の本文では確認できず、風土記逸文と賀茂氏の伝えによる"
+   ],
+   "en": {
+    "reason": "Tosa Jinja is the Ichinomiya (the foremost shrine of the province) of Tosa Province. Ajisukitakahikone-no-Mikoto is written 阿遅鉏高日子根神 in the Kojiki and 味耜高彦根神 in the Nihon Shoki. The official site lists access and the reception hours for prayer requests. Sources differ on whether it is a Myōjin Taisha, so please treat its rank as a rough guide.",
+    "A1": "The official site lists access, the address, and the reception hours for prayer requests (9:00–16:00). Visiting hours within the grounds, the ordinary goshuin reception and offering fee, and parking have not been confirmed.",
+    "A2": "The official site states that the shrine was ranked as a Shikinai Taisha (a major shrine listed in the Engishiki) under the Engi-era system. The Kurō (drum tower) and the Rōmon (tower gate) are Important Cultural Properties of the state. A note calling it a Myōjin shrine does not appear in the printed edition of the Engishiki, and encyclopedias differ in how they write it.",
+    "A3": "Ajisukitakahikone-no-Mikoto is written 阿遅鉏高日子根神 in the Kojiki and 味耜高彦根神 in the Nihon Shoki. Hitokotonushi-no-Kami appears in a scene of Emperor Yūryaku, but that scene is set on Mount Katsuragi in Yamato.",
+    "open": [
+     "Visiting hours within the grounds have not been confirmed on the official site.",
+     "The ordinary goshuin reception hours and offering fee have not been confirmed on the official site.",
+     "The number of parking spaces and fees have not been confirmed on the official site.",
+     "Whether it is a Myōjin Taisha is written differently depending on the source.",
+     "The repair period for the Rōmon (tower gate) may have been changed and needs to be checked.",
+     "The treatment of the main deity differs among official documents.",
+     "A link between Tosa and these deities cannot be confirmed in the main text of the Kojiki and Nihon Shoki. It rests on fragments of the Fudoki (regional gazetteers) quoted in other works, and on the traditions of the Kamo clan."
+    ]
+   }
+  },
+  "izumo": {
+   "reason": "大国主大神は、古事記上巻の国作りと国譲りの主役で、日本書紀にも大己貴神として登場します。公式サイトに参拝時間、時間外の参拝場所、一畑電車・バスでのアクセス、駐車場の台数が載っています。社格は事典の記載のみで公式では確認できていないため、目安としてご覧ください。",
+   "A1": {
+    "text": "公式に、参拝時間（6時〜19時）、時間外の参拝場所、一畑電車・バスでのアクセス、駐車場の台数が載っています。御朱印と駐車料金は確認できていません。",
+    "src": [
+     "z2",
+     "z3",
+     "z1"
+    ]
+   },
+   "A2": {
+    "text": "公式は、出雲国風土記（733年）が祭神を「天の下造らしし大神」と称えると説明します。社格を示す資料は、公式では確認できていません。",
+    "src": [
+     "z1"
+    ]
+   },
+   "A3": {
+    "text": "大国主大神は、古事記上巻の国作り・国譲りの主役です。日本書紀では大己貴神として登場し、別名に大国主神・大物主神を記します。",
+    "src": [
+     "z1"
+    ]
+   },
+   "open": [
+    "社格（式内名神大社・出雲国一宮・旧官幣大社・勅祭社）は事典のみで、公式では確認できていない",
+    "御朱印の授与は未確認",
+    "駐車場の料金・利用時間は未確認"
+   ],
+   "en": {
+    "reason": "Ōkuninushi-no-Ōkami is the central figure of the land-building and the land-transfer in the first volume of the Kojiki, and he also appears in the Nihon Shoki as 大己貴神. The official site lists visiting hours, the place to worship outside those hours, access by Ichibata Electric Railway and bus, and the number of parking spaces. Its rank is recorded only in encyclopedias and has not been confirmed on the official site, so please treat it as a rough guide.",
+    "A1": "The official site lists visiting hours (6:00–19:00), the place to worship outside those hours, access by Ichibata Electric Railway and bus, and the number of parking spaces. Goshuin and parking fees have not been confirmed.",
+    "A2": "The official site explains that the Izumo no Kuni Fudoki (733) praises the deity as the great deity who created the land under heaven (「天の下造らしし大神」). Its shrine rank has not been confirmed on the official site.",
+    "A3": "Ōkuninushi-no-Ōkami is the central figure of the land-building and the land-transfer in the first volume of the Kojiki. In the Nihon Shoki he appears as 大己貴神, and the names 大国主神 and 大物主神 are given as other names.",
+    "open": [
+     "Its ranks (Shikinai Myōjin Taisha, Ichinomiya of Izumo Province, former Kanpei Taisha, and Chokusai-sha) are recorded only in encyclopedias and have not been confirmed on the official site.",
+     "Whether goshuin are offered has not been confirmed.",
+     "The parking fees and hours of use have not been confirmed."
+    ]
+   }
+  },
+  "kibitsu": {
+   "reason": "祭神の大吉備津彦命は、古事記中巻に孝霊天皇の御子として登場し、吉備を言向け和したと記されています。公式サイトに開門5時・閉門18時、御朱印の受付時間（16時まで）、アクセスが載っています。本殿・拝殿は国宝で、日本書紀の四道将軍の条との照合は、まだ済んでいません。",
+   "A1": {
+    "text": "公式に、開門5時・閉門18時、御朱印の受付は16時まで、アクセス、所在地が載っています。御朱印の初穂料と駐車場の台数・料金は確認できていません。",
+    "src": [
+     "j2i",
+     "j2g",
+     "j2j"
+    ]
+   },
+   "A2": {
+    "text": "本殿・拝殿は国宝（1425年再建）で、日本遺産の構成文化財27件のうち8件を占めると公式が記します。式内社などの社格は事典のみで、公式では未確認です。",
+    "src": [
+     "j2h",
+     "j2g",
+     "j2l"
+    ]
+   },
+   "A3": {
+    "text": "古事記中巻は、孝霊天皇の御子に大吉備津日子命を記し、吉備を言向け和したとします。日本書紀の四道将軍の条との照合は未実施です。",
+    "src": [
+     "j2g",
+     "j2k",
+     "k",
+     "j2d2"
+    ]
+   },
+   "open": [
+    "御朱印の初穂料は、公式で確認できていない",
+    "駐車場の台数・料金は、公式で確認できていない",
+    "式内社（名神大社）・備中国一宮・旧官幣中社は事典のみで、公式では確認できていない",
+    "日本書紀 巻第五の四道将軍の条は、原文との逐語照合が未実施で要確認",
+    "温羅退治は公式が伝える由緒で、記紀には見えない",
+    "主祭神以外の配祀神は、公式の要約で確認できていない"
+   ],
+   "en": {
+    "reason": "Ōkibitsuhiko-no-Mikoto appears in the middle volume of the Kojiki as a child of Emperor Kōrei, and is said to have brought Kibi under control (言向け和す). The official site lists the gate hours (5:00–18:00), goshuin reception until 16:00, and access. The main hall and worship hall are National Treasures, but the Nihon Shoki passage on the Four Generals has not been checked yet.",
+    "A1": "The official site lists the gate hours (opens 5:00, closes 18:00), goshuin reception until 16:00, access, and the address. The goshuin offering fee and the number of parking spaces and fees have not been confirmed.",
+    "A2": "The main hall and worship hall are National Treasures (rebuilt in 1425), and the official site says they account for 8 of the 27 constituent cultural properties of the Japan Heritage story. Ranks such as Shikinai-sha are recorded only in encyclopedias and have not been confirmed on the official site.",
+    "A3": "The middle volume of the Kojiki records Ōkibitsuhiko-no-Mikoto (written 大吉備津日子命) as a child of Emperor Kōrei, and says he brought Kibi under control (言向け和す). It has not yet been checked against the passage on the Four Generals (四道将軍) in the Nihon Shoki.",
+    "open": [
+     "The goshuin offering fee has not been confirmed on the official site.",
+     "The number of parking spaces and fees have not been confirmed on the official site.",
+     "Shikinai-sha (Myōjin Taisha), Ichinomiya of Bitchū Province, and former Kanpei Chūsha are recorded only in encyclopedias and have not been confirmed on the official site.",
+     "A word-for-word comparison with the passage on the Four Generals in volume 5 of the Nihon Shoki has not been done and needs to be checked.",
+     "The story of subduing 温羅 is an origin account told by the official site and does not appear in the Kojiki or Nihon Shoki.",
+     "The deities enshrined alongside the main deity have not been confirmed in the official summary."
+    ]
+   }
+  },
+  "ooasahiko": {
+   "reason": "「大麻比古」の名は記紀に見えませんが、公式は大麻比古大神を天太玉命にあたるとし、古事記では布刀玉命です。もう一柱の猿田彦大神は、天孫降臨の道案内の神です。公式に授与所とご祈祷の時間、無料駐車場1000台が載っており、車での参拝を計画しやすい一方、御朱印と電車・バスの案内は確認できていません。",
+   "A1": {
+    "text": "公式に、授与所7時30分〜16時30分、ご祈祷9時〜16時の受付、所在地、無料駐車場1000台が載っています。御朱印の案内と電車・バスの案内は確認できていません。",
+    "src": [
+     "j3i",
+     "j3k"
+    ]
+   },
+   "A2": {
+    "text": "公式の由緒書は「延喜の制名神大社」（延喜式で特に重んじられた社）と書き、阿波国一宮、明治6年に国幣中社に列したと記します。",
+    "src": [
+     "j3g",
+     "j3h"
+    ]
+   },
+   "A3": {
+    "text": "公式では大麻比古大神は天太玉命にあたり、古事記では布刀玉命です。猿田彦大神は天孫降臨の道案内の神です。「大麻比古」の名は記紀に見えません。",
+    "src": [
+     "j3g",
+     "j3h",
+     "ns1",
+     "kg"
+    ]
+   },
+   "open": [
+    "御朱印の有無・初穂料・受付時間は、公式で確認できていない",
+    "電車・バスなど公共交通機関の案内は、確認した公式ページに無い",
+    "境内の開閉門の時間は、確認した公式ページに無い",
+    "郵便番号は、確認した公式ページに無い",
+    "大麻比古の名は記紀に出ず、事典に公式と異なる説明（天日鷲命の子）がある"
+   ],
+   "en": {
+    "reason": "The name Ōasahiko does not appear in the Kojiki or Nihon Shoki, but the official site identifies Ōasahiko-no-Ōkami as Ame-no-Futodama-no-Mikoto, written 布刀玉命 in the Kojiki. The other deity, Sarutahiko-no-Kami, guided the way in the descent of the heavenly grandchild. The official site lists the amulet office hours, the prayer rite hours, and free parking for 1,000 vehicles, which helps with planning a visit by car, but a goshuin guide and train and bus information have not been confirmed.",
+    "A1": "The official site lists the amulet office hours (7:30–16:30), the reception hours for prayer rites (9:00–16:00), the address, and free parking for 1,000 vehicles. A goshuin guide and information on trains and buses have not been confirmed.",
+    "A2": "The official history describes it as a 'Myōjin Taisha under the Engi system' (a shrine given special regard in the Engishiki) and as the Ichinomiya of Awa Province, and says it was ranked as a Kokuhei Chūsha in 1873.",
+    "A3": "The official site identifies Ōasahiko-no-Ōkami as Ame-no-Futodama-no-Mikoto, who is written 布刀玉命 in the Kojiki. Sarutahiko-no-Kami is the deity who guided the way in the descent of the heavenly grandchild. The name Ōasahiko does not appear in the Kojiki or Nihon Shoki.",
+    "open": [
+     "Whether goshuin are offered, the offering fee, and the reception hours have not been confirmed on the official site.",
+     "Information on public transport such as trains and buses is not on the official pages that were checked.",
+     "The opening and closing times of the grounds are not on the official pages that were checked.",
+     "The postal code is not on the official pages that were checked.",
+     "The name Ōasahiko does not appear in the Kojiki or Nihon Shoki, and an encyclopedia gives an explanation that differs from the official one (a child of 天日鷲命)."
+    ]
+   }
+  },
+  "oomishima": {
+   "reason": "大山津見神は、古事記では天孫降臨の段で木花之佐久夜毗売と石長比売の父として、日本書紀では大山祇神として登場する山の神です。公式サイトに開門時間、御朱印の授与、鳥居脇の駐車場13台、しまなみ海道からのアクセスが示されています。海の神としての信仰は、記紀ではなく神社側の説明に基づきます。",
+   "A1": {
+    "text": "公式に、開門（日の出頃〜17時）、授与所とご祈祷の時間、御朱印の授与、アクセス、鳥居脇13台の駐車の案内が載っています。初穂料と駐車料金は確認できていません。",
+    "src": [
+     "v1a",
+     "v1b",
+     "v1e"
+    ]
+   },
+   "A2": {
+    "text": "公式は、伊予国一の宮（国の筆頭格の社）で、大正の御代に四国唯一の国幣大社に列したと記します。本殿・拝殿は国の重要文化財です。",
+    "src": [
+     "v1c",
+     "v1f"
+    ]
+   },
+   "A3": {
+    "text": "大山津見神は、古事記では天孫降臨の段で木花之佐久夜毗売と石長比売の父として、日本書紀では大山祇神として登場します。",
+    "src": [
+     "oy1",
+     "oy2"
+    ]
+   },
+   "open": [
+    "御朱印の初穂料は、公式で確認できていない",
+    "駐車場の料金・台数の詳細は、公式で確認できていない",
+    "延喜式での社格を示す資料は、確認できていない",
+    "記紀の記述の出典が事典と観光情報サイトで、原文との照合は確認できていない",
+    "海の神としての信仰は神社側の説明で、記紀の記述ではない"
+   ],
+   "en": {
+    "reason": "Ōyamatsumi-no-Kami is a mountain deity who appears in the Kojiki, in the scene of the descent of the heavenly grandchild, as the father of Konohanasakuya-hime and Iwanaga-hime, and in the Nihon Shoki as 大山祇神. The official site lists the gate hours, goshuin, parking for 13 vehicles beside the torii gate, and access from the Shimanami Kaidō. The belief in the deity as a god of the sea comes from the shrine's own explanation, not from the Kojiki or Nihon Shoki.",
+    "A1": "The official site lists the gate hours (from around sunrise to 17:00), the hours for the amulet office and prayer rites, goshuin, access, and parking for 13 vehicles beside the torii gate. The offering fee and parking fees have not been confirmed.",
+    "A2": "The official site states that it is the Ichinomiya of Iyo Province (the foremost shrine of the province) and that it was ranked as the only Kokuhei Taisha in Shikoku during the Taishō era. The main hall and worship hall are Important Cultural Properties of the state.",
+    "A3": "Ōyamatsumi-no-Kami appears in the Kojiki, in the scene of the descent of the heavenly grandchild, as the father of Konohanasakuya-hime and Iwanaga-hime, and in the Nihon Shoki as 大山祇神.",
+    "open": [
+     "The goshuin offering fee has not been confirmed on the official site.",
+     "Details of the parking fee and the number of spaces have not been confirmed on the official site.",
+     "No source showing its rank in the Engishiki has been confirmed.",
+     "The passages from the Kojiki and Nihon Shoki are sourced to an encyclopedia and a tourist information site, and a comparison with the original text has not been confirmed.",
+     "The belief in the deity as a god of the sea comes from the shrine's own explanation and is not in the Kojiki or Nihon Shoki."
+    ]
+   }
+  },
+  "susa": {
+   "reason": "公式が記す祭神は、古事記の須佐之男命、櫛名田比売、足名椎、手名椎にあたる四柱で、八俣大蛇の物語と結びつけて読めます。公式に祈祷（通常日は予約不要）、授与所、バス・レンタサイクルの案内が載っています。一方、公式の由緒は風土記の伝承で、記紀の須賀宮との関係は書かれていません。",
+   "A1": {
+    "text": "公式に、所在地、祈祷（通常日は予約不要）、授与所の案内、バス・レンタサイクルなどの交通手段が載っています。境内の参拝時間、御朱印、駐車場の台数は確認できていません。",
+    "src": [
+     "z1_1",
+     "z1_8",
+     "z1_9",
+     "z1_11"
+    ]
+   },
+   "A2": {
+    "text": "公式は、延喜式神名帳に載る式内社で、明治32年に国幣小社に列したと記します。本殿は島根県指定文化財、兵庫鎖の太刀は国の重要文化財です。",
+    "src": [
+     "z1_3",
+     "z1_4",
+     "z1_5",
+     "nf084a"
+    ]
+   },
+   "A3": {
+    "text": "公式の祭神は、古事記の須佐之男命・櫛名田比売・足名椎・手名椎にあたる神々です。記紀の須賀宮との関係は、公式の由緒には書かれていません。",
+    "src": [
+     "z1_2",
+     "z1_3"
+    ]
+   },
+   "open": [
+    "境内の参拝時間と授与所の時間は、公式で確認できていない",
+    "御朱印の案内は、公式で確認できていない",
+    "公共交通の所要時間は、公式ページ本文で確認できていない",
+    "駐車場の台数・料金は、公式で確認できていない",
+    "公式の由緒は風土記の伝承で、記紀の須賀宮との関係は書かれていない"
+   ],
+   "en": {
+    "reason": "The four enshrined deities named by the official site, Susanoo-no-Mikoto, Inada-hime-no-Mikoto, Ashinazuchi-no-Kami, and Tenazuchi-no-Kami, correspond to 須佐之男命, 櫛名田比売, 足名椎, and 手名椎 in the Kojiki, so the link to the Yamata no Orochi (eight-forked serpent) story is easy to follow. The official site lists prayer rites (no reservation needed on ordinary days), the amulet office, and ways to get there by bus or rental bicycle. The official history is based on a Fudoki tradition and does not mention the Suga palace of the Kojiki and Nihon Shoki.",
+    "A1": "The official site lists the address, prayer rites (no reservation needed on ordinary days), the amulet office, and ways to get there such as bus and rental bicycle. Visiting hours within the grounds, goshuin, and the number of parking spaces have not been confirmed.",
+    "A2": "The official site states that it is a Shikinai-sha listed in the Engishiki shrine register and that it was ranked as a Kokuhei Shōsha in 1899. The main hall is designated by Shimane Prefecture, and the sword (兵庫鎖の太刀) is an Important Cultural Property of the state.",
+    "A3": "The deities named by the official site correspond to those written 須佐之男命, 櫛名田比売, 足名椎, and 手名椎 in the Kojiki, namely Susanoo-no-Mikoto, Inada-hime-no-Mikoto, Ashinazuchi-no-Kami, and Tenazuchi-no-Kami. The official history does not mention any relationship with the Suga palace (須賀宮) of the Kojiki and Nihon Shoki.",
+    "open": [
+     "Visiting hours within the grounds and the hours of the amulet office have not been confirmed on the official site.",
+     "A goshuin guide has not been confirmed on the official site.",
+     "Travel times by public transport have not been confirmed in the body text of the official pages.",
+     "The number of parking spaces and fees have not been confirmed on the official site.",
+     "The official history rests on a tradition in the Fudoki (regional gazetteers) and does not describe any relationship with the Suga palace of the Kojiki and Nihon Shoki."
+    ]
+   }
+  },
+  "yaegaki": {
+   "reason": "祭神の須佐之男命と稲田姫命は、記紀の八俣大蛇の物語に登場する夫婦神で、公式は大蛇退治のあと二柱が結ばれたと伝えます。公式に祈祷・授与品・アクセス・電話の案内があります。社務所の時間は2020年付の案内で、御朱印の記載は見当たらず、旧県社などの社格は事典のみの記載のため、目安です。",
+   "A1": {
+    "text": "公式に、祈祷・授与品、アクセス、電話の案内があります。社務所の時間は2020年付の案内で、御朱印の記載は公式で見当たらず、駐車場の台数も確認できていません。",
+    "src": [
+     "s07_8",
+     "s07_3",
+     "s07_6",
+     "s07_7"
+    ]
+   },
+   "A2": {
+    "text": "板絵著色神像（本殿板壁画）は国の重要文化財（昭和34年指定）です。延喜式の佐久佐神社との同定や旧県社などの社格は、事典のみです。",
+    "src": [
+     "s07_12",
+     "s07_13",
+     "s07_16",
+     "s07_17"
+    ]
+   },
+   "A3": {
+    "text": "稲田姫命は古事記の櫛名田比売、日本書紀の奇稲田姫で、須佐之男命の大蛇退治に登場します。佐久佐女の森に隠した話は、記紀に書かれていません。",
+    "src": [
+     "s07_1",
+     "k",
+     "ns1"
+    ]
+   },
+   "open": [
+    "社務所と授与所の現在の時間は、公式で確認できていない（案内は2020年付）",
+    "御朱印の有無・授与場所・時間は、公式で確認できていない",
+    "駐車場の台数・料金は、公式で確認できていない",
+    "佐久佐神社との同定、須賀からの遷座、旧県社・別表神社の社格は事典のみで、公式と神社庁には記載が無い",
+    "創祀の年代は、公式にも神社庁にも記載が無い",
+    "青幡佐久佐日古命は記紀に名が見えず、風土記の原文は未確認"
+   ],
+   "en": {
+    "reason": "Susanoo-no-Mikoto and Inada-hime-no-Mikoto are the couple of the Yamata no Orochi (eight-forked serpent) story in the Kojiki and Nihon Shoki, and the official site says the two were joined after the serpent was slain. The official site has guides to prayer rites, amulets, access, and a telephone number. The office hours are in a notice dated 2020, no goshuin information was found, and ranks such as former prefectural shrine are recorded only in encyclopedias, so please treat them as a rough guide.",
+    "A1": "The official site has guides to prayer rites, amulets, access, and a telephone number. The office hours are in a notice dated 2020, no goshuin information was found on the official site, and the number of parking spaces has not been confirmed.",
+    "A2": "The painted wooden-panel deity images (板絵著色神像) on the wall of the main hall are an Important Cultural Property of the state (designated in 1959). Its identification with Sakusa Jinja (佐久佐神社) of the Engishiki and its ranks, such as former prefectural shrine, are recorded only in encyclopedias.",
+    "A3": "Inada-hime-no-Mikoto is written 櫛名田比売 in the Kojiki and 奇稲田姫 in the Nihon Shoki, and appears in the story of Susanoo-no-Mikoto slaying the great serpent. The story of hiding her in the forest of 佐久佐女 is not written in the Kojiki or Nihon Shoki.",
+    "open": [
+     "The current hours of the shrine office and the amulet office have not been confirmed on the official site (the notice is dated 2020).",
+     "Whether goshuin are offered, where, and when have not been confirmed on the official site.",
+     "The number of parking spaces and fees have not been confirmed on the official site.",
+     "The identification with Sakusa Jinja (佐久佐神社), the transfer from Suga, and the ranks of former prefectural shrine and Beppyō Jinja (a shrine on the special list kept by the Shinto shrine association) are recorded only in encyclopedias, and are not found on the official site or in the Jinja-chō (prefectural shrine office) record.",
+     "The year of founding is not given on the official site or by the Jinja-chō (prefectural shrine office).",
+     "The name 青幡佐久佐日古命 does not appear in the Kojiki or Nihon Shoki, and the original text of the Fudoki has not been confirmed."
+    ]
+   }
+  },
+  "itsukushima": {
+   "reason": "宗像三女神を祀り、古事記・日本書紀の誓約（天照大御神と素盞鳴尊が行った誓い）の場面に結びつく社です。拝観時間、昇殿料、宮島口からのフェリーでの行き方、駐車場がないことまで、公式サイトに示されています。御朱印の授与は公式で確認できていません。",
+   "A1": {
+    "text": "公式サイトに、季節ごとの拝観時間、昇殿料、宮島口からフェリーで渡る行き方、駐車場がないことが書かれています。御朱印の授与は、公式で確認できていません。",
+    "src": [
+     "it2",
+     "it3",
+     "it6"
+    ]
+   },
+   "A2": {
+    "text": "1996年に世界文化遺産に登録され、国宝の社殿・回廊が6棟、重要文化財が11棟3基あると公式が一覧で示しています。社格を示す資料は、確認できていません。",
+    "src": [
+     "it1",
+     "it4"
+    ]
+   },
+   "A3": {
+    "text": "祭神は宗像三女神と同じ三柱で、古事記・日本書紀の誓約（天照大御神と素盞鳴尊が行った誓い）の場面に登場します。",
+    "src": [
+     "it1"
+    ]
+   },
+   "open": [
+    "御朱印の授与の有無・場所・料金は公式で確認できていない",
+    "社格を示す資料が無い"
+   ],
+   "en": {
+    "reason": "The shrine enshrines the Three Munakata Goddesses, who are linked to the oath scene of the Kojiki and the Nihon Shoki (a pledge made by Amaterasu-Ōmikami and Susanoo-no-Mikoto). The official site gives the viewing hours, the fee for entering the inner hall, the ferry route from 宮島口 and the fact that there is no parking lot. Whether goshuin are given could not be confirmed officially.",
+    "A1": "The official site gives the viewing hours by season, the fee for entering the inner hall, how to reach the shrine by ferry from 宮島口, and the fact that there is no parking lot. Whether goshuin are given could not be confirmed officially.",
+    "A2": "The shrine was inscribed as a World Heritage Site in 1996. The official site lists six National Treasure buildings (halls and corridors) and eleven buildings and three structures designated Important Cultural Properties. No source showing a shrine rank could be confirmed.",
+    "A3": "The enshrined deities are three goddesses, the same as the Three Munakata Goddesses. They appear in the oath scene of the Kojiki and the Nihon Shoki, a pledge made by Amaterasu-Ōmikami and Susanoo-no-Mikoto.",
+    "open": [
+     "Whether goshuin are given, and where and at what price, has not been confirmed on the official site",
+     "No source showing a shrine rank was found"
+    ]
+   }
+  },
+  "kagoshimajingu": {
+   "reason": "山幸彦（彦火火出見尊）と豊玉姫を祀り、海幸山幸の話に出る神々に参拝できます。大隅国の一之宮（国ごとに由緒ある社に付く呼び名）で、御朱印の受付と200台の無料駐車場が公式に案内されています。参拝時間などは公式ページ間でずれがあり、確認できていません。",
+   "A1": {
+    "text": "参拝時間・祈願受付の時刻、番地の枝番、ICからの所要時間が公式ページ間で一致せず、確認できていません。御朱印は社務所で受付、無料駐車場は200台と案内されています。",
+    "src": [
+     "n3l",
+     "n3n",
+     "n3o"
+    ]
+   },
+   "A2": {
+    "text": "公式は延喜式で大社に列し、大隅国の一之宮（国ごとに由緒ある社に付く呼び名）と案内し、明治28年に官幣大社となりました。本殿・拝殿などは国指定重要文化財です。",
+    "src": [
+     "n3m",
+     "fx_039_5"
+    ]
+   },
+   "A3": {
+    "text": "主祭神の彦火火出見尊は古事記の火遠理命にあたり、海幸山幸の話に登場します。豊玉姫は海神の娘で、書紀ではこの話の中で妻となります。",
+    "src": [
+     "fx_039_1",
+     "fx_039_2"
+    ]
+   },
+   "open": [
+    "参拝時間と祈願受付の時刻が公式ページ間で一致しない",
+    "番地の枝番（2496と2496-1）の表記が揺れている",
+    "ICからの所要時間が公式ページ間で一致しない",
+    "高千穂宮や御陵を鹿児島神宮の地と特定する記述は記紀本文に無い",
+    "隼人との関係を説明した公式の記述が見つかっていない",
+    "現社殿を造営した藩主名が資料で分かれる"
+   ],
+   "en": {
+    "reason": "The shrine enshrines Yamasachihiko (Hikohohodemi-no-Mikoto) and Toyotama-hime, so you can visit deities from the tale of Umisachi and Yamasachi. It is the Ichinomiya of Ōsumi Province (a title given to a notable shrine of each province), and the official pages announce goshuin reception and a free parking lot for 200 cars. The visiting hours and some other points differ between official pages and remain unconfirmed.",
+    "A1": "The visiting hours, the prayer reception hours, the street-number suffix and the travel time from the expressway interchange do not agree across the official pages, so they could not be confirmed. Goshuin are handled at the shrine office, and a free parking lot for 200 cars is announced.",
+    "A2": "The official site says the shrine is listed as a Taisha (major shrine) in the Engishiki and calls it the Ichinomiya of Ōsumi Province (a title given to a notable shrine of each province). It became a Kanpei Taisha in 1895 (Meiji 28). The main hall, the worship hall and other buildings are Important Cultural Properties designated by the national government.",
+    "A3": "The principal deity, Hikohohodemi-no-Mikoto, corresponds to Hoori-no-Mikoto in the Kojiki and appears in the tale of Umisachi and Yamasachi. Toyotama-hime is the daughter of the sea god, and in the Nihon Shoki she becomes his wife within this tale.",
+    "open": [
+     "The visiting hours and the prayer reception hours differ between official pages",
+     "The street number is written inconsistently (2496 and 2496-1)",
+     "The travel time from the expressway interchange differs between official pages",
+     "No passage in the main text of the Kojiki or Nihon Shoki identifies this site as the location of Takachiho Palace or the imperial tombs",
+     "No official statement explaining the shrine's relationship with the Hayato has been found",
+     "Sources differ on which feudal lord built the present shrine buildings"
+    ]
+   }
+  },
+  "usa": {
+   "reason": "公式が全国の八幡さまの総本宮と説明する社で、応神天皇・神功皇后と、宗像三女神と同じ名の比売大神を祀り、記紀の複数の場面に結びつきます。開門6時・閉門18時のほか、宇佐ICなどからの行き方と有料駐車場が公式に案内されています。御朱印の授与は確認できていません。",
+   "A1": {
+    "text": "公式は開門6時・閉門18時、東九州自動車道の宇佐ICやJR宇佐駅からの行き方、有料駐車場を案内します。季節による時間変更の有無と、御朱印の授与は確認できていません。",
+    "src": [
+     "us2",
+     "us3",
+     "us4"
+    ]
+   },
+   "A2": {
+    "text": "公式は725年に現在の地で創建と記し、勅祭社（天皇の使いが参向する社）16社に列するとします。御本殿は国宝です。そのほかの社格を示す資料は、確認できていません。",
+    "src": [
+     "us1",
+     "us2"
+    ]
+   },
+   "A3": {
+    "text": "祭神の応神天皇は古事記中巻・書紀巻第十、神功皇后は書紀巻第九に登場します。比売大神の三柱は宗像三女神と同じ名です。八幡の神号は記紀本文に見当たりません。",
+    "src": [
+     "us1",
+     "us2"
+    ]
+   },
+   "open": [
+    "御朱印の授与の有無・場所・料金は公式で確認できていない",
+    "季節によって参拝時間が変わるかどうかは公式から読み取れない",
+    "現在地へ着いた年が公式の由緒（725年）と略年表（782年）で異なる",
+    "八幡という神号は、記紀本文に無い"
+   ],
+   "en": {
+    "reason": "The official site describes this shrine as the head shrine of Hachiman shrines across the country. It enshrines Emperor Ōjin, Empress Jingū and Hime-ōkami (比売大神), whose three deities have the same names as the Three Munakata Goddesses, and it is linked to several scenes in the Kojiki and the Nihon Shoki. The gate hours (6:00–18:00), the routes from Usa IC and elsewhere, and a paid parking lot are given officially. Whether goshuin are given could not be confirmed.",
+    "A1": "The official site gives the gate hours (opening at 6:00, closing at 18:00), directions from Usa IC on the Higashi-Kyūshū Expressway and from JR Usa Station, and a paid parking lot. Whether the hours change by season, and whether goshuin are given, could not be confirmed.",
+    "A2": "The official site states that the shrine was founded at its present site in 725 and that it is one of the 16 Chokusai-sha (shrines to which an imperial envoy is sent). The main hall is a National Treasure. No source showing any other shrine rank could be confirmed.",
+    "A3": "Emperor Ōjin, an enshrined deity, appears in the middle volume of the Kojiki and in Volume 10 of the Nihon Shoki, and Empress Jingū appears in Volume 9 of the Nihon Shoki. The three deities of Hime-ōkami (比売大神) have the same names as the Three Munakata Goddesses. The divine title Hachiman is not found in the main text of the Kojiki or the Nihon Shoki.",
+    "open": [
+     "Whether goshuin are given, and where and at what price, has not been confirmed on the official site",
+     "It is not clear from the official site whether the visiting hours change by season",
+     "The year the shrine reached its present site differs between the official history (725) and the short chronology (782)",
+     "The divine title Hachiman is not found in the main text of the Kojiki or the Nihon Shoki"
+    ]
+   }
+  },
+  "hakozaki": {
+   "reason": "福岡の古社で、応神天皇・神功皇后・玉依姫命を祀り、記紀の場面とあわせて読むことができます。社務所の受付は8時30分から17時30分、御朱印は直接記帳か書き置きで、地下鉄箱崎宮前駅から徒歩約3分と公式に示されています。創建の時期は、公式も諸説あり断定できないとしています。",
+   "A1": {
+    "text": "社務所の受付は8:30〜17:30で、御朱印は直接記帳か書き置きです。郵送は不可。地下鉄箱崎宮前駅から徒歩約3分で有料駐車場もあります。通常時の参拝のしかたは確認できていません。",
+    "src": [
+     "n3d",
+     "n3c",
+     "n3e"
+    ]
+   },
+   "A2": {
+    "text": "公式は日本三大八幡宮の一つと案内します。明治18年に官幣中社、大正3年に官幣大社となり、本殿・拝殿・楼門・一之鳥居が国指定重要文化財です。",
+    "src": [
+     "n3b",
+     "n3c"
+    ]
+   },
+   "A3": {
+    "text": "応神天皇は古事記中巻・日本書紀巻第十、神功皇后は古事記中巻、玉依姫命は海幸山幸の条に登場します。八幡の語は、取得した記紀本文に見当たりません。",
+    "src": [
+     "n3b"
+    ]
+   },
+   "open": [
+    "創建の時期は公式も諸説あり断定できないとしている",
+    "楼門の内での通常時の参拝のしかたは公式で確認できていない",
+    "八幡の語は記紀本文に無い"
+   ],
+   "en": {
+    "reason": "This is a long-established shrine in Fukuoka. It enshrines Emperor Ōjin, Empress Jingū and Tamayori-hime-no-Mikoto, and you can read it alongside scenes of the Kojiki and the Nihon Shoki. The official site gives the shrine office's reception hours of 8:30–17:30, how goshuin are given (written directly or pre-written sheets), and the walk of about 3 minutes from 箱崎宮前 Station. The official site itself says that there are several theories on the founding date and that it cannot be fixed.",
+    "A1": "The shrine office is open for reception from 8:30 to 17:30. Goshuin are either written directly in your book or given as pre-written sheets, and mailing is not available. The shrine is about a 3-minute walk from 箱崎宮前 Station on the subway, and there is a paid parking lot. The usual way of worshipping in ordinary times could not be confirmed.",
+    "A2": "The official site describes the shrine as one of the Three Great Hachiman Shrines. It became a Kanpei Chūsha in 1885 (Meiji 18) and a Kanpei Taisha in 1914 (Taishō 3). The main hall, the worship hall, the two-story gate and the first torii are Important Cultural Properties designated by the national government.",
+    "A3": "Emperor Ōjin appears in the middle volume of the Kojiki and in Volume 10 of the Nihon Shoki, and Empress Jingū appears in the middle volume of the Kojiki. Tamayori-hime-no-Mikoto appears in the Umisachi and Yamasachi section. The word Hachiman is not found in the Kojiki and Nihon Shoki texts that were obtained.",
+    "open": [
+     "The official site itself says that there are several theories on the founding date and that it cannot be determined",
+     "The usual way of worshipping inside the two-story gate in ordinary times could not be confirmed on the official site",
+     "The word Hachiman is not found in the main text of the Kojiki or the Nihon Shoki"
+    ]
+   }
+  },
+  "miyazaki": {
+   "reason": "初代の神武天皇を祀り、古事記で日向から東へ向かい、日本書紀で橿原宮に即位する場面とつながる社です。神門や授与所の開く時刻、2種の御朱印（各300円）、JR宮崎神宮駅から徒歩10分の行き方が公式に示されています。駐車場の台数と料金は確認できていません。",
+   "A1": {
+    "text": "公式は、神門・幣殿・授与所の開く時刻、御朱印2種（各300円）、JR宮崎神宮駅から徒歩10分の行き方を案内します。駐車場の台数と料金は、確認できていません。",
+    "src": [
+     "k3h",
+     "k3i",
+     "k3j"
+    ]
+   },
+   "A2": {
+    "text": "公式は、社伝で創建を神武天皇の孫・健磐龍命とし、明治18年に官幣大社、昭和21年に社格が廃止されたと記します。文化財の指定を示す資料は、確認できていません。",
+    "src": [
+     "k3g"
+    ]
+   },
+   "A3": {
+    "text": "祭神の神武天皇は、古事記中巻で日向から東へ向かい、書紀巻第三で橿原宮に即位します。相殿の鵜葺草葺不合命と玉依姫命は、海幸山幸の系譜に出ます。",
+    "src": [
+     "k",
+     "ns3"
+    ]
+   },
+   "open": [
+    "駐車場の台数・料金は公式で確認できていない",
+    "記紀の原文で「宮崎」の地名は確認できていない",
+    "文化財の指定を示す資料が無い",
+    "社格以外の格式を示す資料が無い"
+   ],
+   "en": {
+    "reason": "The shrine enshrines Emperor Jinmu, the first emperor, and is linked to the scenes where he sets out east from Hyūga in the Kojiki and accedes to the throne at Kashihara Palace in the Nihon Shoki. The opening times of the gate and the amulet office, the two kinds of goshuin, and the 10-minute walk from JR Miyazaki Jingū Station are given officially. The number of parking spaces and the fees could not be confirmed.",
+    "A1": "The official site gives the opening times of the sacred gate (Shinmon), the offering hall (Heiden) and the amulet office, two kinds of goshuin (300 yen each), and the route on foot, 10 minutes from JR Miyazaki Jingū Station. The number of parking spaces and the fees could not be confirmed.",
+    "A2": "According to the official site, shrine tradition says it was founded by Takeiwatatsu-no-Mikoto, a grandson of Emperor Jinmu. The shrine became a Kanpei Taisha in 1885 (Meiji 18), and the shrine ranking system was abolished in 1946 (Shōwa 21). No source showing designation as a cultural property could be confirmed.",
+    "A3": "Emperor Jinmu, the enshrined deity, sets out east from Hyūga in the middle volume of the Kojiki and accedes to the throne at Kashihara Palace in Volume 3 of the Nihon Shoki. Ugayafukiaezu-no-Mikoto and Tamayori-hime-no-Mikoto, enshrined alongside him, appear in the genealogy of the Umisachi and Yamasachi tale.",
+    "open": [
+     "The number of parking spaces and the fees have not been confirmed on the official site",
+     "The place name Miyazaki (宮崎) could not be confirmed in the original texts of the Kojiki and the Nihon Shoki",
+     "No source showing designation as a cultural property was found",
+     "No source showing any status other than shrine rank was found"
+    ]
+   }
+  },
+  "munakata": {
+   "reason": "記紀の誓約で生まれた宗像三女神を祀り、勅使の記録や沖ノ島の出土品（国宝）が、公式や公的な資料で確かめられる社です。祈願殿の受付（9時から17時）と御朱印の授与も公式で確認できました。一方、境内の参拝時間・アクセス・駐車場は確認できていません。",
+   "A1": {
+    "text": "公式で確認できたのは、祈願殿の受付（9時から17時）と御朱印の授与、神宝館の開館時間です。境内の参拝時間、アクセス、駐車場は確認できていません。",
+    "src": [
+     "mu3",
+     "mu6",
+     "mu1"
+    ]
+   },
+   "A2": {
+    "text": "沖ノ島の出土品は国宝に指定され、2017年に世界遺産に登録されました。辺津宮の本殿・拝殿は重要文化財です。勅使の記録も公式が挙げます。社格を示す資料は、確認できていません。",
+    "src": [
+     "fx_014_2",
+     "mu7",
+     "mu3",
+     "mu2"
+    ]
+   },
+   "A3": {
+    "text": "祭神は誓約で生まれた宗像三女神で、古事記上巻と書紀巻第一第六段に登場します。古事記は三宮の割り当てが現在と一部異なるとされます。",
+    "src": [
+     "mu2",
+     "fx_014_4"
+    ]
+   },
+   "open": [
+    "境内の参拝可能時間は公式で確認できていない",
+    "アクセスページ本文が取得できず、行き方が確認できていない",
+    "駐車場の台数・料金・時間は公式で確認できていない",
+    "社格を示す資料が無い"
+   ],
+   "en": {
+    "reason": "The shrine enshrines the Three Munakata Goddesses, who were born in the oath scene of the Kojiki and the Nihon Shoki. Records of imperial envoys and the articles excavated on Okinoshima (National Treasures) can be checked in official and public sources. The reception at the prayer hall (9:00–17:00) and the giving of goshuin were also confirmed officially. However, the visiting hours of the precincts, the access and the parking could not be confirmed.",
+    "A1": "What could be confirmed officially is the reception at the prayer hall (9:00–17:00), the giving of goshuin, and the opening hours of the Treasure Hall (Shinpōkan). The visiting hours of the precincts, the access and the parking could not be confirmed.",
+    "A2": "The articles excavated on Okinoshima are designated National Treasures, and the island was inscribed as a World Heritage Site in 2017. The main hall and the worship hall of Hetsu-miya are Important Cultural Properties. The official site also lists records of imperial envoys. No source showing a shrine rank could be confirmed.",
+    "A3": "The enshrined deities are the Three Munakata Goddesses, who were born in the oath. They appear in the upper volume of the Kojiki and in Volume 1, Section 6 of the Nihon Shoki. The Kojiki is said to differ in part from the present assignment of the goddesses to the three shrines.",
+    "open": [
+     "The visiting hours of the precincts have not been confirmed on the official site",
+     "The text of the access page could not be obtained, so the directions could not be confirmed",
+     "The number of parking spaces, the fees and the hours have not been confirmed on the official site",
+     "No source showing a shrine rank was found"
+    ]
+   }
+  },
+  "shikaumi": {
+   "reason": "祭神の綿津見三神は、古事記で伊邪那岐命の禊に生まれ、阿曇連らの祖神とされる神々です。延喜式に名神大社（大社の中の区分）と載り、859年に従五位上を授かった記事が三代実録にあります（社格は目安です）。お祓いの受付と参拝時間は公式に示されますが、御朱印の授与は確認できていません。",
+   "A1": {
+    "text": "公式は、お祓いの受付を9時から17時、参拝時間を6時開門・17時30分閉門と案内します。冬季の月の数字が欠けています。御朱印の授与は本文で確認できていません。",
+    "src": [
+     "x3b1"
+    ]
+   },
+   "A2": {
+    "text": "延喜式の神名帳に名神大社（大社の中の区分）とあり、859年に従五位上を授かった記事が三代実録にあります。公式ページには社格の記載がなく、事典で確認した内容です。",
+    "src": [
+     "x3b2",
+     "fx_027_7",
+     "nf085b"
+    ]
+   },
+   "A3": {
+    "text": "祭神の綿津見三神は、古事記では伊邪那岐命の禊で生まれ、阿曇連らの祖神とされます。日本書紀では第五段の一書に、阿曇連の祭る神として出ます。",
+    "src": [
+     "x3b2"
+    ]
+   },
+   "open": [
+    "御朱印の授与は公式ページ本文で確認できていない",
+    "参拝時間の表で冬季の月の数字が欠けている",
+    "最新のバスの便は要確認",
+    "駐車場の台数は公式で確認できていない",
+    "社格は事典と延喜式の確認で、公式ページには記載が無い",
+    "書紀の段・一書の番号は要確認",
+    "相殿の祭神は公式ページ本文で確認できていない"
+   ],
+   "en": {
+    "reason": "The enshrined Three Watatsumi Deities were born, in the Kojiki, from the purification of Izanagi-no-Mikoto and are regarded as ancestral deities of the Azumi no Muraji and others. The shrine is listed in the Engishiki as a Myōjin Taisha (a category within Taisha), and the Sandai Jitsuroku records that it was granted the Junior Fifth Rank, Upper Grade, in 859 (shrine rank is only a guide). The reception hours for purification rites and the visiting hours are given officially, but whether goshuin are given could not be confirmed.",
+    "A1": "The official site gives the reception hours for purification rites (9:00–17:00) and the visiting hours (the gate opens at 6:00 and closes at 17:30). The month figures for the winter season are missing. Whether goshuin are given could not be confirmed in the text.",
+    "A2": "The Engishiki shrine register lists the shrine as a Myōjin Taisha (a category within Taisha), and the Sandai Jitsuroku has a record that it was granted the Junior Fifth Rank, Upper Grade, in 859. The official pages do not state a shrine rank, so this was confirmed in reference works.",
+    "A3": "The enshrined Three Watatsumi Deities were born, in the Kojiki, from the purification of Izanagi-no-Mikoto, and are regarded as the ancestral deities of the Azumi no Muraji and others. In the Nihon Shoki they appear in one variant account of the fifth section, as deities worshipped by the Azumi no Muraji.",
+    "open": [
+     "Whether goshuin are given has not been confirmed in the text of the official pages",
+     "The month figures for the winter season are missing from the visiting hours table",
+     "The latest bus schedule needs to be checked",
+     "The number of parking spaces has not been confirmed on the official site",
+     "The shrine rank was confirmed through reference works and the Engishiki, and it is not stated on the official pages",
+     "The section and variant-account numbers in the Nihon Shoki need to be checked",
+     "The deities enshrined alongside have not been confirmed in the text of the official pages"
+    ]
+   }
+  },
+  "hokkaido": {
+   "reason": "国作りの大国主神（大那牟遅神）と少彦名神を祀り、北海道で記紀の神々に参拝できる社です。月ごとの開閉門時間、地下鉄円山公園駅やJRバスでの行き方、授与が午前9時からであることが公式に示されています。創祀は明治2年で、古代からの由緒ではなく開拓の守り神として始まった社です。",
+   "A1": {
+    "text": "公式は、月ごとの開閉門時間、地下鉄円山公園駅やJRバスからの行き方、授与は午前9時からと案内します。初穂料、郵便番号、駐車場の台数と料金は、確認できていません。",
+    "src": [
+     "hk3",
+     "hk6",
+     "hk7"
+    ]
+   },
+   "A2": {
+    "text": "創祀は明治2年で、昭和39年に明治天皇を増祀して北海道神宮となりました。古い由緒を示す記述ではなく、社格や文化財を示す資料も、確認できていません。",
+    "src": [
+     "hk2"
+    ]
+   },
+   "A3": {
+    "text": "大那牟遅神は古事記の大穴牟遅神（大国主神）、少彦名神は国を作り固める場面に登場します。大国魂神の名は古事記に無く、明治天皇は記紀の神ではありません。",
+    "src": [
+     "hk2"
+    ]
+   },
+   "open": [
+    "御朱印の初穂料と郵便番号は公式で確認できていない",
+    "駐車場の台数・通常の料金は公式で確認できていない",
+    "社格・文化財を示す資料が無い",
+    "北海道の開拓と記紀神話の直接のつながりは、記紀に書かれていない",
+    "大国魂神の古事記での名は無く、別名としての扱いは要確認"
+   ],
+   "en": {
+    "reason": "The shrine enshrines Ōkuninushi-no-Ōkami (the shrine's 大那牟遅神), who made the land, and Sukunahikona-no-Kami, so you can visit deities of the Kojiki and the Nihon Shoki in Hokkaidō. The opening and closing hours for each month, the routes from 円山公園 subway station and by JR Bus, and the 9:00 a.m. start of amulet distribution are given officially. The shrine was first enshrined in 1869, and it began not with ancient origins but as a guardian of the pioneering of Hokkaidō.",
+    "A1": "The official site gives the opening and closing hours for each month, directions from 円山公園 subway station and by JR Bus, and says that the distribution of amulets and similar items starts at 9:00 a.m. The offering fee, the postal code, and the number of parking spaces and fees could not be confirmed.",
+    "A2": "The shrine was first enshrined in 1869 (Meiji 2) and became Hokkaidō Jingū in 1964 (Shōwa 39), when Emperor Meiji was added as an enshrined deity. The description does not point to ancient origins, and no source showing a shrine rank or cultural properties could be confirmed.",
+    "A3": "The shrine's 大那牟遅神 corresponds to 大穴牟遅神 (Ōkuninushi) of the Kojiki, and Sukunahikona-no-Kami appears in the scene of making and firming the land. The name Ōkunitama-no-Kami does not appear in the Kojiki, and Emperor Meiji is not a deity of the Kojiki or the Nihon Shoki.",
+    "open": [
+     "The offering fee for goshuin and the postal code have not been confirmed on the official site",
+     "The number of parking spaces and the usual fees have not been confirmed on the official site",
+     "No source showing a shrine rank or cultural properties was found",
+     "A direct link between the pioneering of Hokkaidō and the myths of the Kojiki and the Nihon Shoki is not described in those texts",
+     "The name Ōkunitama does not appear in the Kojiki, and its treatment as another name needs to be checked"
+    ]
+   }
+  },
+  "dewa": {
+   "reason": "月読命（古事記で伊耶那岐命の禊に生まれた三貴子の一柱）や大国主神・少彦名神など、記紀に登場する神々を、羽黒山頂の三神合祭殿に合わせ祀っています。御朱印の受付時間、バスと有料道路での行き方、駐車場が公式に示されています。一方、伊氐波神は記紀に出ない神で、山そのものと記紀神話の関係も確認できていません。",
+   "A1": {
+    "text": "公式は、御朱印の受付時間（山頂・麓の授与所）、バスと有料道路での行き方、駐車場を案内します。御朱印は郵送不可です。境内の参拝時間と初穂料は、確認できていません。",
+    "src": [
+     "v2h",
+     "v2i",
+     "dw2"
+    ]
+   },
+   "A2": {
+    "text": "三神合祭殿は文政元年に完成し、2000年に国の重要文化財に指定されたと公式が記します。公式は国宝の五重塔も案内します。社格を示す資料は、確認できていません。",
+    "src": [
+     "v2g",
+     "v2j"
+    ]
+   },
+   "A3": {
+    "text": "月山神社の月読命は、古事記では伊耶那岐命の禊で生まれた三貴子の一柱です。一方、出羽神社の伊氐波神は記紀に登場せず、山そのものとの関係も確認できていません。",
+    "src": [
+     "v2f"
+    ]
+   },
+   "open": [
+    "境内の参拝時間は公式本文で確認できていない",
+    "御朱印の初穂料は公式本文で確認できていない",
+    "伊氐波神は記紀に登場しない",
+    "出羽三山の山そのものと月読命・記紀神話の関係は確認できていない",
+    "社格を示す資料が無い"
+   ],
+   "en": {
+    "reason": "Deities that appear in the Kojiki and the Nihon Shoki are enshrined together in the Sanshin Gōsaiden (the hall enshrining three deities together) on the summit of Mount Haguro. They include Tsukuyomi-no-Mikoto (one of the three noble deities born from the purification of Izanagi-no-Mikoto in the Kojiki), Ōkuninushi-no-Ōkami and Sukunahikona-no-Kami. The goshuin reception hours, the routes by bus and toll road, and the parking are given officially. However, Ideha-no-Kami does not appear in the Kojiki or the Nihon Shoki, and the relationship between the mountain itself and the myths could not be confirmed.",
+    "A1": "The official site gives the goshuin reception hours (at the amulet offices on the summit and at the foot of the mountain), directions by bus and toll road, and the parking. Goshuin cannot be sent by mail. The visiting hours of the precincts and the offering fee could not be confirmed.",
+    "A2": "The official site records that the Sanshin Gōsaiden (the hall enshrining three deities together) was completed in 1818 (Bunsei 1) and designated an Important Cultural Property by the national government in 2000. The official site also introduces the five-story pagoda, a National Treasure. No source showing a shrine rank could be confirmed.",
+    "A3": "Tsukuyomi-no-Mikoto of Gassan Jinja is one of the three noble deities born from the purification of Izanagi-no-Mikoto in the Kojiki. In contrast, Ideha-no-Kami of Dewa Jinja does not appear in the Kojiki or the Nihon Shoki, and his relationship with the mountain itself could not be confirmed.",
+    "open": [
+     "The visiting hours of the precincts have not been confirmed in the text of the official site",
+     "The offering fee for goshuin has not been confirmed in the text of the official site",
+     "Ideha-no-Kami does not appear in the Kojiki or the Nihon Shoki",
+     "The relationship between the Three Mountains of Dewa themselves and Tsukuyomi-no-Mikoto or the myths of the Kojiki and the Nihon Shoki could not be confirmed",
+     "No source showing a shrine rank was found"
+    ]
+   }
+  },
+  "isasumi": {
+   "reason": "古事記中巻の崇神天皇の条で、大毘古命と子の建沼河別命が相津で出会い地名の由来になったと語られ、公式はこの話を創祀と結びつけて引いています。御朱印の受付は9時から16時、ご祈祷は9時から15時（予約不要）、駐車は120台と、参拝の準備も公式に示されています。日本書紀には相津の語が見当たらず、地名の由来は古事記のみの記事です。",
+   "A1": {
+    "text": "公式は、御朱印の受付を9時から16時、ご祈祷を9時から15時（予約不要）と案内し、初穂料も示します。磐越自動車道や会津高田駅からの行き方と、駐車120台も記されています。",
+    "src": [
+     "l1b",
+     "l1d",
+     "l1c"
+    ]
+   },
+   "A2": {
+    "text": "公式は、延喜式神名帳の名神大社（大社の中の区分）、明治以降の国幣中社、現在の別表神社であると記します。岩代国一之宮（国ごとに由緒ある社に付く呼び名）とも案内します。",
+    "src": [
+     "l1a"
+    ]
+   },
+   "A3": {
+    "text": "古事記中巻の崇神天皇の条で、大毘古命と子の建沼河別命が相津で出会い、地名の由来になったと語られます。公式は、この話を創祀と結びつけて引いています。",
+    "src": [
+     "l1a",
+     "k"
+    ]
+   },
+   "open": [
+    "日本書紀では相津の語が見当たらず、地名由来は古事記の記事のみ",
+    "古事記の出典URLは上巻のページで、中巻の崇神天皇の条の出典は別に確認が必要",
+    "駐車場の料金は公式で確認できていない",
+    "授与所の営業時間は公式ページで確認できていない"
+   ],
+   "en": {
+    "reason": "In the section on Emperor Sujin in the middle volume of the Kojiki, Ōbiko-no-Mikoto and his son Takenunakawawake-no-Mikoto meet at 相津 (Aizu), and the story is told as the origin of the place name. The official site cites this story in connection with the shrine's founding. The goshuin reception hours (9:00–16:00), the prayer rite hours (9:00–15:00, no reservation needed) and parking for 120 cars are also given officially. The word 相津 is not found in the Nihon Shoki, so the origin of the place name rests on the Kojiki alone.",
+    "A1": "The official site gives the goshuin reception hours (9:00–16:00) and the prayer rite hours (9:00–15:00, no reservation needed), together with the offering fees. It also gives directions from the 磐越自動車道 expressway and from 会津高田 Station, and states that there is parking for 120 cars.",
+    "A2": "The official site states that the shrine is a Myōjin Taisha (a category within Taisha) in the Engishiki shrine register, a Kokuhei Chūsha from the Meiji era onward, and a Beppyō Jinja today (a shrine on the appendix list of the Association of Shinto Shrines). It also describes the shrine as the Ichinomiya of Iwashiro Province (a title given to a notable shrine of each province).",
+    "A3": "In the section on Emperor Sujin in the middle volume of the Kojiki, Ōbiko-no-Mikoto and his son Takenunakawawake-no-Mikoto meet at 相津 (Aizu), and the story is told as the origin of the place name. The official site cites this story in connection with the shrine's founding.",
+    "open": [
+     "The word 相津 is not found in the Nihon Shoki, and the origin of the place name is only in the Kojiki",
+     "The source URL for the Kojiki is the page of the upper volume, so the source for the Emperor Sujin section in the middle volume needs to be checked separately",
+     "The parking fee has not been confirmed on the official site",
+     "The opening hours of the amulet office have not been confirmed on the official pages"
+    ]
+   }
+  }
+ }
+}
