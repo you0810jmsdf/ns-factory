@@ -1991,9 +1991,13 @@ tr.row-out-stock td{
         </select>
         <select id="toolstats-sort" style="padding:6px 10px;border:1px solid #d8c2a8;border-radius:8px;background:#fff;font-size:12px;color:#5C3D2E">
           <option value="pv" selected>PVが多い順</option>
+          <option value="pv-asc">PVが少ない順</option>
           <option value="uu">UUが多い順</option>
+          <option value="uu-asc">UUが少ない順</option>
           <option value="last">最終アクセスが新しい順</option>
+          <option value="last-asc">最終アクセスが古い順</option>
           <option value="first">初回アクセスが新しい順</option>
+          <option value="first-asc">初回アクセスが古い順</option>
         </select>
         <input id="toolstats-search" type="search" placeholder="ページ名・タイトルで絞り込み" style="flex:1;min-width:180px;padding:6px 10px;border:1px solid #d8c2a8;border-radius:8px;font-size:12px">
         <span id="toolstats-count" style="font-size:11px;color:#8a6a4a"></span>
@@ -2007,10 +2011,10 @@ tr.row-out-stock td{
               <th style="padding:8px;text-align:left">分類</th>
               <th style="padding:8px;text-align:left">ページ</th>
               <th style="padding:8px;text-align:left">タイトル</th>
-              <th style="padding:8px;text-align:right">PV</th>
-              <th style="padding:8px;text-align:right">UU</th>
-              <th style="padding:8px;text-align:right">初回</th>
-              <th style="padding:8px;text-align:right">最終</th>
+              <th data-ts-sort="pv" data-ts-label="PV" tabindex="0" role="button" title="押すたびに降順・昇順を切り替えます" style="padding:8px;text-align:right;cursor:pointer;user-select:none;white-space:nowrap">PV</th>
+              <th data-ts-sort="uu" data-ts-label="UU" tabindex="0" role="button" title="押すたびに降順・昇順を切り替えます" style="padding:8px;text-align:right;cursor:pointer;user-select:none;white-space:nowrap">UU</th>
+              <th data-ts-sort="first" data-ts-label="初回" tabindex="0" role="button" title="押すたびに降順・昇順を切り替えます" style="padding:8px;text-align:right;cursor:pointer;user-select:none;white-space:nowrap">初回</th>
+              <th data-ts-sort="last" data-ts-label="最終" tabindex="0" role="button" title="押すたびに降順・昇順を切り替えます" style="padding:8px;text-align:right;cursor:pointer;user-select:none;white-space:nowrap">最終</th>
             </tr>
           </thead>
           <tbody id="toolstats-rows"></tbody>
@@ -9075,6 +9079,18 @@ function toolstatsLoad() {
     document.getElementById('toolstats-refresh-btn')?.addEventListener('click', () => toolstatsLoad());
     ['toolstats-group', 'toolstats-sort'].forEach(id => document.getElementById(id)?.addEventListener('change', toolstatsRender));
     document.getElementById('toolstats-search')?.addEventListener('input', toolstatsRender);
+    // 見出し（PV・UU・初回・最終）を押すと並べ替え。同じ見出しをもう一度押すと降順⇄昇順。
+    document.querySelectorAll('th[data-ts-sort]').forEach(th => {
+      const flip = () => {
+        const sel = document.getElementById('toolstats-sort');
+        if (!sel) return;
+        const key = th.dataset.tsSort;
+        sel.value = (sel.value === key) ? key + '-asc' : key;
+        toolstatsRender();
+      };
+      th.addEventListener('click', flip);
+      th.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
+    });
   }
   fetch(TOOLSTATS_GAS_URL + '?action=counts&t=' + Date.now(), { cache: 'no-store' })
     .then(r => r.text())
@@ -9106,11 +9122,24 @@ function toolstatsRender() {
     return r.group.key === group;
   });
   if (kw) list = list.filter(r => (r.page + ' ' + r.title).toLowerCase().includes(kw));
-  const t = d => d ? d.getTime() : 0;
-  if (sort === 'uu') list.sort((a, b) => b.uu - a.uu || b.pv - a.pv);
-  else if (sort === 'last') list.sort((a, b) => t(b.last) - t(a.last));
-  else if (sort === 'first') list.sort((a, b) => t(b.first) - t(a.first));
-  else list.sort((a, b) => b.pv - a.pv || b.uu - a.uu);
+  // sort は「pv」「pv-asc」のように、項目名＋（昇順なら -asc）
+  const sortAsc = /-asc$/.test(sort);
+  const sortKey = sort.replace(/-asc$/, '');
+  const sign = sortAsc ? -1 : 1;
+  // 日付のない行は、昇順でも降順でも最後に置く
+  const byDate = k => (a, b) => {
+    if (!a[k] || !b[k]) return (a[k] ? 0 : 1) - (b[k] ? 0 : 1);
+    return sign * (b[k].getTime() - a[k].getTime());
+  };
+  if (sortKey === 'uu') list.sort((a, b) => sign * (b.uu - a.uu || b.pv - a.pv));
+  else if (sortKey === 'last') list.sort(byDate('last'));
+  else if (sortKey === 'first') list.sort(byDate('first'));
+  else list.sort((a, b) => sign * (b.pv - a.pv || b.uu - a.uu));
+  document.querySelectorAll('th[data-ts-sort]').forEach(th => {
+    const on = th.dataset.tsSort === sortKey;
+    th.textContent = th.dataset.tsLabel + (on ? (sortAsc ? ' ▲' : ' ▼') : '');
+    th.setAttribute('aria-sort', on ? (sortAsc ? 'ascending' : 'descending') : 'none');
+  });
 
   const sum = (k) => list.reduce((s, r) => s + (r[k] || 0), 0);
   const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
