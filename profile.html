@@ -404,6 +404,17 @@ section { padding:100px 24px; }
 .activity-tags {
   display:flex; flex-wrap:wrap; gap:6px; margin-top:20px;
 }
+.activity-links {
+  display:flex; flex-direction:column; gap:8px;
+  margin-top:20px; padding-top:16px;
+  border-top:1px solid rgba(0,0,0,0.08);
+}
+.activity-links a {
+  font-size:14px; font-weight:600;
+  color:var(--leather); text-decoration:none;
+}
+.activity-links a::after { content:" →"; }
+.activity-links a:hover { text-decoration:underline; }
 .tag {
   font-size:12px; font-weight:500;
   padding:4px 12px;
@@ -1160,17 +1171,24 @@ footer {
           <span class="tag" data-i18n="act.t1b">フルオーダー</span>
           <span class="tag" data-i18n="act.t1c">ハンドスティッチ</span>
         </div>
+        <div class="activity-links">
+          <a href="works.html" data-i18n="act.l1a">作品集を見る</a>
+        </div>
       </div>
       <div class="activity-card reveal reveal-delay-2">
         <span class="activity-icon">📐</span>
         <h3 class="activity-title" data-i18n="act.a2">カルチャー講師</h3>
         <p class="activity-subtitle">Craft Instructor</p>
         <p class="activity-desc" data-i18n="act.a2d">
-          地域のカルチャースクールでレザークラフト講師を担当。革の楽しさと手仕事の喜びを次世代に伝える教育活動を展開。
+          ジョイフルホンダ千葉ニュータウン店のカルチャースクール（JHCS）でレザークラフト講座を担当。印西市文化ホールの「いんざい手仕事工房」でも講師を務め、革の楽しさと手仕事の喜びを次世代に伝えている。
         </p>
         <div class="activity-tags">
           <span class="tag" data-i18n="act.t2a">レザークラフト教室</span>
           <span class="tag" data-i18n="act.t2b">工芸普及</span>
+        </div>
+        <div class="activity-links">
+          <a href="JHCS.html" data-i18n="act.l2a">JHCS 講習案内</a>
+          <a href="inzai-teshigoto.html" data-i18n="act.l2b">いんざい手仕事工房</a>
         </div>
       </div>
       <div class="activity-card reveal reveal-delay-3">
@@ -1183,6 +1201,9 @@ footer {
         <div class="activity-tags">
           <span class="tag" data-i18n="act.t3a">印西市民アカデミー</span>
           <span class="tag" data-i18n="act.t3b">CBIメンバー</span>
+        </div>
+        <div class="activity-links">
+          <a href="https://communitybankinzai.github.io/cbi-site/" target="_blank" rel="noopener" data-i18n="act.l3a">CBI のサイトを見る</a>
         </div>
       </div>
     </div>
@@ -1364,7 +1385,11 @@ window.NSF_I18N_DICT = {
   'act.t1b': 'Full custom order',
   'act.t1c': 'Hand stitching',
   'act.a2': 'Craft instructor',
-  'act.a2d': 'Teaching leathercraft at a local culture school, passing on the joy of leather and handwork to the next generation.',
+  'act.a2d': 'Teaching leathercraft at the Joyful Honda Culture School, Chiba New Town (JHCS), and as an instructor at the Inzai Teshigoto Kobo workshop series at Inzai Culture Hall — passing on the joy of leather and handwork to the next generation.',
+  'act.l1a': 'See the portfolio',
+  'act.l2a': 'JHCS class guide',
+  'act.l2b': 'Inzai Teshigoto Kobo',
+  'act.l3a': 'Visit the CBI site',
   'act.t2a': 'Leathercraft classes',
   'act.t2b': 'Craft outreach',
   'act.a3': 'Local community',
