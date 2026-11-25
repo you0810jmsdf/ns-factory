@@ -18,7 +18,7 @@ window.KATAKAMNA_DATA = (function () {
     {
       id: 'hirajuji',
       name: '平十字',
-      kana: 'ひら じゅうじ',
+      kana: 'ひら とうじ',
       born: '生年不詳',
       died: '没年不詳',
       title: 'カタカムナ巻物の番人・六甲山の猟師',
