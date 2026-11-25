@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>カタカムナ80首と古事記</title>
+<style>
+:root{
+  --bg:#0d0d12; --panel:#16161d; --panel2:#1d1d27; --line:#2d2d3a;
+  --text:#ece9e1; --sub:#a9a6b3; --accent:#c9a96e;
+  --ait:#c9a96e; --nashi:#6f9fd0; --kigu:#b98bd1; --unk:#6a6a78;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;line-height:1.8;font-size:16px}
+a{color:var(--accent)}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+section{padding:44px 0 8px}
+.eyebrow{font-size:12px;letter-spacing:.25em;color:var(--accent);margin:0 0 6px}
+h1{font-size:clamp(28px,6vw,44px);line-height:1.3;margin:0 0 14px;font-weight:700}
+h2{font-size:clamp(21px,4.4vw,28px);margin:0 0 6px;line-height:1.4}
+.lead{color:var(--sub);margin:0 0 18px}
+.hero{padding:44px 0 18px;border-bottom:1px solid var(--line)}
+.warn{border:1px solid var(--accent);background:#c9a96e14;border-radius:10px;padding:12px 14px;font-size:14px;margin:16px 0 0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:22px 0 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 6px;text-align:center}
+.stat b{display:block;font-size:clamp(22px,6vw,32px);line-height:1.2}
+.stat span{font-size:11px;color:var(--sub);line-height:1.4;display:block}
+.stat[data-st=ait] b{color:var(--ait)} .stat[data-st=nashi] b{color:var(--nashi)}
+.stat[data-st=kigu] b{color:var(--kigu)} .stat[data-st=unk] b{color:var(--unk)}
+
+/* モザイク */
+.mosaic{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:14px 0 8px}
+.mosaic button{position:relative;padding:0;border:2px solid var(--unk);background:#000;border-radius:6px;cursor:pointer;aspect-ratio:1;overflow:hidden}
+.mosaic button img{width:100%;height:100%;object-fit:cover;display:block;opacity:.92}
+.mosaic button[data-st=ait]{border-color:var(--ait)} .mosaic button[data-st=nashi]{border-color:var(--nashi)}
+.mosaic button[data-st=kigu]{border-color:var(--kigu)} .mosaic button[data-st=unk]{border-color:var(--unk)}
+.mosaic button span{position:absolute;left:2px;bottom:1px;font-size:10px;font-weight:700;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--sub);margin:4px 0 0}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* 読む前に */
+.points{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:10px}
+.points li{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:11px 14px;font-size:15px}
+.points small{display:block;color:var(--sub);margin-top:3px;font-size:12.5px}
+
+/* 流れ */
+.flow{position:relative;margin:18px 0 0;padding-left:22px;border-left:2px solid var(--line)}
+.step{position:relative;margin:0 0 18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px}
+.step::before{content:"";position:absolute;left:-30px;top:20px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--bg)}
+.step h3{margin:0;font-size:18px}
+.step p{margin:2px 0 10px;color:var(--sub);font-size:13.5px}
+.thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}
+.thumbs button{flex:0 0 auto;width:76px;background:none;border:0;padding:0;color:var(--text);cursor:pointer;scroll-snap-align:start;font:inherit}
+.thumbs img{width:76px;height:76px;border-radius:8px;border:2px solid var(--ait);display:block;background:#000}
+.thumbs span{display:block;font-size:12px;text-align:center;margin-top:2px}
+
+/* 一覧 */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.chip{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:7px 14px;font:inherit;font-size:13.5px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--accent);color:#1a1408;border-color:var(--accent);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:10px}
+.card{display:flex;gap:12px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;color:var(--text);cursor:pointer;font:inherit}
+.card img{width:84px;height:84px;border-radius:8px;flex:0 0 auto;background:#000;border:2px solid var(--unk)}
+.card[data-st=ait] img{border-color:var(--ait)} .card[data-st=nashi] img{border-color:var(--nashi)} .card[data-st=kigu] img{border-color:var(--kigu)}
+.card b{display:block;font-size:15px}
+.card .t{display:block;font-size:12.5px;color:var(--sub);line-height:1.55;margin-top:2px;overflow-wrap:anywhere}
+.badge{display:inline-block;font-size:11px;border-radius:999px;padding:1px 9px;margin-top:5px;border:1px solid currentColor}
+.badge[data-st=ait]{color:var(--ait)} .badge[data-st=nashi]{color:var(--nashi)} .badge[data-st=kigu]{color:var(--kigu)} .badge[data-st=unk]{color:#9a9aa8}
+.count{color:var(--sub);font-size:13px;margin:0 0 8px}
+
+/* ダイアログ */
+dialog{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:16px;padding:0;width:min(560px,94vw);max-height:92vh}
+dialog::backdrop{background:#000c}
+.dlg{padding:14px 16px 18px;overflow:auto;max-height:90vh}
+.dtop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dtop h3{margin:0;font-size:20px}
+.x{background:none;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:5px 12px;font:inherit;cursor:pointer}
+.dimg{display:block;width:min(100%,340px);aspect-ratio:1;margin:10px auto;border-radius:12px;border:2px solid var(--unk);background:#000}
+.dimg[data-st=ait]{border-color:var(--ait)} .dimg[data-st=nashi]{border-color:var(--nashi)} .dimg[data-st=kigu]{border-color:var(--kigu)}
+.dnote{font-size:11.5px;color:var(--sub);text-align:center;margin:-4px 0 10px}
+.dl{margin:0;display:grid;gap:10px}
+.dl dt{font-size:12px;color:var(--accent);letter-spacing:.08em}
+.dl dd{margin:0;font-size:15px;overflow-wrap:anywhere}
+.note{color:var(--sub);font-size:.85em}
+.dnav{display:flex;justify-content:space-between;margin-top:16px;gap:8px}
+.dnav button{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font:inherit;cursor:pointer}
+
+footer{margin-top:40px;padding:26px 0 60px;border-top:1px solid var(--line);font-size:13.5px;color:var(--sub)}
+footer h3{color:var(--text);font-size:15px;margin:18px 0 6px}
+footer ul{margin:0;padding-left:20px}
+footer li{margin:3px 0;overflow-wrap:anywhere}
+@media (max-width:520px){
+  .stats{gap:6px} .mosaic{gap:3px}
+  .step::before{left:-29px}
+}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <p style="margin:0 0 18px;font-size:14px"><a href="../utahi/">← 80首アーカイブ</a>　<a href="../">カタカムナアーカイブ</a></p>
+  <p class="eyebrow">KATAKAMUNA × KOJIKI</p>
+  <h1>カタカムナ80首と古事記</h1>
+  <p class="lead">カタカムナウタヒの80首に、古事記の神さまの名前を重ねて読んだ人たちがいます。その「重ね読み」を、渦巻きの図と一緒にたどってみましょう。</p>
+  <div class="warn"><strong>先にお断り：</strong>これは解説者が当てた「対応づけの解釈」を整理したものです。対応が事実だとは主張しません。</div>
+  <div class="stats" id="stats"></div>
+</div></header>
+
+<main class="wrap">
+  <section>
+    <p class="eyebrow">80 SPIRALS</p>
+    <h2>80首を一望する</h2>
+    <p class="lead">枠の色が、古事記との対応の状態です。図をタップすると、その首の本文と対応が開きます。</p>
+    <div class="mosaic" id="mosaic"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section>
+    <p class="eyebrow">BEFORE YOU READ</p>
+    <h2>読む前に知っておくこと</h2>
+    <ul class="points">
+      <li>古事記の神名・地名に当てられているのは、80首のうち<strong>45首</strong>。残りは「対応なし」と明記された首、神器だけの首、資料に記述が見つからない首です。</li>
+      <li>解説者の対応を古事記の順に並べると、ほぼ古事記の流れに沿っています。ただし、順の逆戻りや繰り返しもあります。<small>別天神 → 神世七代 → 神生み → 神避り → 火神被殺 → 黄泉国 → 禊 の順に重なります。</small></li>
+      <li>第65〜80首は、確認できた資料に古事記との対応づけがありません。「対応なし」と明記した解説者もいないので、<strong>未確認</strong>の扱いです。</li>
+      <li>対応づけを載せる解説者は3人。吉野信子さん（第2〜28首）、中島志保さん（第55首まで）、HIRONOMICHI（全域。「神様に解説をお願いした」という神示形式で独自説を含むため、参考扱い）。</li>
+      <li>対応は<strong>解釈の一つ</strong>です。原本は現存が確認されておらず、資料はすべて二次資料。楢崎皐月は古事記を参考に解読したとされるため、対応が見つかっても独立した裏づけにはなりません。</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">FOLLOWING KOJIKI</p>
+    <h2>古事記の流れにそって読む</h2>
+    <p class="lead">古事記上巻の場面の順に、対応づけのある首を並べました。図をタップすると詳しく読めます。</p>
+    <div class="flow" id="flow"></div>
+  </section>
+
+  <section>
+    <p class="eyebrow">ALL 80</p>
+    <h2>80首ぜんぶ</h2>
+    <div class="filters" id="filters"></div>
+    <p class="count" id="count"></p>
+    <div class="grid" id="grid"></div>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  <h3>図について</h3>
+  <p style="margin:0">図は、元資料から切り出したカタカムナ文字の渦巻き図を、白黒反転して小さくしたものです。本文との首ごとの照合は、まだ終わっていません。</p>
+  <h3>この整理で確認していないこと</h3>
+  <ul>
+    <li>日本書紀との対応（書紀本文は、信頼できる公的資料で確認できませんでした）。</li>
+    <li>古事記の海幸山幸〜神武天皇の節（國學院大學の古事記ビューアーが未公開の範囲）。</li>
+    <li>解説者の対応づけの<strong>妥当性</strong>。「解説者がそう当てている」「古事記にその神名がある」までを確認し、意味や順序の一致は評価していません。</li>
+    <li>吉野信子さんの動画（第29首以降）と、中島志保さんの第56首以降の解説（公開リンクが確認できませんでした）。</li>
+    <li>第14首の吉野信子さんの表にある「アマテラス・ツクヨミ・スサノオ」は、第14首の本文のどの出典にもない語です。表の置き場所の誤りかどうかは、資料から判断できません。</li>
+  </ul>
+  <h3>出典（二次資料）</h3>
+  <ul>
+    <li>古事記：<a href="https://kojiki.kokugakuin.ac.jp/kojiki/" rel="noopener">國學院大學 古事記ビューアー</a>／<a href="https://kojiki.kokugakuin.ac.jp/shinmei/" rel="noopener">古事記学センター 神名データベース</a>（全338項目を照合に使用）</li>
+    <li>ウタヒの本文・対応づけ：<a href="https://katakamuna-note.com/allkatakamunautahi-80list/329/" rel="noopener">katakamuna-note.com</a>／<a href="https://katakamu-na.com/utau/" rel="noopener">吉野信子</a>／<a href="https://universai-mind.blog.jp/" rel="noopener">中島志保</a>／<a href="https://hironomichi.jp/MENU-KATAKAMUNA80.html" rel="noopener">HIRONOMICHI</a>／<a href="https://rekishinoeki.org/katakamuna/" rel="noopener">日本神話と歴史</a></li>
+  </ul>
+  <p style="margin-top:18px">N's factory 教育部　作成：2026-11-25（対応表の作成：2026-11-24）</p>
+</div></footer>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+
+<script>
+const DATA = {"songs": [{"n": 1, "text": "カタカムナ ヒビキ マノスベシ アシアトウアン ウツシマツル カタカムナ ウタヒ", "textHtml": "カタカムナ ヒビキ マノスベシ アシアトウアン ウツシマツル カタカムナ ウタヒ", "map": "なし（吉野信子が明記）", "sec": "—", "st": "nashi"}, {"n": 2, "text": "ヤタノカカミ カタカムナ カミ", "textHtml": "ヤタノカカミ カタカムナ カミ", "map": "八咫鏡（神器。冒頭部には出ない）", "sec": "—", "st": "kigu"}, {"n": 3, "text": "フトタマノミ ミコト フトマニニ", "textHtml": "フトタマノミ ミコト フトマニニ", "map": "フトタマノミミコト＝布刀玉命（吉野・中島）", "sec": "天の石屋", "st": "ait"}, {"n": 4, "text": "イハトハニ カミナリテ カタカムナ ヨソヤコト ホグシウタ", "textHtml": "イハトハニ カミナリテ カタカムナ ヨソヤコト ホグシウタ", "map": "なし（吉野信子が明記）", "sec": "—", "st": "nashi"}, {"n": 5, "text": "ヒフミヨイ マワリテメクル ムナヤコト アウノスヘシレ カタチサキ", "textHtml": "ヒフミヨイ マワリテメクル ムナヤコト アウノスヘシレ カタチサキ", "map": "なし（吉野信子が明記）", "sec": "—", "st": "nashi"}, {"n": 6, "text": "ソラニモロケセ ユヱヌオヲ ハエツヰネホン カタカムナ", "textHtml": "ソラニモロケセ ユヱヌオヲ ハエツヰネホン カタカムナ", "map": "なし（確認できた資料に対応づけの記述なし）", "sec": "—", "st": "unk"}, {"n": 7, "text": "マカタマノ アマノミナカヌシ タカミムスヒ カムミムスヒ ミスマルノタマ", "textHtml": "マカタマノ アマノミナカヌシ タカミムスヒ カムミムスヒ ミスマルノタマ", "map": "天之御中主神・高御産巣日神・神産巣日神（吉野・中島・HIRONOMICHI）", "sec": "天地初発（別天神）", "st": "ait"}, {"n": 8, "text": "ウマシタカカム アシカビヒコ トコロチマタノ トキオカシ", "textHtml": "ウマシタカカム アシカビヒコ トコロチマタノ トキオカシ", "map": "宇摩志阿斯訶備比古遅神／道俣神・時量師神（吉野・中島）", "sec": "天地初発（別天神）／禊", "st": "ait"}, {"n": 9, "text": "アメノトコタチ クニトコタチ アメ クニカ ソコ ソギ タチ カタカムナ マノ トキ トコロ トコ タチ", "textHtml": "アメノトコタチ クニトコタチ アメ クニカ ソコ ソギ タチ カタカムナ マノ トキ トコロ トコ タチ", "map": "天之常立神・国之常立神（吉野・中島）", "sec": "天地初発（別天神）／神世七代", "st": "ait"}, {"n": 10, "text": "メクルマノ ミナカヌシ タカミムスヒ カムミムスヒ オノコロシマ カムナホク アメツチネ ハシマリ", "textHtml": "メクルマノ ミナカヌシ タカミムスヒ カムミムスヒ オノコロシマ カムナホク アメツチネ ハシマリ", "map": "天之御中主神・高御産巣日神・神産巣日神・淤能碁呂島（吉野・中島）", "sec": "天地初発（別天神）／国土の修理固成", "st": "ait"}, {"n": 11, "text": "イハ フトヤ ネ イキ ツチ ノ ワ カタ カムナ アマ ノ ヒト タマ カミ サキ サトリ ニナ タマ ノ ワケ ツミ イキ コト マリ ノ ワケ ヨミ", "textHtml": "イハ フトヤ ネ　イキ ツチ ノ ワ　カタ カムナ　アマ ノ ヒト タマ　カミ サキ サトリ　ニナ タマ ノ ワケ ツミ　イキ コト マリ ノ　ワケ ヨミ", "map": "<strong>なし</strong>（吉野信子が明記）", "sec": "—", "st": "nashi"}, {"n": 12, "text": "シヒ ハタ シヒ フミ カムミ アキ タマ ト アウ カムミ カタ カムナ ノ ミソデ ホト アオ ココロ アカ クスベ アカ ミコト ハナ クスベ コト ミチ トヨ クスベ ミチ ウタ シメシ", "textHtml": "シヒ ハタ シヒ フミ　カムミ アキ タマ ト　アウ カムミ　カタ カムナ ノ　ミソデ ホト　アオ ココロ　アカ クスベ　アカ ミコト　ハナ クスベ　コト ミチ　トヨ クスベ ミチ　ウタ シメシ", "map": "<strong>なし</strong>（吉野信子が明記）", "sec": "—", "st": "nashi"}, {"n": 13, "text": "スヒ チニ ツヌ クヒ イモ イク クヒ オホ トノヂ イモ オホ トノベ オモ ダル イモ アヤ カシ コネ イサ ナミ イサ ナギ トヨ カブ シヌ ウキ フヌ マカ ハコ クニ / 〔神世七代の対偶神〕", "textHtml": "スヒ チニ ツヌ クヒ　イモ イク クヒ　オホ トノヂ イモ　オホ トノベ　オモ ダル イモ　アヤ カシ コネ　イサ ナミ イサ ナギ　トヨ カブ シヌ　ウキ フヌ　マカ ハコ クニ<br><span class=\"note\">〔神世七代の対偶神〕</span>", "map": "須比智邇神＊・角杙神＊・意富斗能地神＊・大斗乃弁神＊・於母陀流神＊・阿夜訶志古泥神＊…ほか3柱 <span class=\"note\">［DB外2件: 妹活杙神・妹活杙］</span>（HIRO・中島志保・吉野信子）", "sec": "神世七代", "st": "ait"}, {"n": 14, "text": "オホ コト オシヲ イハ ツチ ヒコ イハス ヒメ オホ トヒ ワケ アメノ フキヲ オホ ヤ ヒコ カサ ケツ ワケノ オシヲ オホ ワタ ツミ ハヤ アキツ ヒコ イモ ハヤ アキツ ヒメ / 〔神生みによる神々1〕", "textHtml": "オホ コト オシヲ　イハ ツチ ヒコ　イハス ヒメ　オホ トヒ ワケ　アメノ フキヲ　オホ ヤ ヒコ カサ ケツ　ワケノ　オシヲ　オホ ワタ ツミ　ハヤ アキツ ヒコ イモ　ハヤ アキツ ヒメ<br><span class=\"note\">〔神生みによる神々1〕</span>", "map": "大事忍男神＊・石土毘古神＊・石巣比売神＊・天之吹男神＊・大屋毘古神＊・大綿津見神＊…ほか6柱 <span class=\"note\">［DB外3件: 須佐之男命・大戸比別神・速秋津比子神］</span>（HIRO・中島志保・吉野信子）<br>※吉野信子の表の「アマテラス・ツクヨミ・スサノオ」は第14首の本文に無い語（§6）", "sec": "神生み・禊②", "st": "ait"}, {"n": 15, "text": "アワ ナギ アワ ナミ ツラ ナギ ナミ アヤ ミク マリ クニ ノ ミク マリ アメノ クヒ サ モチ クニ ノ クヒ サ モチ シナツ ヒコ ククノ チ オホ ヤマ ツミ ヌツチ カヤヌ ヒメ / 〔神生みによる神々2〕", "textHtml": "アワ ナギ アワ ナミ　ツラ ナギ ナミ　アヤ ミク マリ　クニ ノ ミク マリ　アメノ クヒ サ モチ　クニ ノ クヒ サ モチ　シナツ ヒコ　ククノ チ　オホ ヤマ ツミ　ヌツチ　カヤヌ ヒメ<br><span class=\"note\">〔神生みによる神々2〕</span>", "map": "沫那芸神＊・沫那美神＊・頬那芸神＊・頬那美神＊・天之水分神＊・国之水分神＊…ほか6柱 <span class=\"note\">［DB外2件: 久久能智神］</span>（HIRO・中島志保）", "sec": "神生み", "st": "ait"}, {"n": 16, "text": "アメノ サツチ クニ ノ サツチ アメノ サギ リ クニ ノ サギ リ アメノ クラト クニ ノ クラト オホト マト ヒコ オホト マト ヒメ トリノ イハ クス フネ オホ ケツ ヒメ / 〔神生みによる神々3〕", "textHtml": "アメノ サツチ　クニ ノ サツチ　アメノ サギ リ　クニ ノ サギ リ　アメノ クラト　クニ ノ クラト　オホト マト ヒコ　オホト マト ヒメ　トリノ イハ クス フネ　オホ ケツ ヒメ<br><span class=\"note\">〔神生みによる神々3〕</span>", "map": "天之狭土神＊・国之狭土神＊・天之狭霧神＊・国之狭霧神＊・天之闇戸神＊・国之闇戸神＊…ほか3柱 <span class=\"note\">［DB外4件: 大戸惑子神・大戸惑女神］</span>（HIRO・中島志保）", "sec": "国生み・神生み", "st": "ait"}, {"n": 17, "text": "カム ナガラ トヨヒ カミ アマ ウツシ ヤホ トヨノ ユツ イキ フタ ネ フタ ハシ ウキフ ツミ タカ マカ カヅ ムスヒ ヌシ カタ カムナ マカ ハコ クニ ノ ヒトツ カタ ツミ", "textHtml": "カム ナガラ　トヨヒ カミ　アマ ウツシ　ヤホ トヨノ ユツ　イキ フタ ネ　フタ ハシ　ウキフ ツミ　タカ マカ カヅ　ムスヒ ヌシ　カタ カムナ　マカ ハコ クニ ノ　ヒトツ カタ ツミ", "map": "<strong>なし</strong>（吉野信子が明記）", "sec": "—", "st": "nashi"}, {"n": 18, "text": "カムアシキネ アマタマノムカヒ アマアメ オホ トノヂ オホ トノベ アマクニムカヒ トコ タチ", "textHtml": "カムアシキネ　アマタマノムカヒ　アマアメ　オホ　トノヂ　オホ　トノベ　アマクニムカヒ　トコ タチ", "map": "大斗乃弁神＊・意富斗能地神＊・国之常立神 <span class=\"note\">［DB外3件: 常立・大戸之道神］</span>（HIRO・中島志保・吉野信子）", "sec": "神世七代", "st": "ait"}, {"n": 19, "text": "マカカ オホチカム イツノタテカム アマナアモリ ムカヒ アメノウツメ", "textHtml": "マカカ　オホチカム　イツノタテカム　アマナアモリ　ムカヒ　アメノウツメ", "map": "天宇受売命＊（HIRO・中島志保・吉野信子）", "sec": "天の石屋②", "st": "ait"}, {"n": 20, "text": "アマノカカミ アメノヨワロツ トキ トコロ トコ タチ アメ クニ ノ ヤホ ソト ナミ カタ カムナ カタチ サキ アワセ マク ハヒ", "textHtml": "アマノカカミ　アメノヨワロツ　トキ トコロ　トコ タチ　アメ クニ ノ　ヤホ ソト ナミ　カタ カムナ　カタチ サキ　アワセ マク ハヒ", "map": "<strong>なし</strong>（吉野信子が明記）", "sec": "—", "st": "nashi"}, {"n": 21, "text": "イマ トハ ヒトワ ミコ ニホ ヤホ アマツ クニ コト ミチ カタ カムナ ナミ マリ メグル オホト コロ イモマクカラミヌ フトヤマト", "textHtml": "イマ トハ ヒトワ ミコ ニホ ヤホ アマツ クニ コト ミチ カタ カムナ ナミ マリ メグル オホト コロ イモマクカラミヌ フトヤマト", "map": "<strong>なし</strong>（吉野信子が明記）", "sec": "—", "st": "nashi"}, {"n": 22, "text": "アメ オキミツゴ モコロシマ アマツアキツネ ツクシシマ オホトヤシマ", "textHtml": "アメ オキミツゴ モコロシマ アマツアキツネ ツクシシマ オホトヤシマ", "map": "天御虚空豊秋津根別＊・筑紫島＊ <span class=\"note\">［DB外5件: 隠伎之三子島・大倭豊秋津島？・大八島國］</span>（中島志保・吉野信子）", "sec": "国生み", "st": "ait"}, {"n": 23, "text": "アマ タカマカハラ アワチホノサワケ アメクニクラト オキミツゴシマ", "textHtml": "アマ タカマカハラ アワチホノサワケ アメクニクラト オキミツゴシマ", "map": "淡道之穂之狭別島＊・天之闇戸神＊・国之闇戸神＊ <span class=\"note\">［DB外4件: 高天原・隠伎之三子島］</span>（中島志保・吉野信子）", "sec": "国生み・神生み", "st": "ait"}, {"n": 24, "text": "アメクニサギリ モコロシマ アメクニサツチ ソコソギシマ タケヒワケ", "textHtml": "アメクニサギリ モコロシマ アメクニサツチ ソコソギシマ タケヒワケ", "map": "天之狭霧神＊・国之狭霧神＊・国之狭土神＊・建依別＊・天之狭土神 <span class=\"note\">［DB外1件: 天之狭士神］</span>（中島志保・吉野信子）", "sec": "国生み・神生み", "st": "ait"}, {"n": 25, "text": "オホトマト オホケツヒメ イワクストリフネ ミツゴナミ ヒノカカヒコ", "textHtml": "オホトマト オホケツヒメ イワクストリフネ ミツゴナミ ヒノカカヒコ", "map": "大宜都比売神＊・鳥之石楠船神＊・天鳥船神＊・火之炫毘古神＊ <span class=\"note\">［DB外5件: 大戸惑子神・大戸惑女神・隠岐三子？・隠岐三子］</span>（中島志保・吉野信子）", "sec": "国生み・神生み", "st": "ait"}, {"n": 26, "text": "タクリカナヤマ ウツメクソ アメノハニヤス ミツハノメ オキツフト マリ", "textHtml": "タクリカナヤマ ウツメクソ アメノハニヤス ミツハノメ オキツフト マリ", "map": "金山毘古神＊・金山毘売神＊・波邇夜須毘古神＊・弥都波能売神＊・波邇夜須毘売神（中島志保・吉野信子）", "sec": "伊耶那美の神避り", "st": "ait"}, {"n": 27, "text": "イハクスユマリ アマナクニヌシ ワレムスビ イホクニツ マリ ヤヘモコロ", "textHtml": "イハクスユマリ アマナクニヌシ ワレムスビ イホクニツ マリ ヤヘモコロ", "map": "<strong>なし</strong>（吉野信子が明記）", "sec": "—", "st": "nashi"}, {"n": 28, "text": "イキノヒトツネ イククヒノツチ カグナツチ イハ サク ネ サク イハツツヌヲ", "textHtml": "イキノヒトツネ イククヒノツチ カグナツチ イハ サク ネ サク イハツツヌヲ", "map": "活杙神＊・野椎神＊・火之迦具土神＊・石析神＊・根析神＊・石筒之男神＊…ほか1柱 <span class=\"note\">［DB外2件: 伊伎島・壱岐島］</span>（中島志保・吉野信子）", "sec": "神世七代・国生み・神生み・火神被殺", "st": "ait"}, {"n": 29, "text": "ミカヒシキシマ ハヤヒタケフツ カタカムナ オホワクムスビ ヤタシマ", "textHtml": "ミカヒシキシマ ハヤヒタケフツ カタカムナ オホワクムスビ ヤタシマ", "map": "和久産巣日神（中島志保）", "sec": "伊耶那美の神避り", "st": "ait"}, {"n": 30, "text": "トヨ クモヌ フツ サカル ツミ フトナ シメシ ウタ マリ タバネ カブシ ウキ フヌ メグル マリ ウヒ チニ ホロシ カタ カムナ タカ マカ ムスビ ヌシ イモ イク クヒ カミ ワク サトリ", "textHtml": "トヨ クモヌ フツ サカル ツミ フトナ シメシ ウタ マリ タバネ カブシ ウキ フヌ メグル マリ ウヒ チニ ホロシ カタ カムナ タカ マカ ムスビ ヌシ イモ イク クヒ カミ ワク サトリ", "map": "宇比地邇神・活杙神（中島志保）", "sec": "神世七代", "st": "ait"}, {"n": 31, "text": "カタカムナ オホ トノヂ カムミ ムスビ イモ オホ トノベ マクミ ワク タマ イモ カラミ マクミ トノヘシ カタ カムナ サカキメグリ ノ カム ヤタ マリ オモ タル ヌシ シヅ マリヌ クニ ヌシ", "textHtml": "カタカムナ　オホ トノヂ　カムミ ムスビ イモ　オホ トノベ　マクミ ワク タマ イモ　カラミ マクミ　トノヘシ カタ カムナ　サカキメグリ ノ　カム ヤタ マリ　オモ タル ヌシ　シヅ マリヌ　クニ ヌシ", "map": "大国主神（HIRO）", "sec": "須賀の宮②", "st": "ait"}, {"n": 32, "text": "アマノ カミ アメノ ヨロヅ クナギ ノ タマ ワケ アヤ クメ シコネ カム ツミ シヅ マリヌ イツノ タテ カム アワ ナギ カサネ アハ ヂノ ホノサ ワケ シマ イヨノ イヤ シロチ", "textHtml": "アマノ カミ　アメノ ヨロヅ　クナギ ノ タマ ワケ　アヤ クメ シコネ　カム ツミ シヅ マリヌ　イツノ タテ カム　アワ ナギ カサネ　アハ ヂノ　ホノサ ワケ シマ　イヨノ イヤ シロチ", "map": "淡道之穂之狭別島（HIRO）", "sec": "国生み", "st": "ait"}, {"n": 33, "text": "カム ナガラ エヒメ サヌキ ヂ アワ トサ ヂ アメノ オシ コロ オキ ミツゴ ツ クシトヨ ワケ ヒノ クニ クマソ イヤ シロ チバ イキツ サキ ヨリ イヤ シロ コト サトリ", "textHtml": "カム ナガラ　エヒメ サヌキ ヂ　アワ トサ ヂ　アメノ オシ コロ　オキ ミツゴ　ツ クシトヨ ワケ　ヒノ クニ クマソ　イヤ シロ チバ イキツ サキ ヨリ イヤ シロ コト サトリ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 34, "text": "アマツ ミソラ ノ アメ ヒトツ ハシラ サド オホ ヤマト イヤ シロチ タニ キビコ アキツ ノ イヤ シロ スベ シマ カサネ オホ タマル ワケ オホ コト オシヲ トワ チカ フタヤ ヒメ", "textHtml": "アマツ ミソラ ノ　アメ ヒトツ ハシラ　サド  オホ ヤマト　イヤ シロチ　タニ キビコ　アキツ ノ　イヤ シロ スベ　シマ カサネ　オホ タマル ワケ　オホ コト オシヲ　トワ チカ　フタヤ ヒメ", "map": "<span class=\"note\">［DB外2件: 大倭・忌曾孫］</span>（HIRO）", "sec": "—", "st": "ait"}, {"n": 35, "text": "カム ナガラ オホト ヒワケ ノ カタ カムナ イハ ツチ ヒコ イハス ヒメ ツミ アメノ フキヲ ノ オホヤ ヒコ オシヲ オホ トヂ カサネ ワタ ヒメ ハヤ アキツ マノ ヒコ ヒメ", "textHtml": "カム ナガラ　オホト ヒワケ ノ　カタ カムナ　イハ ツチ ヒコ　イハス ヒメ ツミ　アメノ フキヲ ノ　オホヤ ヒコ オシヲ　オホ トヂ カサネ　ワタ ヒメ　ハヤ アキツ　マノ ヒコ ヒメ", "map": "大戸日別神・石土毘古神・石巣比売神・天之吹男神・大屋毘古神・速秋津日子神…ほか1柱（HIRO）", "sec": "神生み", "st": "ait"}, {"n": 36, "text": "カム ナガラ オホ ワタ ツミ カハ ウミ ワケ イカツ アワ ナギ アワ ナミ カタ フト ムスヒ オホ トノヂ アメノ ミク マリ クニノ ミク マリ ツラ ナギ メグル トヨ ツラ ナミ", "textHtml": "カム ナガラ　オホ ワタ ツミ　カハ ウミ ワケ　イカツ アワ ナギ　アワ ナミ　カタ フト ムスヒ　オホ トノヂ　アメノ ミク マリ　クニノ ミク マリ　ツラ ナギ メグル　トヨ ツラ ナミ", "map": "大綿津見神・沫那芸神・沫那美神・意富斗能地神・天之水分神・国之水分神…ほか2柱（HIRO）", "sec": "神世七代・神生み", "st": "ait"}, {"n": 37, "text": "カム ナガラ アメ ノクヒサ モチ カタ カムナ クニノ クヒサ モチ オキ ミツゴ サキ カゼ シナツ ヒコ キノ クク ノチ イヤ ミソギ ミチ オホ ヤマ ツミ カヤヌ ヒメ ツチ イヤ ミソギ", "textHtml": "カム ナガラ　アメ ノクヒサ モチ　カタ カムナ　クニノ クヒサ モチ　オキ ミツゴ　サキ カゼ シナツ ヒコ　キノ クク ノチ　イヤ ミソギ ミチ　オホ ヤマ ツミ　カヤヌ ヒメ ツチ　イヤ ミソギ", "map": "天之久比奢母智神・国之久比奢母智神・志那都比古神・鹿屋野比売神 <span class=\"note\">［DB外1件: 久久能智神］</span>（HIRO）", "sec": "神生み", "st": "ait"}, {"n": 38, "text": "カムナガラ アメ クニ サツチ アメ クニ サギリ イヤ ミソギ サネ アメ クニ クラト オホマ ヒコ ヒメ イヤ ミソギ マリ オホ ケツ ヒメ ヒノ ヤギ ハヤヲ ヒメ イヤ ミソギ ワク", "textHtml": "カムナガラ　アメ クニ サツチ　アメ クニ サギリ　イヤ ミソギ サネ　アメ クニ クラト　オホマ ヒコ ヒメ　イヤ ミソギ マリ　オホ ケツ ヒメ　ヒノ ヤギ ハヤヲ ヒメ　イヤ ミソギ ワク", "map": "天之狭土神・国之狭土神・天之狭霧神・国之狭霧神・天之闇戸神・国之闇戸神…ほか2柱 <span class=\"note\">［DB外2件: 大戸惑子神・大戸惑女神］</span>（HIRO）", "sec": "国生み・神生み", "st": "ait"}, {"n": 39, "text": "カムナガラ ヒノ カガ ヒコ ヒノ カグ ツチ イヤ ミソギ ムス カタ カムナ カナ ヤマ ヒコ カナ ヤマ ヒメ イヤ ミソギ ハニ ヤス ヒコ ヒメ ミツハ ワク ムス イヤ ミソギ", "textHtml": "カムナガラ　ヒノ カガ ヒコ　ヒノ カグ ツチ　イヤ ミソギ ムス　カタ カムナ　カナ ヤマ ヒコ　カナ ヤマ ヒメ　イヤ ミソギ　ハニ ヤス ヒコ ヒメ　ミツハ ワク ムス　イヤ ミソギ", "map": "火之炫毘古神・火之迦具土神 <span class=\"note\">［DB外4件: 金山彦神・金山姫神・埴安彦神・埴安姫神］</span>（HIRO）", "sec": "神生み", "st": "ait"}, {"n": 40, "text": "カムナガラ トヨ ウケ ヒメヌ イカ ツチ ヒビキ マノネ カタ カムナ イハ サク ネサク イハ ツツヲ マリ ツラ ネ ミカヒ ハヤ ビヌ タケ イカ ツチ タケ フツ ノ ムスビ", "textHtml": "カムナガラ　トヨ ウケ ヒメヌ　イカ ツチ ヒビキ　マノネ　カタ カムナ　イハ サク ネサク　イハ ツツヲ　マリ ツラ ネ　ミカヒ ハヤ ビヌ　タケ イカ ツチ　タケ フツ ノ　ムスビ", "map": "石析神・根析神・石筒之男神・甕速日神・樋速日神・建御雷之男神（HIRO）", "sec": "火神被殺", "st": "ait"}, {"n": 41, "text": "カムナガラ トヨクラオカミ クラミツハ アマタママトマリ カタカムナ マサカヤマツミ ムカヒマリ オドヤマツミヲ メグルマリ ワクミハラナル マカヒクシサリ", "textHtml": "カムナガラ トヨクラオカミ クラミツハ アマタママトマリ カタカムナ マサカヤマツミ ムカヒマリ オドヤマツミヲ メグルマリ ワクミハラナル マカヒクシサリ", "map": "闇御津羽神・正鹿山津見神・淤縢山津見神・奥山津見神・志芸山津見神 <span class=\"note\">［DB外1件: 闇龗］</span>（中島志保）", "sec": "火神被殺", "st": "ait"}, {"n": 42, "text": "カムナガラ クラヤマツミヌ ミホトヨニ オクヤマツミ カタカムナ ココロツラナギ ハヤマツミ タカマカハラ カタカムフトマニ アメノヲハバリ イツノヲハバリ", "textHtml": "カムナガラ クラヤマツミヌ ミホトヨニ オクヤマツミ カタカムナ ココロツラナギ ハヤマツミ タカマカハラ カタカムフトマニ アメノヲハバリ イツノヲハバリ", "map": "闇山津見神＊・奥山津見神＊・羽山津見神＊・天之尾羽張・伊都之尾羽張・頬那芸神（HIRO・中島志保）", "sec": "神生み・火神被殺", "st": "ait"}, {"n": 43, "text": "カムナガラ ミハカシナ カタカケメグル オホカムツミ ヨモツチシキノ イフヤサカ カムマトマリノ ツキタテフナト ミチナガチバ タケナミハメ ソラワケ イフヤサカ", "textHtml": "カムナガラ ミハカシナ カタカケメグル オホカムツミ ヨモツチシキノ イフヤサカ カムマトマリノ ツキタテフナト ミチナガチバ タケナミハメ ソラワケ イフヤサカ", "map": "黄泉津大神・道敷大神・衝立船戸神・道之長乳歯神 <span class=\"note\">［DB外3件: 意富迦牟都美命・黄泉比良坂・伊賦夜坂］</span>（中島志保）", "sec": "黄泉国③・禊①", "st": "ait"}, {"n": 44, "text": "カムナガラ マノハストヂノ トキオカシ ワツラヒノウシ カサネツミ メグルマノ チマタムスビヌヒ カタカムナ アキクヒノウシ ムカヒマリ タマオキサカル オキナギサヒコ", "textHtml": "カムナガラ マノハストヂノ トキオカシ ワツラヒノウシ カサネツミ メグルマノ チマタムスビヌヒ カタカムナ アキクヒノウシ ムカヒマリ タマオキサカル オキナギサヒコ", "map": "奥津那芸佐毘古神＊・時量師神・和豆良比能宇斯能神・道俣神・奥疎神 <span class=\"note\">［DB外1件: 飽咋野宇斯能神］</span>（HIRO・中島志保）", "sec": "禊①", "st": "ait"}, {"n": 45, "text": "カムナガラ オキツカヒベラ ヘサカルミチタマ フトマニノ ヘツナギサビコ カタカムナ トヨウケミ カタヘツカヒヘラ アワノマガ ヤソマガツヒ オホマガツヒ", "textHtml": "カムナガラ オキツカヒベラ ヘサカルミチタマ フトマニノ ヘツナギサビコ カタカムナ トヨウケミ カタヘツカヒヘラ アワノマガ ヤソマガツヒ オホマガツヒ", "map": "奥津甲斐弁羅神＊・辺疎神＊・辺津那芸佐毘古神＊・辺津甲斐弁羅神＊・八十禍津日神＊・道俣神 <span class=\"note\">［DB外2件: 豊受比売神・大禍津日神之長乳歯神］</span>（HIRO・中島志保）", "sec": "禊①・禊②", "st": "ait"}, {"n": 46, "text": "カムナガラ クニカツギ フトマニノ アヤ カムナホビ オホカムナホビ イツノメニ オホトヂムスビ イツノメノ ソコツワタツミ ソコツツヲ イシ マトマリメグル ナカツツヲ", "textHtml": "カムナガラ クニカツギ フトマニノ アヤ カムナホビ オホカムナホビ イツノメニ オホトヂムスビ イツノメノ ソコツワタツミ ソコツツヲ イシ マトマリメグル ナカツツヲ", "map": "神直毘神・伊豆能売・底津綿津見神 <span class=\"note\">［DB外4件: 神直日神・底筒男・中筒男・天照大神］</span>（HIRO・中島志保）", "sec": "禊②", "st": "ait"}, {"n": 47, "text": "カムナガラ ウハツワタツミ ムラヂイツク ウハツツヲ アマテラス ウツシキカナ サクタケ ハヤスサノヲ ツキヨミマ ミクラタナ タキリヒメ イチキシマ サヨリヒメ", "textHtml": "カムナガラ ウハツワタツミ ムラヂイツク ウハツツヲ アマテラス ウツシキカナ サクタケ ハヤスサノヲ ツキヨミマ ミクラタナ タキリヒメ イチキシマ サヨリヒメ", "map": "狭依毘売命＊・上津綿津見神・月読命・多紀理毘売命・市寸島比売命 <span class=\"note\">［DB外7件: 上筒男・天照大神・須佐之男命・素戔嗚尊・田霧姫・…］</span>（HIRO・中島志保）", "sec": "禊②・うけひ", "st": "ait"}, {"n": 48, "text": "アマツカミ カムナマニマニ ウタサトシ ヤクサスヘヒト ココロワクミト", "textHtml": "アマツカミ カムナマニマニ ウタサトシ ヤクサスヘヒト ココロワクミト", "map": "<span class=\"note\">［DB外1件: 天津神］</span>（中島志保）", "sec": "—", "st": "ait"}, {"n": 49, "text": "マカウミコ メクルモコロ オキミツゴ ヨモツチカヘシ カムツミココロ", "textHtml": "マカウミコ メクルモコロ オキミツゴ ヨモツチカヘシ カムツミココロ", "map": "黄泉津大神 <span class=\"note\">［DB外2件: 黄泉比良坂・道反大神］</span>（中島志保）", "sec": "黄泉国③", "st": "ait"}, {"n": 50, "text": "カムツミ ツキタツフナト イキココロ アハキタカタマ ミチノナカチハ", "textHtml": "カムツミ ツキタツフナト イキココロ アハキタカタマ ミチノナカチハ", "map": "衝立船戸神＊・道之長乳歯神＊（HIRO・中島志保）", "sec": "禊①", "st": "ait"}, {"n": 51, "text": "イキココロ アハキマハラ トキオカシ トコロチマタシ ワツラヒノウシ / 〔時間と空間を守る神々〕", "textHtml": "イキココロ アハキマハラ トキオカシ トコロチマタシ ワツラヒノウシ<br><span class=\"note\">〔時間と空間を守る神々〕</span>", "map": "時量師神・道俣神・和豆良比能宇斯能神 <span class=\"note\">［DB外3件: 阿波岐原・時置師神］</span>（HIRO・中島志保）", "sec": "禊①", "st": "ait"}, {"n": 52, "text": "タマキソラ アキクヒノウシ オキサカル ナギサヒコ オキツカヒヘラ ナミ / 〔左の空間のお祓い〕", "textHtml": "タマキソラ アキクヒノウシ オキサカル ナギサヒコ オキツカヒヘラ ナミ<br><span class=\"note\">〔左の空間のお祓い〕</span>", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 53, "text": "イキココロ アマナヘサカル モモヒクニ ヘツナギサヒコ ヘツカヒヘラ / 〔右の空間のお祓い〕", "textHtml": "イキココロ アマナヘサカル モモヒクニ ヘツナギサヒコ ヘツカヒヘラ<br><span class=\"note\">〔右の空間のお祓い〕</span>", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 54, "text": "タマルツチ イカツツラナギ セカツキ ハクミアシハラ ヤクサアヲヒト / 〔人の住む世界〕", "textHtml": "タマルツチ イカツツラナギ セカツキ ハクミアシハラ ヤクサアヲヒト<br><span class=\"note\">〔人の住む世界〕</span>", "map": "<span class=\"note\">［DB外1件: 葦原］</span>（中島志保）", "sec": "—", "st": "ait"}, {"n": 55, "text": "イキココロ ナカツミシロ イツヲノメ シキケカクツチ イヤシロノツチ / 〔イヤシロの土地〕", "textHtml": "イキココロ ナカツミシロ イツヲノメ シキケカクツチ イヤシロノツチ<br><span class=\"note\">〔イヤシロの土地〕</span>", "map": "<strong>なし</strong>（中島志保が明記）", "sec": "—", "st": "nashi"}, {"n": 56, "text": "オホナホビメ イキココロ カムミイヤマヒ カムミソギ ウルハシココロ", "textHtml": "オホナホビメ イキココロ カムミイヤマヒ カムミソギ ウルハシココロ", "map": "大直毘神（HIRO）", "sec": "禊②", "st": "ait"}, {"n": 57, "text": "アカキウツシネ カムミカラヤマ ムナシキ ケヒココロ ケシキウツシネ", "textHtml": "アカキウツシネ カムミカラヤマ ムナシキ ケヒココロ ケシキウツシネ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 58, "text": "カムナマニマニ カミワケノウタ オホトタマ タマルアハチ ホノサワケ", "textHtml": "カムナマニマニ カミワケノウタ オホトタマ タマルアハチ ホノサワケ", "map": "淡道之穂之狭別島（HIRO）", "sec": "国生み", "st": "ait"}, {"n": 59, "text": "オホコトオシヲ イヨフタナ イキツヒメシマ オホトヒワケ ハツチヒコ", "textHtml": "オホコトオシヲ イヨフタナ イキツヒメシマ オホトヒワケ ハツチヒコ", "map": "大事忍男神・大戸日別神 <span class=\"note\">［DB外1件: 「意与］</span>（HIRO）", "sec": "神生み", "st": "ait"}, {"n": 60, "text": "カムナマニマニ トヨウケヒメ ワクムスビ カミワケノミチ アメヨロツ", "textHtml": "カムナマニマニ トヨウケヒメ ワクムスビ カミワケノミチ アメヨロツ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 61, "text": "アマアワナギ ハヤアキツ ヨモツチカヘシ ヤホウツシツミ カシラハラ", "textHtml": "アマアワナギ　ハヤアキツ　ヨモツチカヘシ　ヤホウツシツミ　カシラハラ", "map": "沫那芸神（HIRO）", "sec": "神生み", "st": "ait"}, {"n": 62, "text": "ヤクサイカツチ ウツシツミ ヒダリミギリノ タナカヒノマ アキツヒメ", "textHtml": "ヤクサイカツチ　ウツシツミ　ヒダリミギリノ　タナカヒノマ　アキツヒメ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 63, "text": "ヘサカルカムミ ウツシツミ ムネニ タナマタオクソギ タナココロノセ", "textHtml": "ヘサカルカムミ　ウツシツミ　ムネニ　タナマタオクソギ　タナココロノセ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 64, "text": "ヤハ マカシ ソレ ツミ アメノ セヲ キネ アキ タマ コメ カム ナガラ ワク ツミ ヒトヨ ヤシ アナミ ワク アナミ コロ アメノ トヨセ ツミ アメノ ヨロ ツ ミナカ ノ オホ カミ", "textHtml": "ヤハ　マカシ　ソレ　ツミ　アメノ　セヲ　キネ　アキ　タマ　コメ　カム　ナガラ　ワク　ツミ　ヒトヨ　ヤシ　アナミ　ワク　アナミ　コロ　アメノ　トヨセ　ツミ　アメノ　ヨロ　ツ　ミナカ　ノ　オホ　カミ", "map": "<span class=\"note\">［DB外1件: 天之御中主神の大神］</span>（HIRO）", "sec": "—", "st": "ait"}, {"n": 65, "text": "カムナガラ アマ ネキ アメノ ワク トメ ミチ トヨ カム ツミ アワ タマ ヒメ ヤス マ ワ ケ ツミ ワク ハヤ タニ サキ イカ ツチ ヒビキ アマ タマ ノ ネ", "textHtml": "カムナガラ　アマ　ネキ　アメノ　ワク　トメ　ミチ　トヨ　カム　ツミ　アワ　タマ　ヒメ　ヤス　マ　ワ　ケ　ツミ　ワク　ハヤ　タニ　サキ　イカ　ツチ　ヒビキ　アマ　タマ　ノ　ネ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 66, "text": "カムナガラ ミツハ ワク ムス マカ タマ ノ アキ カタ フマリ ツツ ウミ ノ アナ トヨ フツ フミ ハマリ カム ナガラ ミツハ ワク ムス ミソデ マク カラミ ミカ ハヤビ", "textHtml": "カムナガラ　ミツハ　ワク　ムス　マカ　タマ　ノ　アキ　カタ　フマリ　ツツ　ウミ　ノ　アナ　トヨ　フツ　フミ　ハマリ　カム　ナガラ　ミツハ　ワク　ムス　ミソデ　マク　カラミ　ミカ　ハヤビ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 67, "text": "カゼ ミツ トロ ヤマ ツツミ クミト ヤマ ツツミ カムナガラ イワト ヌマ ツツミ オトワ ヤマ ツツミ トロ カエシ アオ アマ イワト ヤマ ツミ ハラ ヤマ ツミ アメノ ヨハ イホ ツワケ", "textHtml": "カゼ　ミツ　トロ　ヤマ　ツツミ　クミト　ヤマ　ツツミ　カムナガラ　イワト　ヌマ　ツツミ　オトワ　ヤマ　ツツミ　トロ　カエシ　アオ　アマ　イワト　ヤマ　ツミ　ハラ　ヤマ　ツミ　アメノ　ヨハ　イホ　ツワケ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 68, "text": "トヨホ イホ カムナガラ オホ カム カエシ ワケ カエシ イキ トキ オホ ワ カエシ スベ ソラ カムナガラ オキ ハヒ オキ ナギ サキ アヤ オキ ツ アカ ユラ ハユ タヘ", "textHtml": "トヨホ　イホ　カムナガラ　オホ　カム　カエシ　ワケ　カエシ　イキ　トキ　オホ　ワ　カエシ　スベ　ソラ　カムナガラ　オキ　ハヒ　オキ　ナギ　サキ　アヤ　オキ　ツ　アカ　ユラ　ハユ　タヘ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 69, "text": "カム ナガラ カエシ ナギ トキ トコロ タカ ユラ イヤ アマ ウツシ オホ アマ ウツシ カム ナガラ カム ナホビ イキ アマツ トメ ハヤ ウツシ ワタ ツミ ハヤ ヨミツ カム アマ", "textHtml": "カム　ナガラ　カエシ　ナギ　トキ　トコロ　タカ　ユラ　イヤ　アマ　ウツシ　オホ　アマ　ウツシ　カム　ナガラ　カム　ナホビ　イキ　アマツ　トメ　ハヤ　ウツシ　ワタ　ツミ　ハヤ　ヨミツ　カム　アマ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 70, "text": "アナ ウツシ ワタ ツミ アナ ユツ チハ ウツシ ワタ ツミ チハ ヨミツ カム アマ ミチ ハヒ ウツシ ワタ カエシ ミチ チハ ハマ トヨ チハ ウツシ カエシ カム ナガラ チハ ヨミツ", "textHtml": "アナ　ウツシ　ワタ　ツミ　アナ　ユツ　チハ　ウツシ　ワタ　ツミ　チハ　ヨミツ　カム　アマ　ミチ　ハヒ　ウツシ　ワタ　カエシ　ミチ　チハ　ハマ　トヨ　チハ　ウツシ　カエシ　カム　ナガラ　チハ　ヨミツ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 71, "text": "ウチムシ イキ カエシ ワク ウツシ ホギ アナ フト アマ ヤマト カムナガラ ウツシ ヨミ ワケ ヤホ ヤタ トメ フミ ナギ ワタ サキ アメ カム アマ オキ ツ サキ シマ ウシ", "textHtml": "ウチムシ イキ カエシ ワク ウツシ ホギ アナ フト アマ ヤマト カムナガラ ウツシ ヨミ ワケ ヤホ ヤタ トメ フミ ナギ ワタ サキ アメ カム アマ オキ ツ サキ シマ ウシ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 72, "text": "ソレ マ アマ ウツシ アウ ホコ アメ オホ カムナガラ アメノ ハシ マリ ココロ ワク ヤマ コブ ワケ ヒトミ トリ ムスヒメ ヒネ カム ナガラ ウツシ タマ イキ コト サキ ワレメ", "textHtml": "ソレ マ アマ ウツシ アウ ホコ アメ オホ カムナガラ アメノ ハシ マリ ココロ ワク ヤマ コブ ワケ ヒトミ トリ ムスヒメ ヒネ カム ナガラ ウツシ タマ イキ コト サキ ワレメ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 73, "text": "アメノ ヒトネ フト タマ アメノ カミ カム アマ アメノ ウケ ハシ ナギ ウツシ ミチ ナミ ウツシ ヤシマ イヤミチ オキ イキ カム アマ ヒメチ ナミ アメノ ナホビ チハ ヒメ フカヒ ウツシ", "textHtml": "アメノ ヒトネ フト タマ アメノ カミ カム アマ アメノ ウケ ハシ ナギ ウツシ ミチ ナミ ウツシ ヤシマ イヤミチ オキ イキ カム アマ ヒメチ ナミ アメノ ナホビ チハ ヒメ フカヒ ウツシ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 74, "text": "スベ カエシ ヤタ ナホビ カムナガラ アメノ ウツシ ヨミ タネ ウム ヤホマリ フナミ ヤホマリ フナミ ウミ フトヨ ヤト カム アマ イキ フナ イサキ クニ ヒト アメノ ハム フナ イヤ ハム", "textHtml": "スベ カエシ ヤタ ナホビ カムナガラ アメノ ウツシ ヨミ タネ ウム ヤホマリ フナミ ヤホマリ フナミ ウミ フトヨ ヤト カム アマ イキ フナ イサキ クニ ヒト アメノ ハム フナ イヤ ハム", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 75, "text": "ナギ ウム カムナガラ イホ ハラ ハメ ヤホ ウツシ クマリ ワク ムスビ トヨ ウケ ヒ メ カム ナガラ オキ ホト ムツ ナギ サキ トコ カムミ マリ アメノ ヤタカミ アメノ ソマ", "textHtml": "ナギ ウム カムナガラ イホ ハラ ハメ ヤホ ウツシ クマリ ワク ムスビ トヨ ウケ ヒ メ カム ナガラ オキ ホト ムツ ナギ サキ トコ カムミ マリ アメノ ヤタカミ アメノ ソマ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 76, "text": "カムナガラ アマ ワレマ アメノ クソムス オキ ヤホマ カム ウツシ スベ カエシ フナ コロシ カムナガラ ア ナ アマ ハユ ユツ コナ カムミ マリ アメノ コト ミチ ヨミ カム アマ", "textHtml": "カムナガラ アマ ワレマ アメノ クソムス オキ ヤホマ カム ウツシ スベ カエシ フナ コロシ カムナガラ ア ナ アマ ハユ ユツ コナ カムミ マリ アメノ コト ミチ ヨミ カム アマ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 77, "text": "ヒネ シマ ヒメ ヨミ オキ ヤマツミ ムツノ ウツシ カエシ フナ カエシ ハネ カムナガラ オホ トケ ハシリ アマ トヨ コトミチ ナミ ウロ ハユ アメ ウツシ アヤ カム ナガラ アメノ フトマリ", "textHtml": "ヒネ シマ ヒメ ヨミ オキ ヤマツミ ムツノ ウツシ カエシ フナ カエシ ハネ カムナガラ オホ トケ ハシリ アマ トヨ コトミチ ナミ ウロ ハユ アメ ウツシ アヤ カム ナガラ アメノ フトマリ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 78, "text": "ヤマト ヒネ フトヤ フミトメ トロミ ハユ フナトメ フナミ カエシ コト カムナガラ アメノ フナ フミ オホ ナミ ヒメ アメノ ウヅメ ヒメ ハニ ヤギ ウヅメ カムナガラ オキツ フトマ ハシ フトヤ ユマリ ネギ", "textHtml": "ヤマト ヒネ フトヤ フミトメ トロミ ハユ フナトメ フナミ カエシ コト カムナガラ アメノ フナ フミ オホ ナミ ヒメ アメノ ウヅメ ヒメ ハニ ヤギ ウヅメ カムナガラ オキツ フトマ ハシ フトヤ ユマリ ネギ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 79, "text": "オホ ワタ マリ イムナ カムナガラ カム アマ ヒト タマ カム マリ ハヒ タマ ハヒ オキナ サキ ミチ カム ミチ カムナガラ マノ スベ オキ アマツ イマ ウミ ヒト ウツシ", "textHtml": "オホ ワタ マリ イムナ カムナガラ カム アマ ヒト タマ カム マリ ハヒ タマ ハヒ オキナ サキ ミチ カム ミチ カムナガラ マノ スベ オキ アマツ イマ ウミ ヒト ウツシ", "map": "確認できず", "sec": "—", "st": "unk"}, {"n": 80, "text": "ヒト アメノ ウツシ ネ カムナガラ ウミ イマ サキ イヤミヨ ヤホ ウミ アマ マカ ウミ ウツシ ソレ ヤス カムナガラ ミトロ カヘシ アキ ウツシ スベ ワリ アマ タマ ミトロ カヘシ", "textHtml": "ヒト アメノ ウツシ ネ カムナガラ ウミ イマ サキ イヤミヨ ヤホ ウミ アマ マカ ウミ ウツシ ソレ ヤス カムナガラ ミトロ カヘシ アキ ウツシ スベ ワリ アマ タマ ミトロ カヘシ", "map": "確認できず", "sec": "—", "st": "unk"}], "flow": [{"sec": "別天神", "songs": [7, 8, 9, 10]}, {"sec": "神世七代", "songs": [9, 13, 18, 28, 30, 36]}, {"sec": "国土の修理固成（淤能碁呂嶋）", "songs": [10]}, {"sec": "国生み", "songs": [16, 22, 23, 24, 25, 28, 32, 38, 58]}, {"sec": "神生み", "songs": [14, 15, 16, 23, 24, 25, 28, 35, 36, 37, 38, 39, 42, 59, 61]}, {"sec": "伊耶那美の神避り", "songs": [26, 29]}, {"sec": "火神被殺", "songs": [28, 40, 41, 42]}, {"sec": "黄泉国③", "songs": [43, 49]}, {"sec": "禊①", "songs": [43, 44, 45, 50, 51]}, {"sec": "禊②", "songs": [14, 45, 46, 47, 56]}, {"sec": "うけひ", "songs": [47]}, {"sec": "天の石屋②", "songs": [19]}, {"sec": "須賀の宮②", "songs": [31]}]};
+const SONGS = DATA.songs, FLOW = DATA.flow;
+const ST = {
+  ait:   {label:'古事記の神名に対応', short:'神名に対応'},
+  nashi: {label:'対応なしと明記',     short:'対応なし'},
+  kigu:  {label:'神器のみ（神名なし）', short:'神器のみ'},
+  unk:   {label:'資料に記述なし（未確認）', short:'未確認'}
+};
+const COLOR = {ait:'var(--ait)', nashi:'var(--nashi)', kigu:'var(--kigu)', unk:'var(--unk)'};
+const byN = n => SONGS[n-1];
+const img = n => 'images/s' + String(n).padStart(2,'0') + '.jpg';
+const strip = h => { const d=document.createElement('div'); d.innerHTML=h; return d.textContent; };
+const $ = id => document.getElementById(id);
+const BLURB = {
+  '別天神':'天地がひらけたとき、最初に現れた神々。',
+  '神世七代':'別天神のあとに続く、国土ができる前の神々の世代。',
+  '国土の修理固成（淤能碁呂嶋）':'イザナギとイザナミが国づくりを命じられ、最初の島をつくる場面。',
+  '国生み':'二神が日本の島々を生む場面。',
+  '神生み':'島に続いて、山・海・風・火などの神々を生む場面。',
+  '伊耶那美の神避り':'火の神を生んだイザナミが亡くなる場面。',
+  '火神被殺':'イザナギが、火の神を斬る場面。',
+  '黄泉国③':'黄泉の国から逃げ帰るくだり。',
+  '禊①':'黄泉から戻ったイザナギが、身を清める場面のはじまり。',
+  '禊②':'禊の続き。神々が次々に生まれる場面。',
+  'うけひ':'アマテラスとスサノオが、誓いを立てて神々を生む場面。',
+  '天の石屋②':'アマテラスが岩屋に隠れ、世が暗くなる場面。',
+  '須賀の宮②':'スサノオが出雲に宮を建てる場面。'
+};
+
+// 件数
+const cnt = {ait:0,nashi:0,kigu:0,unk:0}; SONGS.forEach(s=>cnt[s.st]++);
+$('stats').innerHTML = ['ait','nashi','kigu','unk'].map(k =>
+  `<div class="stat" data-st="${k}"><b>${cnt[k]}</b><span>${ST[k].label}</span></div>`).join('');
+$('legend').innerHTML = ['ait','nashi','kigu','unk'].map(k =>
+  `<span><i style="background:${COLOR[k]}"></i>${ST[k].label}</span>`).join('');
+
+// モザイク
+$('mosaic').innerHTML = SONGS.map(s =>
+  `<button data-n="${s.n}" data-st="${s.st}" aria-label="第${s.n}首（${ST[s.st].label}）"><img src="${img(s.n)}" alt="" loading="lazy"><span>${s.n}</span></button>`).join('');
+
+// 流れ
+$('flow').innerHTML = FLOW.map(f => {
+  const th = f.songs.map(n => `<button data-n="${n}" aria-label="第${n}首"><img src="${img(n)}" alt="第${n}首の渦巻き図" loading="lazy"><span>第${n}首</span></button>`).join('');
+  return `<div class="step"><h3>${f.sec}</h3><p>${BLURB[f.sec]||''}${f.songs.length}首</p><div class="thumbs">${th}</div></div>`;
+}).join('');
+
+// 一覧
+let filter = 'all';
+function renderGrid(){
+  const list = SONGS.filter(s => filter==='all' || s.st===filter);
+  $('count').textContent = list.length + '首を表示';
+  $('grid').innerHTML = list.map(s => {
+    const m = strip(s.map).replace(/［[^］]*］/g,'').replace(/\s+/g,' ').slice(0,46);
+    return `<button class="card" data-n="${s.n}" data-st="${s.st}"><img src="${img(s.n)}" alt="" loading="lazy"><span><b>第${s.n}首</b><span class="t">${m}</span><span class="badge" data-st="${s.st}">${ST[s.st].short}</span></span></button>`;
+  }).join('');
+}
+$('filters').innerHTML = [['all','ぜんぶ（80）'],['ait','神名に対応（'+cnt.ait+'）'],['nashi','対応なし（'+cnt.nashi+'）'],['kigu','神器のみ（'+cnt.kigu+'）'],['unk','未確認（'+cnt.unk+'）']]
+  .map(([k,l]) => `<button class="chip" data-f="${k}" aria-pressed="${k==='all'}">${l}</button>`).join('');
+$('filters').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if(!b) return;
+  filter = b.dataset.f;
+  $('filters').querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c===b));
+  renderGrid();
+});
+renderGrid();
+
+// ダイアログ
+const dlg = $('dlg'); let cur = 1;
+function openSong(n){
+  cur = n; const s = byN(n);
+  const flowSecs = FLOW.filter(f=>f.songs.includes(n)).map(f=>f.sec);
+  $('dlgBody').innerHTML = `
+    <div class="dtop"><h3>第${n}首　<span class="badge" data-st="${s.st}">${ST[s.st].label}</span></h3><button class="x" id="dx">閉じる</button></div>
+    <img class="dimg" data-st="${s.st}" src="${img(n)}" alt="第${n}首の渦巻き図">
+    <p class="dnote">元資料の渦巻き図（白黒反転）。本文との首ごとの照合は未了です。</p>
+    <dl class="dl">
+      <div><dt>本文</dt><dd>${s.textHtml}</dd></div>
+      <div><dt>古事記側の対応（解説者が当てたもの）</dt><dd>${s.map}</dd></div>
+      <div><dt>古事記で初めて出る場面</dt><dd>${s.sec}${flowSecs.length?'':''}</dd></div>
+    </dl>
+    <div class="dnav"><button id="dp"${n<=1?' disabled':''}>← 第${n-1}首</button><button id="dn"${n>=80?' disabled':''}>第${n+1}首 →</button></div>`;
+  if(!dlg.open) dlg.showModal();
+  $('dlgBody').scrollTop = 0;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-n]');
+  if (b && !dlg.contains(b)) { openSong(+b.dataset.n); return; }
+  if (e.target.id==='dx') dlg.close();
+  if (e.target.id==='dp' && cur>1) openSong(cur-1);
+  if (e.target.id==='dn' && cur<80) openSong(cur+1);
+  if (e.target===dlg) dlg.close();
+});
+document.addEventListener('keydown', e => {
+  if(!dlg.open) return;
+  if(e.key==='ArrowLeft' && cur>1) openSong(cur-1);
+  if(e.key==='ArrowRight' && cur<80) openSong(cur+1);
+});
+</script>
+</body>
+</html>
