@@ -731,6 +731,12 @@ footer {
 }
 .book-links { display:flex; flex-wrap:wrap; gap:12px; }
 .book-links .btn-primary { display:inline-block; }
+.book-links .book-note-link {
+  display:inline-block; padding:12px 22px; border-radius:var(--radius-full);
+  border:1px solid var(--leather); color:var(--leather); font-size:17px;
+  transition:background .2s;
+}
+.book-links .book-note-link:hover { background:var(--leather-pale); }
 @media (max-width:768px) {
   .book-card { grid-template-columns:1fr; gap:28px; text-align:center; }
   .book-cover img { max-width:180px; margin:0 auto; }
@@ -1224,9 +1230,11 @@ footer {
         <h3 class="book-title" data-i18n="book.title">公務員が革職人に？</h3>
         <p class="book-subtitle" data-i18n="book.subtitle">25年勤めた元海上自衛官が、『好き』を仕事にした記録</p>
         <p class="book-desc" data-i18n="book.desc">25年勤めた私が、好きな革の仕事で開業するまでの記録と、その数字をまとめた一冊です。売上も、失敗も、続ける理由も、そのまま書きました。</p>
-        <p class="book-status" data-i18n="book.status">Amazon で近日発売（Kindle 版・紙の本）</p>
+        <p class="book-status" data-i18n="book.status">Amazon で発売中（Kindle 版・紙の本）</p>
         <div class="book-links">
-          <a href="https://note.com/you0810jmsdf/n/n51319b4f75b5" class="btn-primary" target="_blank" rel="noopener" data-i18n="book.note">note で読む</a>
+          <a href="https://www.amazon.co.jp/dp/B0H7TB6BKG" class="btn-primary" target="_blank" rel="noopener" data-i18n="book.kindle">Kindle 版 1,250円</a>
+          <a href="https://www.amazon.co.jp/dp/B0HSX396ZQ" class="btn-primary" target="_blank" rel="noopener" data-i18n="book.paper">紙の本 1,980円</a>
+          <a href="https://note.com/you0810jmsdf/n/n51319b4f75b5" class="book-note-link" target="_blank" rel="noopener" data-i18n="book.note">note で読む</a>
         </div>
       </div>
     </div>
@@ -1417,7 +1425,9 @@ window.NSF_I18N_DICT = {
   'book.title': 'From Civil Servant to Leather Craftsman?',
   'book.subtitle': 'A record of how I turned what I love into my work, after 25 years in the Japan Maritime Self-Defense Force',
   'book.desc': 'The record, with the real numbers, of how I opened my own leather craft business after 25 years of service. Sales, failures, and the reasons I keep going are all written down as they are.',
-  'book.status': 'Coming soon on Amazon (Kindle and paperback, in Japanese)',
+  'book.status': 'Now on Amazon (Kindle and paperback, in Japanese)',
+  'book.kindle': 'Kindle edition ¥1,250',
+  'book.paper': 'Paperback ¥1,980',
   'book.note': 'Read on note (Japanese)',
   'contact.heading': 'Contact',
   'contact.body': 'Order consultations, collaboration proposals, teaching requests — feel free to get in touch.',
