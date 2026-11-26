@@ -115,7 +115,7 @@
    "hero": {
     "img": "yomi-hero.jpg",
     "cap": "黄泉比良坂を石でふさぐ伊耶那岐命",
-    "cap_en": "Izanagi-no-Mikoto blocks 黄泉比良坂 (reading unconfirmed) with a rock"
+    "cap_en": "Izanagi-no-Mikoto blocks Yomotsuhirasaka (黄泉比良坂) with a rock"
    },
    "heads": [
     "黄泉国へ妻を追う",
@@ -128,7 +128,7 @@
    "heads_en": [
     "Following Izanami-no-Mikoto to the Land of Yomi",
     "Izanagi-no-Mikoto flees from the pursuers",
-    "The peaches and the rock at 黄泉比良坂 (reading unconfirmed)",
+    "The peaches and the rock at Yomotsuhirasaka (黄泉比良坂)",
     "Names given to the deities and the rock",
     "Going to perform purification"
    ]
@@ -165,7 +165,7 @@
     "Susanoo-no-Mikoto goes up to heaven",
     "Amaterasu-Ōmikami brandishes her bow",
     "Susanoo-no-Mikoto proposes a pledge",
-    "The pledge across 天安河 (reading unconfirmed)",
+    "The pledge across Ame-no-Yasu-no-Kawa (天安河)",
     "Dividing the children who were born",
     "Susanoo-no-Mikoto claims victory",
     "The heavenly piebald horse in the sacred weaving hall"
@@ -254,7 +254,7 @@
      "img": "inaba-3.jpg",
      "shape": "port",
      "cap": "水門で菟に治し方を教える大穴牟遅神",
-     "cap_en": "大穴牟遅神 (reading unconfirmed) teaches the hare at the river mouth"
+     "cap_en": "Ōanamuji-no-Kami (大穴牟遅神) teaches the hare at the river mouth"
     },
     {
      "after": 3,
@@ -268,15 +268,15 @@
      "img": "inaba-5.jpg",
      "shape": "port",
      "cap": "八十神を退け、大穴牟遅神に嫁ぐと答えた八上比売",
-     "cap_en": "Yakami-hime answers that she will marry 大穴牟遅神 (reading unconfirmed)"
+     "cap_en": "Yakami-hime answers that she will marry Ōanamuji-no-Kami (大穴牟遅神)"
     }
    ],
    "heads_en": [
-    "The Eighty Deities set out for 稲羽 (reading unconfirmed)",
+    "The Eighty Deities set out for Inaba (稲羽)",
     "The naked hare at the cape of 気多 (reading unconfirmed)",
     "The hare tells what happened",
-    "The teaching of 大穴牟遅神 (reading unconfirmed)",
-    "What the hare told 大穴牟遅神 (reading unconfirmed)"
+    "The teaching of Ōanamuji-no-Kami (大穴牟遅神)",
+    "What the hare told Ōanamuji-no-Kami (大穴牟遅神)"
    ]
   },
   "nenokuni": {
@@ -291,7 +291,7 @@
    ],
    "figs": [],
    "heads_en": [
-    "The heated rock and the death of 大穴牟遲神 (reading unconfirmed)",
+    "The heated rock and the death of Ōanamuji-no-Kami (大穴牟遲神)",
     "Crushed in the split tree and sent to 根堅州國 (reading unconfirmed)",
     "Suseri-bime and the chamber of snakes",
     "The burning field and the mouse",
@@ -312,12 +312,12 @@
    ],
    "figs": [],
    "heads_en": [
-    "The songs of 八千矛神 (reading unconfirmed) and Nunakawa-hime",
+    "The songs of Yachihoko-no-Kami (八千矛神) and Nunakawa-hime",
     "Suseri-bime's jealousy and the song for the journey",
     "The consort's song and the divine tales",
     "The wives and children of Ōkuninushi-no-Kami",
     "Sukunahikona-no-Kami and making and firming up the land",
-    "The deity worshipped on 御諸山 (reading unconfirmed)",
+    "The deity worshipped on Mimoro-no-Yama (御諸山)",
     "The descendants of Ōtoshi-no-Kami"
    ]
   },
@@ -455,8 +455,8 @@
     "Setting out east from the Takachiho palace",
     "Meeting 宇豆毘古 (reading unconfirmed) at 速吸門 (reading unconfirmed)",
     "Itsuse-no-Mikoto is struck by an arrow",
-    "The sword of 高倉下 (reading unconfirmed) at Kumano",
-    "The dream of 高倉下 (reading unconfirmed)",
+    "The sword of Takakuraji (高倉下) at Kumano",
+    "The dream of Takakuraji (高倉下)",
     "Following Yatagarasu"
    ]
   },
@@ -470,9 +470,9 @@
    ],
    "figs": [],
    "heads_en": [
-    "兄宇迦斯 (reading unconfirmed) shoots back a whistling arrow",
-    "兄宇迦斯 (reading unconfirmed) is struck by the crushing trap",
-    "The feast of 弟宇迦斯 (reading unconfirmed) and a song",
+    "Eukashi (兄宇迦斯) shoots back a whistling arrow",
+    "Eukashi (兄宇迦斯) is struck by the crushing trap",
+    "The feast of Otōkashi (弟宇迦斯) and a song",
     "The Eighty Braves at 忍坂 (reading unconfirmed)",
     "A song for attacking 登美毘古 (reading unconfirmed)"
    ]
@@ -488,7 +488,7 @@
    "figs": [],
    "heads_en": [
     "Nigihayahi-no-Mikoto comes to serve",
-    "大久米命 (reading unconfirmed) tells of the child of a deity",
+    "Ōkume-no-Mikoto (大久米命) tells of the child of a deity",
     "Ōmononushi-no-Kami as a vermilion-painted arrow",
     "Seven maidens at 高佐士野 (reading unconfirmed)",
     "A night with the maiden beside the Sai River"
@@ -504,7 +504,7 @@
    "figs": [],
    "heads_en": [
     "Tagishimimi-no-Mikoto plots against his brothers",
-    "神沼河耳命 (reading unconfirmed) kills Tagishimimi-no-Mikoto",
+    "Kamununakawamimi-no-Mikoto (神沼河耳命) kills Tagishimimi-no-Mikoto",
     "Kamuyaimimi-no-Mikoto yields the position",
     "The age and tomb of 神倭伊波禮毘古 (reading unconfirmed)"
    ]
@@ -523,7 +523,7 @@
     "Emperors Itoku, Kōshō and Kōan",
     "Emperor Kōrei's children and Kibi",
     "Emperor Kōgen's children and Takeuchi-no-Sukune",
-    "Emperor Kaika and the line of 日子坐王 (reading unconfirmed)"
+    "Emperor Kaika and the line of Hikoimasu-no-Miko (日子坐王)"
    ]
   },
   "sujin-miwa": {
@@ -538,7 +538,7 @@
    "heads_en": [
     "Emperor Sujin's children",
     "Pestilence and the dream of Ōmononushi-no-Ōkami",
-    "The emperor questions 意富多多泥古 (reading unconfirmed)",
+    "The emperor questions Ōtataneko (意富多多泥古)",
     "Shrines for the heavenly and earthly deities",
     "Red earth and the hemp thread"
    ]
@@ -554,8 +554,8 @@
    "figs": [],
    "heads_en": [
     "Ōbiko-no-Mikoto and Takenunakawawake-no-Mikoto are sent out",
-    "The maiden's song and 建波邇安王 (reading unconfirmed)",
-    "Shooting 建波邇安王 (reading unconfirmed) at the 和訶羅河 (reading unconfirmed)",
+    "The maiden's song and Takehaniyasu-ō (建波邇安王)",
+    "Shooting Takehaniyasu-ō (建波邇安王) at the 和訶羅河 (reading unconfirmed)",
     "Places named 屎褌 (reading unconfirmed) and the Cormorant River",
     "Ōbiko and Takenunakawawake meet at Aizu"
    ]
@@ -572,7 +572,7 @@
    "figs": [],
    "heads_en": [
     "Emperor Suinin's consorts and children",
-    "沙本毘古王 (reading unconfirmed) gives the cord dagger",
+    "Sahobiko-no-Miko (沙本毘古王) gives the cord dagger",
     "The consort tells of the emperor's dream",
     "The consort enters the rice fortress",
     "The consort's hair and jewel cords",
@@ -612,8 +612,8 @@
    "figs": [],
    "heads_en": [
     "Emperor Keikō's consort and children",
-    "The two women taken by 大碓命 (reading unconfirmed)",
-    "小碓命 (reading unconfirmed) and the elder brother who did not come out",
+    "The two women taken by Ōusu-no-Mikoto (大碓命)",
+    "Ōsu-no-Mikoto (小碓命) and the elder brother who did not come out",
     "Entering the house of the 熊曾建 (reading unconfirmed) in a young girl's guise",
     "The killing of 熊曾建 (reading unconfirmed) and the name Yamato Takeru",
     "Killing Izumo Takeru (出雲建) with a fake sword (詐刀)"
@@ -635,7 +635,7 @@
     "The fire-striker and the counter-fire",
     "弟橘比賣命 (reading unconfirmed) enters the sea",
     "The comb and the slope deity of 足柄 (reading unconfirmed)",
-    "The cry 阿豆麻波夜 (reading unconfirmed) and the song at 酒折宮 (reading unconfirmed)"
+    "The cry 阿豆麻波夜 (reading unconfirmed) and the song at Sakaori-no-Miya (酒折宮)"
    ]
   },
   "yamatotakeru-saigo": {
@@ -650,7 +650,7 @@
    ],
    "figs": [],
    "heads_en": [
-    "The old man at 酒折宮 (reading unconfirmed) and Miyazu-hime",
+    "The old man at Sakaori-no-Miya (酒折宮) and Miyazu-hime",
     "The white boar of Ibuki and the great icy rain",
     "The clear spring 居寤清泉 (reading unconfirmed) and 當藝野 (reading unconfirmed)",
     "The village of 三重 (reading unconfirmed) and the songs of the homeland",
@@ -690,7 +690,7 @@
    ],
    "figs": [],
    "heads_en": [
-    "The mourning ship and the death of 香坂王 (reading unconfirmed)",
+    "The mourning ship and the death of Kagusaka-no-Miko (香坂王)",
     "Oshikuma-no-Miko and 難波根子建振熊命 (reading unconfirmed) in battle",
     "The stratagem of cutting the bowstrings",
     "Oshikuma-no-Miko and 伊佐比宿禰 (reading unconfirmed) enter the sea",
@@ -711,9 +711,9 @@
    "figs": [],
    "heads_en": [
     "Emperor Ōjin's wives and children",
-    "Wishing 宇遅能和紀郎子 (reading unconfirmed) to rule the realm",
+    "Wishing Uji-no-Wakiiratsuko (宇遅能和紀郎子) to rule the realm",
     "Meeting 宮主矢河枝比売 (reading unconfirmed) at 木幡 (reading unconfirmed)",
-    "髪長比売 (reading unconfirmed) is given to 大雀命 (reading unconfirmed)",
+    "Kaminagahime (髪長比売) is given to Ōsazaki-no-Mikoto (大雀命)",
     "The songs of the emperor and the crown prince",
     "The song of the 国主 of Yoshino"
    ]
@@ -731,10 +731,10 @@
    "heads_en": [
     "Horses from Paekche and the Analects",
     "The sake of 須須許理 (reading unconfirmed) and the stone",
-    "大山守命 (reading unconfirmed) prepares troops",
+    "Ōyamamori-no-Mikoto (大山守命) prepares troops",
     "Dropping 大山守命 from the boat",
-    "The cape of 訶和羅 (reading unconfirmed) and the bones of 大山守命 (reading unconfirmed)",
-    "大雀命 (reading unconfirmed) and 宇遅能和紀郎子 (reading unconfirmed) yield the realm to each other"
+    "The cape of 訶和羅 (reading unconfirmed) and the bones of Ōyamamori-no-Mikoto (大山守命)",
+    "Ōsazaki-no-Mikoto (大雀命) and Uji-no-Wakiiratsuko (宇遅能和紀郎子) yield the realm to each other"
    ]
   },
   "amenohiboko": {
@@ -785,11 +785,11 @@
    ],
    "figs": [],
    "heads_en": [
-    "The jealousy of 石之日売命 (reading unconfirmed)",
-    "黒日売 (reading unconfirmed) flees down to Kibi",
-    "黒日売 (reading unconfirmed) is driven off the boat",
+    "The jealousy of Iwa-no-Hime-no-Mikoto (石之日売命)",
+    "Kurohime (黒日売) flees down to Kibi",
+    "Kurohime (黒日売) is driven off the boat",
     "Picking 菘菜 (reading unconfirmed) greens in Kibi",
-    "黒日売 (reading unconfirmed) presents songs"
+    "Kurohime (黒日売) presents songs"
    ]
   },
   "nintoku-yamashiro": {
@@ -821,8 +821,8 @@
    ],
    "figs": [],
    "heads_en": [
-    "Songs exchanged with 八田若郎女 (reading unconfirmed)",
-    "女鳥王 (reading unconfirmed) becomes the wife of 速総別王 (reading unconfirmed)",
+    "Songs exchanged with Yata-no-Wakairatsume (八田若郎女)",
+    "Medori-no-Miko (女鳥王) becomes the wife of 速総別王 (reading unconfirmed)",
     "The emperor visits 女鳥王",
     "Fleeing to Mount 倉椅山 (reading unconfirmed)",
     "山部大楯連 (reading unconfirmed) takes the jewelled bracelet"
@@ -838,7 +838,7 @@
    ],
    "figs": [],
    "heads_en": [
-    "A wild goose lays eggs on the island of 日女嶋 (reading unconfirmed)",
+    "A wild goose lays eggs on the island of Himeshima (日女嶋)",
     "Takeuchi-no-Sukune answers in a song",
     "The ship named 枯野 (reading unconfirmed)",
     "The broken ship, salt and a koto",
@@ -878,7 +878,7 @@
    ],
    "figs": [],
    "heads_en": [
-    "The consorts and children of 男浅津間若子宿禰命 (reading unconfirmed)",
+    "The consorts and children of Oasatsumawakugo-no-Sukune-no-Mikoto (男浅津間若子宿禰命)",
     "The emperor declines the succession",
     "Fixing the clan names and titles",
     "Crown Prince 軽 and 軽大郎女 (reading unconfirmed)",
@@ -899,7 +899,7 @@
    "figs": [],
    "heads_en": [
     "根臣 (reading unconfirmed) steals the jewelled headdress",
-    "目弱王 (reading unconfirmed) cuts off the emperor’s head",
+    "Mayowa-no-Miko (目弱王) cuts off the emperor’s head",
     "The deaths of 黒日子王 (reading unconfirmed) and 白日子王 (reading unconfirmed)",
     "Surrounding the house of 都夫良意美 (reading unconfirmed)",
     "The shooting of 市辺之忍歯王 (reading unconfirmed)",
@@ -919,12 +919,12 @@
    "figs": [],
    "heads_en": [
     "The consorts and children of 大長谷若建命 (reading unconfirmed)",
-    "The house of the great district chief of 志幾 (reading unconfirmed)",
-    "The dog sent to 若日下部王 (reading unconfirmed)",
+    "The house of the great district chief of Shiki (志幾)",
+    "The dog sent to Wakakusakabe-no-Miko (若日下部王)",
     "引田部赤猪子 (reading unconfirmed) waits eighty years",
     "Two songs for 赤猪子 (reading unconfirmed)",
     "The maiden dances at Yoshino",
-    "The origin of the name 阿岐豆野 (reading unconfirmed)"
+    "The origin of the name Akizuno (阿岐豆野)"
    ]
   },
   "yuryaku-hitokoto": {
