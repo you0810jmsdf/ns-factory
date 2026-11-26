@@ -708,8 +708,8 @@ function closeModal() {
   editingId = null;
 }
 
-function toggleUrlField(type) {
-  document.getElementById('url-row').style.display = type === 'website' ? 'flex' : 'none';
+function toggleUrlField() {   // URL欄は種類にかかわらず、いつも出す（2026-11-26 事業主決定A「サービスって区分そもそもいるの？」→ 種類の欄を外した）
+  document.getElementById('url-row').style.display = 'flex';
 }
 
 function renderHistoryForm(history) {

@@ -189,9 +189,9 @@ const PrintManager = (() => {
     const blankRows = Array(Math.max(0, maxRows - printRows.length))
       .fill('<tr class="blank-row"><td class="col-date"></td><td class="col-hist"></td></tr>');
 
-    const subText = entry.owner
-      ? `${entry.owner}${entry.type === 'website' && entry.url ? '　' + entry.url : ''}`
-      : (entry.type === 'website' && entry.url ? entry.url : '');
+    const subText = entry.owner   // URL は種類にかかわらず、あれば印刷する（2026-11-26・種類の欄を外した）
+      ? `${entry.owner}${entry.url ? '　' + entry.url : ''}`
+      : (entry.url || '');
     // 長いURLは字を小さくして3行まで入れる（2行・7.5ptで約110字、3行・6ptで約190字が目安）
     const subCls = textUnits(subText) > size.subLongUnits ? 'svc-sub svc-sub--long' : 'svc-sub';
     const ownerLine = subText ? `<div class="${subCls}">${subText}</div>` : '';

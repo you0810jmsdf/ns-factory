@@ -139,21 +139,17 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <form id="entry-form">
       <input type="hidden" id="e-id">
       <div class="modal-body">
-        <div class="row-2">
-          <div class="field-row">
-            <label for="e-title">サービス名 *</label>
-            <input type="text" id="e-title" required placeholder="例: Amazon, Gmail">
-          </div>
-          <div class="field-row">
-            <label for="e-type">種類</label>
-            <select id="e-type">
-              <option value="website">Webサイト</option>
-              <option value="app">アプリ</option>
-              <option value="service">サービス</option>
-              <option value="other">その他</option>
-            </select>
-          </div>
+        <div class="field-row">
+          <label for="e-title">サービス名 *</label>
+          <input type="text" id="e-title" required placeholder="例: Amazon, Gmail">
         </div>
+        <!-- 種類の欄は画面から外した（2026-11-26・URL欄を隠すだけで、ほかに使い道が無かった）。保存済みの種類はそのまま残すため、見えない欄で持ち続ける -->
+        <select id="e-type" hidden aria-hidden="true" tabindex="-1">
+          <option value="website">Webサイト</option>
+          <option value="app">アプリ</option>
+          <option value="service">サービス</option>
+          <option value="other">その他</option>
+        </select>
 
         <div class="row-2">
           <div class="field-row">
