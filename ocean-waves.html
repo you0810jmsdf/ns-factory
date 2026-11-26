@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNABARA ― 海原を、ながめる。</title>
+<meta name="description" content="画像素材0枚。コードがリアルタイムに描く、うねる外洋。波の強さと時間帯を切り替えて、ぐるりと見回せます。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#c8a978;
+    --ink:#f2f4f6;
+    --ink-dim:rgba(242,244,246,.7);
+    --bg:#03060a;
+    --pill-bg:rgba(5,9,14,.42);
+    --pill-bd:rgba(255,255,255,.18);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;background:var(--bg);color:var(--ink);
+    font-family:'Noto Sans JP',sans-serif;}
+  html{overflow-x:clip;}
+  #glcanvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:grab;}
+  #glcanvas.dragging{cursor:grabbing;}
+
+  header{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;
+    justify-content:space-between;gap:12px;padding:20px clamp(14px,4vw,44px);pointer-events:none;}
+  header .side{display:flex;align-items:center;gap:14px;pointer-events:auto;min-width:0;}
+  a.back{color:var(--ink-dim);text-decoration:none;font-size:12.5px;letter-spacing:.08em;white-space:nowrap;
+    transition:color .2s;text-shadow:0 1px 8px rgba(0,0,0,.5);}
+  a.back:hover{color:var(--ink);}
+  .divider{width:1px;height:14px;background:var(--pill-bd);flex-shrink:0;}
+  .logo{display:flex;align-items:center;gap:8px;font-size:15px;letter-spacing:.34em;font-weight:500;
+    text-shadow:0 1px 8px rgba(0,0,0,.5);}
+  .logo .ring{width:9px;height:9px;border:1.5px solid var(--gold);border-radius:50%;flex-shrink:0;}
+  a.readmore{border:1px solid var(--pill-bd);background:var(--pill-bg);color:var(--ink-dim);
+    font-size:12px;letter-spacing:.06em;padding:9px 16px;border-radius:999px;text-decoration:none;
+    white-space:nowrap;backdrop-filter:blur(8px);transition:.2s;}
+  a.readmore:hover{border-color:var(--gold);color:var(--gold);}
+
+  .veil{position:fixed;left:0;right:0;bottom:0;height:46vh;z-index:2;pointer-events:none;
+    background:linear-gradient(180deg,rgba(3,6,10,0) 0%,rgba(3,6,10,.42) 100%);}
+  .hero-fade{transition:opacity .2s linear;}
+  .lead{position:fixed;left:clamp(20px,5vw,48px);bottom:150px;z-index:4;pointer-events:none;max-width:560px;}
+  .kicker{font-family:ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:12px;letter-spacing:.16em;
+    color:var(--ink-dim);margin:0 0 12px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
+  .kicker b{color:var(--gold);font-weight:400;}
+  .lead h1{font-family:'Zen Old Mincho',serif;font-weight:700;font-size:clamp(26px,4.6vw,44px);
+    letter-spacing:.06em;line-height:1.4;margin:0 0 14px;text-shadow:0 2px 18px rgba(0,0,0,.55);}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;}
+  .pill{background:var(--pill-bg);border:1px solid var(--pill-bd);border-radius:999px;padding:8px 14px;
+    font-size:12px;color:var(--ink-dim);backdrop-filter:blur(6px);white-space:nowrap;}
+  .pill b{color:var(--gold);font-weight:500;}
+
+  nav.modes{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:5;
+    background:rgba(5,9,14,.58);border:1px solid var(--pill-bd);border-radius:999px;
+    padding:8px 10px;display:flex;align-items:center;gap:4px;backdrop-filter:blur(14px);
+    max-width:calc(100vw - 24px);overflow-x:auto;scrollbar-width:none;}
+  nav.modes::-webkit-scrollbar{display:none;}
+  .grouplabel{font-size:11px;color:var(--ink-dim);letter-spacing:.12em;padding:0 8px 0 8px;white-space:nowrap;}
+  .sep{width:1px;align-self:stretch;background:var(--pill-bd);margin:2px 4px;flex-shrink:0;}
+  .modebtn{border:none;background:transparent;color:var(--ink-dim);font-family:inherit;font-size:13px;
+    padding:10px 15px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:.2s;flex-shrink:0;}
+  .modebtn:hover{color:var(--ink);}
+  .modebtn.active{background:var(--gold);color:#211a0d;font-weight:700;}
+
+  .glhint{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,#0a1a3a,#03060a);color:var(--ink-dim);font-size:14px;line-height:2;
+    text-align:center;padding:40px;z-index:3;}
+  .glhint.show{display:flex;}
+
+  .about{position:relative;z-index:6;margin-top:100vh;padding:88px clamp(20px,6vw,80px) 120px;
+    background:linear-gradient(180deg, rgba(3,6,10,0) 0%, var(--bg) 90px, var(--bg) 100%);}
+  .about-inner{max-width:680px;}
+  .about-eyebrow{font-family:ui-monospace,'SFMono-Regular',Menlo,monospace;font-size:11px;letter-spacing:.16em;
+    color:var(--gold);margin:0 0 14px;}
+  .about h2{font-family:'Zen Old Mincho',serif;font-weight:700;font-size:clamp(22px,3vw,30px);
+    letter-spacing:.02em;line-height:1.5;margin:0 0 26px;color:var(--ink);}
+  .about-inner > p{font-size:14.5px;line-height:2;color:var(--ink-dim);margin:0 0 22px;}
+  .steps{display:grid;gap:16px;margin:32px 0 36px;}
+  .step{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:20px 22px;}
+  .step b{color:var(--gold);display:block;font-size:13.5px;letter-spacing:.04em;margin-bottom:8px;font-weight:700;}
+  .step p{margin:0;font-size:13.5px;color:var(--ink-dim);line-height:1.9;}
+  .backlink{display:inline-flex;align-items:center;gap:6px;margin-top:8px;color:var(--gold);
+    text-decoration:none;font-size:13px;letter-spacing:.04em;border-bottom:1px solid rgba(200,169,120,.4);
+    padding-bottom:2px;}
+  .backlink:hover{border-color:var(--gold);}
+
+  @media (max-width:640px){
+    header{padding:14px 14px;}
+    .divider{display:none;}
+    a.back .long{display:none;}
+    .logo{font-size:13px;letter-spacing:.24em;}
+    a.readmore{padding:8px 12px;font-size:11px;}
+    .lead{bottom:132px;left:18px;right:18px;}
+    .pill{padding:7px 12px;font-size:11.5px;}
+    .grouplabel{display:none;}
+    .modebtn{padding:10px 13px;}
+    nav.modes{bottom:20px;}
+    .about{padding:64px 22px 90px;}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="glcanvas" aria-label="リアルタイムに描かれる海の映像"></canvas>
+<div class="veil"></div>
+<div class="glhint" id="glhint">お使いのブラウザでは、この海の映像を表示できませんでした。<br>最新の Chrome / Edge / Safari / Firefox でお試しください。</div>
+
+<header>
+  <div class="side">
+    <a class="back" href="digital-room/site-design-lab/" title="サイトデザイン研究室へ戻る">← <span class="long">研究室</span></a>
+    <div class="divider"></div>
+    <div class="logo"><span class="ring"></span>UNABARA</div>
+  </div>
+  <div class="side">
+    <a class="readmore" href="#about">仕組みを読む ▽</a>
+  </div>
+</header>
+
+<div class="hero-fade" id="heroFade">
+  <div class="lead">
+    <p class="kicker"><b>REALTIME OCEAN</b> ― 画像素材0枚</p>
+    <h1>海原を、ながめる。</h1>
+    <div class="pills">
+      <div class="pill"><b>ドラッグ</b>＝見回す</div>
+      <div class="pill"><b>下のボタン</b>＝波と空を変える</div>
+    </div>
+  </div>
+</div>
+
+<nav class="modes" id="modeNav" aria-label="波と空の切り替え">
+  <span class="grouplabel">波</span>
+  <button class="modebtn" data-group="wave" data-mode="calm">凪</button>
+  <button class="modebtn active" data-group="wave" data-mode="swell">うねり</button>
+  <button class="modebtn" data-group="wave" data-mode="storm">時化</button>
+  <div class="sep"></div>
+  <span class="grouplabel">空</span>
+  <button class="modebtn active" data-group="sky" data-mode="day">昼</button>
+  <button class="modebtn" data-group="sky" data-mode="dusk">夕</button>
+  <button class="modebtn" data-group="sky" data-mode="night">月夜</button>
+</nav>
+
+<section class="about" id="about">
+  <div class="about-inner">
+    <p class="about-eyebrow">HOW IT'S MADE</p>
+    <h2>この海は、どうやって描かれているのか。</h2>
+
+    <p>このページに、写真や動画は一枚も使われていません。目の前でうねっている海は、ブラウザの中でその場で計算され続けている「数字」です。3Dソフトで作りこんだ映像を再生しているのではなく、画面の点ひとつひとつについて「ここには海が見えるか、空が見えるか」を、1秒間に何十回も計算し直しています。</p>
+
+    <div class="steps">
+      <div class="step">
+        <b>波は、向きの違う波の重ね合わせ</b>
+        <p>大きくゆっくりした波から、細かく速い波まで、向きと大きさの違う波を何十枚も重ねています。1枚ずつは単純な山と谷のくり返しですが、重ねるほど、同じ形が二度と出てこない海らしい表情になります。波の山を少しとがらせているのも、本物の海に近づける工夫です。</p>
+      </div>
+      <div class="step">
+        <b>視線をのばして、海面を探す</b>
+        <p>画面の点ごとに、目の位置からまっすぐ視線をのばし、波の表面にぶつかる場所を少しずつ探します。ぶつかった場所の傾きがわかれば、そこが空をどのくらい映すかが決まります。遠くの海ほど空をよく映し、足もとの海ほど水の色が見える――あの見え方は、この計算から自然に出てきます。</p>
+      </div>
+      <div class="step">
+        <b>空の色が、海の色を決める</b>
+        <p>「昼」「夕」「月夜」を切り替えると、空の色と光の向きがじわじわ移り変わり、それを映す海の色も一緒に変わります。海そのものの設定はほとんど同じです。「凪」「うねり」「時化」は、波の高さ・とがり具合・速さ・白波の量を変えています。</p>
+      </div>
+    </div>
+
+    <p>すべて、WebGLというブラウザ標準の描画のしくみと、GPU（画像処理を高速に行う部品）に向けた短いプログラムだけで作られています。パソコンやスマホの性能に合わせて、描く細かさを自動で調整しています。</p>
+
+    <a class="backlink" href="digital-room/site-design-lab/">← サイトデザイン研究室へ戻る</a>
+  </div>
+</section>
+
+<script>
+(function(){
+"use strict";
+
+const canvas = document.getElementById("glcanvas");
+const hint = document.getElementById("glhint");
+function fail(msg){ hint.classList.add("show"); canvas.style.display = "none"; if(msg) console.warn(msg); }
+
+const gl = canvas.getContext("webgl2", {antialias:false, alpha:false, powerPreference:"high-performance"});
+if(!gl){ fail("WebGL2 unsupported"); return; }
+
+/* ================= shaders ================= */
+const VS = `#version 300 es
+void main(){
+  vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
+  gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
+}`;
+
+const FS = `#version 300 es
+precision highp float;
+out vec4 outColor;
+
+uniform vec2  uRes;
+uniform float uPhase;     // wave time (already scaled by speed)
+uniform float uDepth;     // wave height
+uniform float uDrag;      // crest sharpness
+uniform float uScale;     // horizontal scale (smaller = longer swell)
+uniform float uFoam;
+uniform float uCamH;
+uniform vec2  uLook;      // yaw, pitch
+uniform vec3  uSun;
+uniform vec3  uSunCol;
+uniform float uSunPow;
+uniform vec3  uSkyTop;
+uniform vec3  uSkyHor;
+uniform vec3  uScatter;
+uniform vec3  uFoamCol;
+uniform float uStars;
+uniform float uExposure;
+
+float waves(vec2 p, int n){
+  float ph = 0.0, f = 1.0, tm = 2.0, wt = 1.0, s = 0.0, ws = 0.0;
+  for(int i = 0; i < n; i++){
+    vec2 d = vec2(sin(ph), cos(ph));
+    float x = dot(d, p) * f + uPhase * tm;
+    float w = exp(sin(x) - 1.0);
+    float dx = -w * cos(x);
+    p += d * dx * wt * uDrag;
+    s += w * wt; ws += wt;
+    wt = mix(wt, 0.0, 0.2);
+    f *= 1.18; tm *= 1.07; ph += 1232.399963;
+  }
+  return s / ws;
+}
+
+float heightAt(vec2 p, int n){ return waves(p * uScale, n) * uDepth; }
+
+float march(vec3 ro, vec3 a, vec3 b){
+  vec3 p = a;
+  vec3 d = normalize(b - a);
+  float len = distance(a, b);
+  for(int i = 0; i < 36; i++){
+    float h = heightAt(p.xz, 8) - uDepth;
+    if(h + 0.01 > p.y) return distance(p, ro);
+    p += d * (p.y - h);
+    if(distance(p, a) > len) break;
+  }
+  return distance(a, ro);
+}
+
+vec3 normalAt(vec2 p, float e){
+  float H = heightAt(p, 18);
+  vec3 a = vec3(p.x, H, p.y);
+  vec3 b = vec3(p.x - e, heightAt(p - vec2(e, 0.0), 18), p.y);
+  vec3 c = vec3(p.x, heightAt(p + vec2(0.0, e), 18), p.y + e);
+  return normalize(cross(a - b, a - c));
+}
+
+float hash3(vec3 p){
+  p = fract(p * 0.3183099 + 0.1);
+  p *= 17.0;
+  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+
+vec3 sky(vec3 d, float disc){
+  float y = max(d.y, 0.0);
+  vec3 c = mix(uSkyHor, uSkyTop, pow(y, 0.45));
+  float sd = max(dot(d, uSun), 0.0);
+  c += uSunCol * (pow(sd, 8.0) * 0.07 + pow(sd, 90.0) * 0.22);
+  c += uSunCol * min(pow(sd, 3200.0) * uSunPow, uSunPow) * disc;
+  if(uStars > 0.001){
+    float st = step(0.9982, hash3(floor(d * 240.0)));
+    c += vec3(0.8, 0.85, 1.0) * st * uStars * smoothstep(0.02, 0.35, d.y) * disc;
+  }
+  return c;
+}
+
+vec3 aces(vec3 x){
+  return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
+}
+
+void main(){
+  vec2 uv = (gl_FragCoord.xy * 2.0 - uRes) / uRes.y;
+  vec3 rd = normalize(vec3(uv, 1.6));
+  float cp = cos(uLook.y), sp = sin(uLook.y);
+  rd = vec3(rd.x, rd.y * cp - rd.z * sp, rd.y * sp + rd.z * cp);
+  float cy = cos(uLook.x), sy = sin(uLook.x);
+  rd = vec3(rd.x * cy + rd.z * sy, rd.y, -rd.x * sy + rd.z * cy);
+  vec3 ro = vec3(0.0, uCamH, 0.0);
+
+  vec3 col;
+  if(rd.y >= -0.0008){
+    col = sky(rd, 1.0);
+  } else {
+    float tHi = -ro.y / rd.y;
+    float tLo = (-uDepth - ro.y) / rd.y;
+    vec3 a = ro + rd * tHi;
+    vec3 b = ro + rd * tLo;
+    float dist = march(ro, a, b);
+    vec3 hit = ro + rd * dist;
+
+    vec3 N = normalAt(hit.xz, 0.012);
+    N = mix(N, vec3(0.0, 1.0, 0.0), 0.8 * min(1.0, sqrt(dist * 0.01) * 1.1));
+
+    float fres = 0.04 + 0.96 * pow(1.0 - max(0.0, dot(-N, rd)), 5.0);
+    vec3 R = normalize(reflect(rd, N));
+    R.y = abs(R.y);
+    vec3 refl = sky(R, 0.22);
+
+    float hn = clamp((hit.y + uDepth) / uDepth, 0.0, 1.0);
+    vec3 scat = uScatter * (0.25 + hn * 1.1);
+    col = fres * refl + (1.0 - fres) * scat;
+
+    float crest = smoothstep(0.62, 0.92, hn);
+    float pat = smoothstep(0.34, 0.7, waves(hit.xz * uScale * 3.7 + 11.0, 6));
+    float foam = crest * pat * uFoam * exp(-dist * 0.018);
+    col = mix(col, uFoamCol, clamp(foam, 0.0, 0.9));
+
+    vec3 hz = sky(normalize(vec3(rd.x, 0.0, rd.z)), 0.0);
+    col = mix(col, hz, 1.0 - exp(-dist * 0.0045));
+  }
+
+  col = aces(col * uExposure);
+  col = pow(col, vec3(1.0 / 2.2));
+  // light dithering against banding in the sky gradient
+  col += (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;
+  outColor = vec4(col, 1.0);
+}`;
+
+function compile(type, src){
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
+    const log = gl.getShaderInfoLog(s);
+    gl.deleteShader(s);
+    throw new Error(log);
+  }
+  return s;
+}
+let prog;
+try{
+  prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+}catch(e){ fail("shader error: " + e.message); return; }
+gl.useProgram(prog);
+const U = {};
+["uRes","uPhase","uDepth","uDrag","uScale","uFoam","uCamH","uLook","uSun","uSunCol","uSunPow",
+ "uSkyTop","uSkyHor","uScatter","uFoamCol","uStars","uExposure"].forEach(n => U[n] = gl.getUniformLocation(prog, n));
+
+/* ================= presets ================= */
+function norm(v){ const l = Math.hypot(v[0], v[1], v[2]); return [v[0]/l, v[1]/l, v[2]/l]; }
+const WAVES = {
+  calm:  {depth:0.45, drag:0.18, scale:1.00, speed:0.55, foam:0.00, camH:1.35},
+  swell: {depth:1.10, drag:0.30, scale:0.80, speed:1.00, foam:0.28, camH:1.60},
+  storm: {depth:2.30, drag:0.44, scale:0.52, speed:1.40, foam:0.60, camH:2.10}
+};
+const SKIES = {
+  day:   {sun:norm([0.22,0.40,1.0]),  sunCol:[1.00,0.95,0.84], sunPow:60, skyTop:[0.09,0.28,0.72], skyHor:[0.56,0.73,0.93],
+          scatter:[0.012,0.085,0.125], foamCol:[0.86,0.91,0.96], stars:0, exposure:1.0},
+  dusk:  {sun:norm([0.10,0.085,1.0]), sunCol:[1.00,0.48,0.18], sunPow:55, skyTop:[0.09,0.13,0.36], skyHor:[0.98,0.44,0.18],
+          scatter:[0.016,0.030,0.055], foamCol:[0.82,0.56,0.46], stars:0, exposure:1.0},
+  night: {sun:norm([-0.20,0.42,1.0]), sunCol:[0.50,0.60,0.82], sunPow:14, skyTop:[0.004,0.008,0.030], skyHor:[0.020,0.036,0.085],
+          scatter:[0.003,0.008,0.016], foamCol:[0.20,0.25,0.34], stars:1, exposure:1.7}
+};
+const KEYS_W = ["depth","drag","scale","speed","foam","camH"];
+const KEYS_S = ["sun","sunCol","sunPow","skyTop","skyHor","scatter","foamCol","stars","exposure"];
+
+const state = { wave:"swell", sky:"day" };
+const cur = {};
+function clone(v){ return Array.isArray(v) ? v.slice() : v; }
+KEYS_W.forEach(k => cur[k] = clone(WAVES.swell[k]));
+KEYS_S.forEach(k => cur[k] = clone(SKIES.day[k]));
+
+function lerpTo(key, target, k){
+  if(Array.isArray(target)){ for(let i = 0; i < target.length; i++) cur[key][i] += (target[i] - cur[key][i]) * k; }
+  else cur[key] += (target - cur[key]) * k;
+}
+
+document.getElementById("modeNav").addEventListener("click", function(e){
+  const b = e.target.closest(".modebtn"); if(!b) return;
+  const g = b.dataset.group;
+  state[g] = b.dataset.mode;
+  this.querySelectorAll('.modebtn[data-group="' + g + '"]').forEach(x => x.classList.toggle("active", x === b));
+});
+
+/* ================= look around ================= */
+const look = { yaw:0, pitch:0.10, tyaw:0, tpitch:0.10 };
+let drag = null;
+canvas.addEventListener("pointerdown", e => {
+  drag = { x:e.clientX, y:e.clientY, touch:e.pointerType === "touch" };
+  canvas.classList.add("dragging");
+  if(!drag.touch){ try{ canvas.setPointerCapture(e.pointerId); }catch(_){} }
+});
+canvas.addEventListener("pointermove", e => {
+  if(!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  drag.x = e.clientX; drag.y = e.clientY;
+  look.tyaw -= dx * 0.0042;
+  if(!drag.touch) look.tpitch = Math.max(-0.22, Math.min(0.42, look.tpitch - dy * 0.003));
+});
+function endDrag(){ drag = null; canvas.classList.remove("dragging"); }
+canvas.addEventListener("pointerup", endDrag);
+canvas.addEventListener("pointercancel", endDrag);
+canvas.addEventListener("pointerleave", e => { if(drag && drag.touch) endDrag(); });
+
+/* ================= sizing / adaptive quality ================= */
+let quality = 1.0;
+const MAX_PIXELS = 620000;
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  const cw = Math.max(1, canvas.clientWidth), ch = Math.max(1, canvas.clientHeight);
+  let w = cw * dpr * quality, h = ch * dpr * quality;
+  const s = Math.min(1, Math.sqrt(MAX_PIXELS * quality * quality / (w * h)));
+  w = Math.max(2, Math.round(w * s)); h = Math.max(2, Math.round(h * s));
+  if(canvas.width !== w || canvas.height !== h){ canvas.width = w; canvas.height = h; }
+  gl.viewport(0, 0, w, h);
+}
+window.addEventListener("resize", resize);
+resize();
+
+/* ================= hero fade on scroll ================= */
+const heroFade = document.getElementById("heroFade");
+const nav = document.getElementById("modeNav");
+let scrolledAway = false;
+function onScroll(){
+  const vh = window.innerHeight || 1;
+  const t = Math.min(1, window.scrollY / (vh * 0.55));
+  heroFade.style.opacity = String(1 - t);
+  nav.style.opacity = String(1 - t);
+  nav.style.pointerEvents = t > 0.8 ? "none" : "auto";
+  scrolledAway = window.scrollY > vh * 1.15;
+}
+window.addEventListener("scroll", onScroll, {passive:true});
+onScroll();
+
+/* ================= render loop ================= */
+const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let last = performance.now(), phase = 0, clock = 0;
+let ftAcc = 0, ftN = 0, frames = 0;
+const stats = { fps:0, quality:1, frames:0 };
+window.__unabara = stats;
+
+function frame(now){
+  requestAnimationFrame(frame);
+  let dt = (now - last) / 1000; last = now;
+  if(scrolledAway) return;
+  const spike = dt > 0.25;
+  dt = Math.min(dt, 0.1);
+
+  const k = 1 - Math.exp(-dt * 1.6);
+  const W = WAVES[state.wave], S = SKIES[state.sky];
+  KEYS_W.forEach(key => lerpTo(key, W[key], k));
+  KEYS_S.forEach(key => lerpTo(key, S[key], k));
+  const kl = 1 - Math.exp(-dt * 9);
+  look.yaw += (look.tyaw - look.yaw) * kl;
+  look.pitch += (look.tpitch - look.pitch) * kl;
+
+  clock += dt;
+  phase += dt * cur.speed * (reduced ? 0.35 : 1);
+
+  resize();
+  const sun = norm(cur.sun);
+  gl.uniform2f(U.uRes, canvas.width, canvas.height);
+  gl.uniform1f(U.uPhase, phase);
+  gl.uniform1f(U.uDepth, cur.depth);
+  gl.uniform1f(U.uDrag, cur.drag);
+  gl.uniform1f(U.uScale, cur.scale);
+  gl.uniform1f(U.uFoam, cur.foam);
+  gl.uniform1f(U.uCamH, cur.camH + Math.sin(clock * 0.55) * 0.07 * (reduced ? 0 : 1));
+  gl.uniform2f(U.uLook, look.yaw, look.pitch);
+  gl.uniform3f(U.uSun, sun[0], sun[1], sun[2]);
+  gl.uniform3fv(U.uSunCol, cur.sunCol);
+  gl.uniform1f(U.uSunPow, cur.sunPow);
+  gl.uniform3fv(U.uSkyTop, cur.skyTop);
+  gl.uniform3fv(U.uSkyHor, cur.skyHor);
+  gl.uniform3fv(U.uScatter, cur.scatter);
+  gl.uniform3fv(U.uFoamCol, cur.foamCol);
+  gl.uniform1f(U.uStars, cur.stars);
+  gl.uniform1f(U.uExposure, cur.exposure);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  frames++; stats.frames = frames;
+  if(!spike && frames > 8){
+    ftAcc += dt; ftN++;
+    if(ftN >= 40){
+      const avg = ftAcc / ftN;
+      stats.fps = Math.round(1 / avg);
+      if(avg > 0.040 && quality > 0.5){ quality = Math.max(0.5, quality * 0.78); resize(); }
+      stats.quality = quality;
+      ftAcc = 0; ftN = 0;
+    }
+  }
+}
+requestAnimationFrame(frame);
+
+canvas.addEventListener("webglcontextlost", e => { e.preventDefault(); fail("context lost"); });
+})();
+</script>
+</body>
+</html>
