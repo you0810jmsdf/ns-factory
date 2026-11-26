@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>N's Trade | 監理幕僚室</title>
+<meta name="theme-color" content="#0b1118">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="N's Trade">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="manifest" href="./manifest.json">
+<style>
+  :root {
+    --bg: #0b1118; --panel: #121b26; --panel2: #18232f; --line: #243140;
+    --fg: #e6edf3; --muted: #8a99a8; --accent: #f0a030;
+    --up: #ef4f4f; --down: #29b6d8;
+    --k-support: #35c48d; --k-resistance: #f0a030; --k-confirm: #f5d547;
+    --k-invalidate: #ff5c8a; --k-target: #6ea8ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body {
+    font: 14px/1.6 system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    padding: env(safe-area-inset-top, 0) max(12px, env(safe-area-inset-right, 0)) env(safe-area-inset-bottom, 0) max(12px, env(safe-area-inset-left, 0));
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding: 12px 0 8px; }
+  h1 { font-size: 18px; margin: 0; letter-spacing: .02em; }
+  h1 small { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 6px; }
+  .price { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .sub { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .layout { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); padding-bottom: 16px; }
+  .layout { max-width: 1200px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .tabs { display: flex; gap: 4px; }
+  .tabs button, .btn {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 12px; cursor: pointer;
+  }
+  .tabs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #1b1203; font-weight: 700; }
+  .btn:hover, .tabs button:hover { border-color: var(--muted); }
+  button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 11px; color: var(--muted); margin-left: auto; }
+  .legend i { display: inline-block; width: 10px; height: 2px; vertical-align: middle; margin-right: 3px; }
+  .pane-label { font-size: 11px; color: var(--muted); padding: 4px 10px 0; }
+  #c-main { height: 400px; } #c-macd { height: 110px; } #c-rsi { height: 100px; }
+  @media (min-width: 960px) { #c-main { height: 520px; } }
+  .tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--line); }
+  .tools .btn { font-size: 13px; }
+  .tools .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #1b1203; font-weight: 700; }
+  .tools label { font-size: 12px; color: var(--muted); display: inline-flex; gap: 4px; align-items: center; margin-left: auto; }
+  .hint { font-size: 12px; color: var(--accent); padding: 0 10px 8px; min-height: 1.6em; }
+  .lines { padding: 8px 10px 10px; border-top: 1px solid var(--line); }
+  .lines-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .lines-head b { font-size: 13px; }
+  .lines-head .btn { padding: 2px 10px; font-size: 12px; margin-left: auto; }
+  .lines-head .btn + .btn { margin-left: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border: 1px solid var(--line); border-left-width: 4px; border-radius: 6px; padding: 2px 8px; font-size: 12px; background: var(--panel2); font-variant-numeric: tabular-nums; }
+  .chip span { color: var(--muted); margin-right: 6px; }
+  .empty { color: var(--muted); font-size: 12px; }
+  footer { color: var(--muted); font-size: 11px; padding: 0 0 20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>N's Trade<small>BTC/JPY</small></h1>
+  <div class="price" id="price">—</div>
+  <div class="sub" id="sub">価格を読み込んでいます</div>
+</header>
+
+<div class="layout">
+  <section class="panel">
+    <div class="bar">
+      <div class="tabs" id="tabs">
+        <button data-iv="1hour" aria-pressed="false">1時間</button>
+        <button data-iv="4hour" aria-pressed="false">4時間</button>
+        <button data-iv="8hour" aria-pressed="true">8時間</button>
+        <button data-iv="1day" aria-pressed="false">日足</button>
+      </div>
+      <div class="legend">
+        <span><i style="background:#9be15d"></i>転換線</span>
+        <span><i style="background:#f5d547"></i>基準線</span>
+        <span><i style="background:#f0a030"></i>先行スパン1</span>
+        <span><i style="background:#c9722a"></i>先行スパン2</span>
+        <span><i style="background:#ff5c5c"></i>遅行スパン</span>
+      </div>
+    </div>
+    <div id="c-main"></div>
+    <div class="pane-label">MACD (12, 26, 9)</div>
+    <div id="c-macd"></div>
+    <div class="pane-label">RSI (14)</div>
+    <div id="c-rsi"></div>
+    <div class="tools">
+      <button class="btn" id="auto-lines" type="button">水平ラインを自動で引く</button>
+      <button class="btn" id="draw-diag" type="button" aria-pressed="false">斜めの線を引く</button>
+      <button class="btn" id="draw-horiz" type="button" aria-pressed="false">水平線を引く</button>
+      <button class="btn" id="clear-lines" type="button">全部消す</button>
+      <label><input type="checkbox" id="auto-trend" checked> トレンドラインを自動表示</label>
+    </div>
+    <div class="hint" id="hint" aria-live="polite"></div>
+    <div class="lines">
+      <div class="lines-head">
+        <b>引いてあるライン</b>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
+
+</div>
+
+<footer>価格はbitbankの公開データ(現物BTC/JPY、約20秒ごとに更新)。GMOコインの暗号資産FXとは数千円ほど差が出ます。ラインは値動きから機械的に計算した参考情報で、売買の判断はご自身で行ってください。</footer>
+
+<script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
+<script>
+(() => {
+  const JST = 9 * 3600;
+  const IV_SEC = { "1hour": 3600, "4hour": 14400, "8hour": 28800, "1day": 86400 };
+  const IV_NAME = { "1hour": "1時間足", "4hour": "4時間足", "8hour": "8時間足", "1day": "日足" };
+  const KIND = {
+    support: { color: "#35c48d", name: "支え" },
+    resistance: { color: "#f0a030", name: "壁" },
+    confirm: { color: "#f5d547", name: "確認" },
+    invalidate: { color: "#ff5c8a", name: "否定" },
+    target: { color: "#6ea8ff", name: "目安" },
+    manual: { color: "#e6edf3", name: "手動" },
+  };
+  const $ = (id) => document.getElementById(id);
+  const yen = (n) => Math.round(n).toLocaleString("ja-JP");
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+
+  const state = { interval: store.get("nst-iv") || "8hour", candles: [], ind: null, lines: [], diag: [], times: [], mode: null, first: null, fresh: true };
+  if (!IV_SEC[state.interval]) state.interval = "8hour";
+
+  // ---------- 指標の計算 ----------
+  const hh = (c, i, n) => { let m = -Infinity; for (let j = i - n + 1; j <= i; j++) m = Math.max(m, c[j].h); return m; };
+  const ll = (c, i, n) => { let m = Infinity; for (let j = i - n + 1; j <= i; j++) m = Math.min(m, c[j].l); return m; };
+  function ema(vals, n) {
+    const out = new Array(vals.length).fill(null); const k = 2 / (n + 1); let e = null, sum = 0, cnt = 0;
+    for (let i = 0; i < vals.length; i++) {
+      if (vals[i] == null) continue;
+      if (e == null) { sum += vals[i]; cnt++; if (cnt === n) { e = sum / n; out[i] = e; } }
+      else { e = vals[i] * k + e * (1 - k); out[i] = e; }
+    }
+    return out;
+  }
+  function indicators(c) {
+    const n = c.length, mid = (i, p) => (i >= p - 1 ? (hh(c, i, p) + ll(c, i, p)) / 2 : null);
+    const tenkan = c.map((_, i) => mid(i, 9)), kijun = c.map((_, i) => mid(i, 26));
+    const spanA = new Array(n + 26).fill(null), spanB = new Array(n + 26).fill(null), chikou = new Array(n).fill(null);
+    for (let i = 0; i < n; i++) {
+      if (tenkan[i] != null && kijun[i] != null) spanA[i + 26] = (tenkan[i] + kijun[i]) / 2;
+      const b = mid(i, 52); if (b != null) spanB[i + 26] = b;
+      if (i - 26 >= 0) chikou[i - 26] = c[i].c;
+    }
+    const close = c.map((k) => k.c), e12 = ema(close, 12), e26 = ema(close, 26);
+    const macd = close.map((_, i) => (e12[i] != null && e26[i] != null ? e12[i] - e26[i] : null));
+    const signal = ema(macd, 9), hist = macd.map((m, i) => (m != null && signal[i] != null ? m - signal[i] : null));
+    const rsi = new Array(n).fill(null); let ag = 0, al = 0;
+    for (let i = 1; i < n; i++) {
+      const d = close[i] - close[i - 1], g = Math.max(d, 0), l = Math.max(-d, 0);
+      if (i <= 14) { ag += g / 14; al += l / 14; if (i === 14) rsi[i] = al === 0 ? 100 : 100 - 100 / (1 + ag / al); }
+      else { ag = (ag * 13 + g) / 14; al = (al * 13 + l) / 14; rsi[i] = al === 0 ? 100 : 100 - 100 / (1 + ag / al); }
+    }
+    return { tenkan, kijun, spanA, spanB, chikou, macd, signal, hist, rsi };
+  }
+  function pivots(c, w = 3, look = 120) {
+    const highs = [], lows = [], s = Math.max(w, c.length - look);
+    for (let i = s; i < c.length - w; i++) {
+      let isH = true, isL = true;
+      for (let j = i - w; j <= i + w; j++) { if (c[j].h > c[i].h) isH = false; if (c[j].l < c[i].l) isL = false; }
+      if (isH) highs.push({ i, price: c[i].h }); if (isL) lows.push({ i, price: c[i].l });
+    }
+    return { highs, lows };
+  }
+  // 山(谷)の頂点を結び、それ以降の山(谷)がすべて線の内側に収まる線を選ぶ
+  function hullLine(piv, sign) {
+    if (piv.length < 2) return null;
+    let a = piv[0]; for (const p of piv) if (sign * (p.price - a.price) > 0) a = p;
+    const later = piv.filter((p) => p.i > a.i); if (!later.length) return null;
+    let b = later[0], best = -Infinity;
+    for (const p of later) { const s = (sign * (p.price - a.price)) / (p.i - a.i); if (s > best) { best = s; b = p; } }
+    return { i1: a.i, p1: a.price, i2: b.i, p2: b.price };
+  }
+  function autoTrend(c) {
+    const pv = pivots(c), out = [];
+    const down = hullLine(pv.highs, 1), up = hullLine(pv.lows, -1);
+    if (down) out.push({ ...down, label: "上値のトレンドライン", color: "#f0a030" });
+    if (up) out.push({ ...up, label: "下値のトレンドライン", color: "#35c48d" });
+    return out;
+  }
+  const lineAt = (t, i) => t.p1 + ((t.p2 - t.p1) / (t.i2 - t.i1)) * (i - t.i1);
+  // AIを使わずに、値動きの形だけからラインを引く
+  function ruleLines(c, ind) {
+    const N = Math.min(c.length, 90), seg = c.slice(-N), out = [];
+    if (seg.length < 10) return out;
+    let bi = 0; seg.forEach((k, i) => { if (k.l < seg[bi].l) bi = i; });
+    const bottom = seg[bi].l; out.push({ price: bottom, label: "底打ちライン", kind: "support" });
+    const before = seg.slice(Math.max(0, bi - 26), bi);
+    let hi = -1;
+    for (let i = bi + 1; i < seg.length; i++) if (hi < 0 || seg[i].h > seg[hi].h) hi = i;
+    if (hi > 0 && seg.length - bi > 2) {
+      out.push({ price: seg[hi].h, label: "反発確認", kind: "confirm" });
+      let lo = Infinity; for (let i = hi + 1; i < seg.length; i++) lo = Math.min(lo, seg[i].l);
+      if (isFinite(lo) && lo > bottom * 1.003) out.push({ price: lo, label: "二番底候補", kind: "support" });
+    }
+    const kj = ind.kijun[c.length - 1], last = c[c.length - 1].c;
+    if (kj != null && kj > last) out.push({ price: kj, label: "基準線", kind: "resistance" });
+    if (before.length) { const ph = Math.max(...before.map((k) => k.h)); if (ph > last * 1.01) out.push({ price: ph, label: "戻り高値", kind: "target" }); }
+    return out;
+  }
+
+  // ---------- チャート ----------
+  const base = (el) => LightweightCharts.createChart(el, {
+    autoSize: true,
+    layout: { background: { color: "#121b26" }, textColor: "#8a99a8", fontSize: 11 },
+    grid: { vertLines: { color: "#1c2733" }, horzLines: { color: "#1c2733" } },
+    rightPriceScale: { borderColor: "#243140", minimumWidth: 84 },
+    timeScale: { borderColor: "#243140", timeVisible: true, secondsVisible: false, rightOffset: 2 },
+    crosshair: { mode: 0 },
+    localization: { locale: "ja-JP", priceFormatter: (p) => Math.round(p).toLocaleString("ja-JP") },
+    handleScale: { axisPressedMouseMove: { price: false } },
+  });
+  const cMain = base($("c-main")), cMacd = base($("c-macd")), cRsi = base($("c-rsi"));
+  cMacd.applyOptions({ timeScale: { visible: false }, layout: { attributionLogo: false } });
+  cRsi.applyOptions({ layout: { attributionLogo: false } });
+  cMain.applyOptions({ timeScale: { visible: false } });
+  cRsi.applyOptions({ localization: { priceFormatter: (p) => p.toFixed(0) } });
+  const thin = (color, w = 1) => ({ color, lineWidth: w, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false });
+  const sSpanA = cMain.addLineSeries(thin("#f0a030")), sSpanB = cMain.addLineSeries(thin("#c9722a"));
+  const sChikou = cMain.addLineSeries(thin("#ff5c5c"));
+  const sKijun = cMain.addLineSeries(thin("#f5d547")), sTenkan = cMain.addLineSeries(thin("#9be15d"));
+  const sCandle = cMain.addCandlestickSeries({ upColor: "#ef4f4f", downColor: "#29b6d8", borderVisible: false, wickUpColor: "#ef4f4f", wickDownColor: "#29b6d8", priceLineColor: "#f0a030" });
+  const sHist = cMacd.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
+  const sMacd = cMacd.addLineSeries(thin("#35c48d")), sSignal = cMacd.addLineSeries(thin("#f0a030"));
+  const sRsi = cRsi.addLineSeries({ ...thin("#29d3e6"), lastValueVisible: true });
+  [30, 70].forEach((p) => sRsi.createPriceLine({ price: p, color: "#3a4a5c", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "" }));
+  sRsi.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
+
+  const charts = [cMain, cMacd, cRsi]; let syncing = false;
+  charts.forEach((ch) => ch.timeScale().subscribeVisibleLogicalRangeChange((r) => {
+    if (syncing || !r) return; syncing = true;
+    charts.forEach((o) => { if (o !== ch) o.timeScale().setVisibleLogicalRange(r); });
+    syncing = false;
+  }));
+
+  function draw() {
+    const c = state.candles, step = IV_SEC[state.interval]; if (!c.length) return;
+    const ind = (state.ind = indicators(c));
+    const times = c.map((k) => k.t + JST); for (let i = 1; i <= 26; i++) times.push(c[c.length - 1].t + i * step + JST);
+    state.times = times;
+    const ser = (arr) => times.map((time, i) => (arr[i] != null ? { time, value: arr[i] } : { time }));
+    sCandle.setData(c.map((k) => ({ time: k.t + JST, open: k.o, high: k.h, low: k.l, close: k.c })));
+    sTenkan.setData(ser(ind.tenkan)); sKijun.setData(ser(ind.kijun));
+    sSpanA.setData(ser(ind.spanA)); sSpanB.setData(ser(ind.spanB)); sChikou.setData(ser(ind.chikou));
+    sMacd.setData(ser(ind.macd)); sSignal.setData(ser(ind.signal));
+    sHist.setData(times.map((time, i) => {
+      const v = ind.hist[i]; if (v == null) return { time };
+      const rising = i > 0 && ind.hist[i - 1] != null ? v >= ind.hist[i - 1] : true;
+      return { time, value: v, color: rising ? "#ef4f4f" : "#3d6df2" };
+    }));
+    sRsi.setData(ser(ind.rsi));
+    if (state.fresh) {
+      state.fresh = false;
+      const r = { from: times.length - (innerWidth < 700 ? 95 : 150), to: times.length + 1 };
+      charts.forEach((ch) => ch.timeScale().setVisibleLogicalRange(r));
+    }
+    drawDiag();
+  }
+
+  // ---------- 斜めの線(トレンドライン) ----------
+  let diagSeries = [], trendNow = [];
+  function drawDiag() {
+    const c = state.candles, times = state.times; if (!c.length) return;
+    diagSeries.forEach((s) => cMain.removeSeries(s)); diagSeries = []; trendNow = [];
+    const segs = [];
+    if ($("auto-trend").checked) segs.push(...autoTrend(c));
+    state.diag.forEach((d) => {
+      let i1 = times.indexOf(d.t1), i2 = times.indexOf(d.t2); if (i1 < 0 || i2 < 0 || i1 === i2) return;
+      const a = i1 < i2 ? { i1, p1: d.p1, i2, p2: d.p2 } : { i1: i2, p1: d.p2, i2: i1, p2: d.p1 };
+      segs.push({ ...a, label: "手動の線", color: "#e6edf3" });
+    });
+    segs.forEach((t) => {
+      const s = cMain.addLineSeries({ color: t.color, lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false, autoscaleInfoProvider: () => null });
+      const data = []; for (let i = t.i1; i < times.length; i++) { const v = lineAt(t, i); if (v > 0) data.push({ time: times[i], value: v }); }
+      s.setData(data); diagSeries.push(s);
+      trendNow.push({ label: t.label, color: t.color, price: lineAt(t, c.length - 1) });
+    });
+    renderChips();
+  }
+
+  // ---------- ライン ----------
+  let priceLines = [];
+  function setLines(lines) {
+    state.lines = (lines || []).filter((l) => l && isFinite(l.price) && l.price > 0 && KIND[l.kind]).slice(0, 8);
+    priceLines.forEach((p) => sCandle.removePriceLine(p));
+    priceLines = state.lines.map((l) => sCandle.createPriceLine({
+      price: l.price, color: KIND[l.kind].color, lineWidth: 2, lineStyle: l.kind === "invalidate" ? 2 : 0, axisLabelVisible: true, title: String(l.label).slice(0, 14),
+    }));
+    store.set("nst-lines-" + state.interval, JSON.stringify(state.lines));
+    renderChips();
+    store.set("nst-lines-" + state.interval, JSON.stringify(state.lines));
+  }
+  function renderChips() {
+    const box = $("chips"); box.textContent = "";
+    const all = [...state.lines.map((l) => ({ label: l.label, price: l.price, color: KIND[l.kind].color })), ...trendNow.map((t) => ({ ...t, label: t.label + "(いまの位置)" }))];
+    if (!all.length) {
+      const e = document.createElement("div"); e.className = "empty";
+      e.textContent = "まだラインはありません。上のボタンで引けます。"; box.append(e);
+    }
+    all.sort((a, b) => b.price - a.price).forEach((l) => {
+      const chip = document.createElement("div"); chip.className = "chip"; chip.style.borderLeftColor = l.color;
+      const s = document.createElement("span"); s.textContent = String(l.label);
+      chip.append(s, document.createTextNode(yen(l.price) + "円")); box.append(chip);
+    });
+  }
+  const saveDiag = () => store.set("nst-diag-" + state.interval, JSON.stringify(state.diag));
+  function setMode(m) {
+    state.mode = state.mode === m ? null : m; state.first = null;
+    $("draw-diag").setAttribute("aria-pressed", String(state.mode === "diag"));
+    $("draw-horiz").setAttribute("aria-pressed", String(state.mode === "horiz"));
+    $("hint").textContent = state.mode === "diag" ? "チャート上で、線の始点をタップしてください。" : state.mode === "horiz" ? "線を引きたい価格の位置をタップしてください。" : "";
+  }
+  $("draw-diag").onclick = () => setMode("diag");
+  $("draw-horiz").onclick = () => setMode("horiz");
+  // チャートのタップ位置を、時刻と価格に直して受け取る
+  $("c-main").addEventListener("click", (ev) => {
+    if (!state.mode) return;
+    const box = $("c-main").getBoundingClientRect();
+    const p = { time: cMain.timeScale().coordinateToTime(ev.clientX - box.left) };
+    const price = sCandle.coordinateToPrice(ev.clientY - box.top);
+    if (p.time == null || price == null || !(price > 0)) { $("hint").textContent = "ローソク足のある範囲をタップしてください。"; return; }
+    if (state.mode === "horiz") { setLines([...state.lines, { price, label: "水平線", kind: "manual" }]); setMode(null); return; }
+    if (!state.first) { state.first = { t: p.time, p: price }; $("hint").textContent = "次に、線の終点をタップしてください。"; return; }
+    if (state.first.t === p.time) { $("hint").textContent = "始点と違う位置(左右にずらして)をタップしてください。"; return; }
+    state.diag.push({ t1: state.first.t, p1: state.first.p, t2: p.time, p2: price }); saveDiag(); setMode(null); drawDiag();
+  });
+  $("auto-lines").onclick = () => state.ind && setLines([...ruleLines(state.candles, state.ind), ...state.lines.filter((l) => l.kind === "manual")]);
+  $("clear-lines").onclick = () => { state.diag = []; saveDiag(); setLines([]); drawDiag(); };
+  $("auto-trend").checked = store.get("nst-trend") !== "0";
+  $("auto-trend").onchange = () => { store.set("nst-trend", $("auto-trend").checked ? "1" : "0"); drawDiag(); };
+
+  // ---------- データ取得 ----------
+  const BB = "https://public.bitbank.cc/btc_jpy";
+  const bb = async (path) => { const r = await fetch(BB + path); const j = await r.json(); if (!r.ok || j.success !== 1) throw new Error("bitbankの応答エラー"); return j.data; };
+  function bbDates(iv) {
+    const now = new Date(), y = now.getUTCFullYear();
+    if (iv !== "1hour") return [String(y - 1), String(y)];
+    const out = [];
+    for (let i = 11; i >= 0; i--) { const d = new Date(now.getTime() - i * 86400e3); out.push(d.toISOString().slice(0, 10).replace(/-/g, "")); }
+    return out;
+  }
+  async function fetchMarket(iv) {
+    const [tk, ...chunks] = await Promise.all([bb("/ticker"), ...bbDates(iv).map((d) => bb(`/candlestick/${iv}/${d}`).then((x) => x.candlestick[0].ohlcv).catch(() => []))]);
+    const seen = new Set(), candles = [];
+    for (const k of chunks.flat()) { const t = Math.floor(k[5] / 1000); if (seen.has(t)) continue; seen.add(t); candles.push({ t, o: +k[0], h: +k[1], l: +k[2], c: +k[3], v: +k[4] }); }
+    candles.sort((a, b) => a.t - b.t);
+    if (!candles.length) throw new Error("ローソク足が空です");
+    return { candles: candles.slice(-500), ticker: { last: +tk.last, high: +tk.high, low: +tk.low } };
+  }
+  async function load() {
+    const iv = state.interval;
+    try {
+      const j = await fetchMarket(iv);
+      if (iv !== state.interval) return;
+      state.candles = j.candles; draw();
+      const last = j.ticker.last || j.candles.at(-1).c, open = j.candles.at(-1).o, diff = ((last - open) / open) * 100;
+      $("price").textContent = yen(last) + " 円";
+      $("price").style.color = diff >= 0 ? "var(--up)" : "var(--down)";
+      const tm = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      $("sub").textContent = `${IV_NAME[iv]}の始値比 ${diff >= 0 ? "+" : ""}${diff.toFixed(2)}% ・ 24時間 高値 ${yen(j.ticker.high)} / 安値 ${yen(j.ticker.low)} ・ ${tm} 更新`;
+    } catch (e) { $("sub").textContent = "価格を取得できませんでした。しばらくすると自動で再取得します。(" + e.message + ")"; }
+  }
+  function switchIv(iv) {
+    state.interval = iv; state.fresh = true; store.set("nst-iv", iv);
+    document.querySelectorAll("#tabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.iv === iv)));
+    let saved = [], sd = []; try { saved = JSON.parse(store.get("nst-lines-" + iv) || "[]"); sd = JSON.parse(store.get("nst-diag-" + iv) || "[]"); } catch {}
+    state.diag = Array.isArray(sd) ? sd : []; setMode(null); setLines(saved); load();
+  }
+  $("tabs").onclick = (e) => { const b = e.target.closest("button"); if (b) switchIv(b.dataset.iv); };
+  setInterval(() => { if (!document.hidden) load(); }, 20000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+
+  switchIv(state.interval);
+})();
+</script>
+</body>
+</html>
