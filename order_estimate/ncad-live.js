@@ -122,7 +122,7 @@
     els.recent.textContent = '';
     if (!d.recent.length) els.recent.appendChild(el('div', 'font-size:12px;color:#8a6a4a;padding:8px 0', 'まだ操作の記録がありません。'));
     var unknown = false; renderPeople(d);
-    d.recent.slice(0, 30).forEach(function (r) {
+    d.recent.slice(0, 100).forEach(function (r) {   /* 2026-11-26 事業主「一人が長時間使うと他の方の履歴が見れないので、100件近くは残して」・前は30 */
       var row = el('div', 'display:grid;grid-template-columns:5.5em 4.2em 12em 1fr;gap:8px;font-size:12px;padding:3px 0;border-bottom:1px dashed #f0e6da;align-items:baseline');
       row.appendChild(el('span', 'color:#8a6a4a;font-variant-numeric:tabular-nums', clock(r.t))); row.appendChild(el('span', 'color:#a08a74', ago(r.t, d.now)));
       if (r.o) { var me = r.p ? who(r.p, r.c) : { name: '（未登録）', known: true }, mc = el('span', 'display:flex;gap:4px;align-items:baseline;min-width:0'); mc.appendChild(kindBadge('自分')); mc.appendChild(el('span', 'color:#3a5a8c;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', me.name)); row.appendChild(mc); if (!me.known) unknown = true; }   /* 作家の端末（2026-11-24 事業主「自分の操作も名前で出す」）。中継は回数・人数に入れていない */
