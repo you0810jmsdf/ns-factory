@@ -32,7 +32,7 @@
   .price { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .sub { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
   .layout { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); padding-bottom: 16px; }
-  .layout { max-width: 1200px; }
+  @media (min-width: 960px) { .layout { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; } .chat { position: sticky; top: 12px; } }
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
   .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--line); }
   .tabs { display: flex; gap: 4px; }
@@ -61,6 +61,21 @@
   .chip { border: 1px solid var(--line); border-left-width: 4px; border-radius: 6px; padding: 2px 8px; font-size: 12px; background: var(--panel2); font-variant-numeric: tabular-nums; }
   .chip span { color: var(--muted); margin-right: 6px; }
   .empty { color: var(--muted); font-size: 12px; }
+  .chat { display: flex; flex-direction: column; }
+  .chat h2 { font-size: 14px; margin: 0; }
+  .log { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 140px; max-height: 52vh; overflow-y: auto; }
+  .msg { padding: 8px 10px; border-radius: 10px; white-space: pre-wrap; overflow-wrap: anywhere; max-width: 92%; }
+  .msg.user { align-self: flex-end; background: #25405c; }
+  .msg.ai { align-self: flex-start; background: var(--panel2); border: 1px solid var(--line); }
+  .msg.note { align-self: center; color: var(--muted); font-size: 12px; text-align: center; }
+  .quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 10px 8px; }
+  .quick .btn { font-size: 12px; padding: 3px 10px; border-radius: 999px; }
+  form { display: flex; gap: 6px; padding: 8px 10px 10px; border-top: 1px solid var(--line); }
+  textarea { flex: 1; min-width: 0; resize: none; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; height: 44px; }
+  .send { background: var(--accent); border: 0; color: #1b1203; font-weight: 700; border-radius: 8px; padding: 0 16px; cursor: pointer; }
+  .send:disabled { opacity: .5; cursor: default; }
+  details { padding: 0 10px 10px; font-size: 12px; color: var(--muted); }
+  details input { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; margin-top: 6px; width: 100%; }
   footer { color: var(--muted); font-size: 11px; padding: 0 0 20px; }
 </style>
 </head>
@@ -109,6 +124,25 @@
     </div>
   </section>
 
+  <section class="panel chat">
+    <div class="bar"><h2>AI相談</h2><span class="sub">設定した端末だけで使えます</span></div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <div class="quick" id="quick">
+      <button class="btn" type="button">底打ちしたと見るべき？</button>
+      <button class="btn" type="button">底打ちラインと反発ラインを引いて</button>
+      <button class="btn" type="button">今の状況は？</button>
+    </div>
+    <form id="form">
+      <textarea id="q" placeholder="チャートについて質問する" aria-label="質問"></textarea>
+      <button class="send" id="send" type="submit">送信</button>
+    </form>
+    <details id="settings">
+      <summary>AIの設定(本人用)</summary>
+      N's CAD のAIと同じサーバーURLと合言葉を入れます。この端末にだけ保存され、入れていない人はAIを使えません。
+      <input id="ai-url" type="url" inputmode="url" autocomplete="off" placeholder="サーバーURL (https://…)" aria-label="サーバーURL">
+      <input id="ai-key" type="password" autocomplete="off" placeholder="合言葉" aria-label="合言葉">
+    </details>
+  </section>
 </div>
 
 <footer>価格はbitbankの公開データ(現物BTC/JPY、約20秒ごとに更新)。GMOコインの暗号資産FXとは数千円ほど差が出ます。ラインは値動きから機械的に計算した参考情報で、売買の判断はご自身で行ってください。</footer>
@@ -174,7 +208,7 @@
     for (let i = s; i < c.length - w; i++) {
       let isH = true, isL = true;
       for (let j = i - w; j <= i + w; j++) { if (c[j].h > c[i].h) isH = false; if (c[j].l < c[i].l) isL = false; }
-      if (isH) highs.push({ i, price: c[i].h }); if (isL) lows.push({ i, price: c[i].l });
+      if (isH) highs.push({ i, t: c[i].t, price: c[i].h }); if (isL) lows.push({ i, t: c[i].t, price: c[i].l });
     }
     return { highs, lows };
   }
@@ -385,6 +419,66 @@
   $("tabs").onclick = (e) => { const b = e.target.closest("button"); if (b) switchIv(b.dataset.iv); };
   setInterval(() => { if (!document.hidden) load(); }, 20000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+
+  // ---------- AI相談(サーバーURLと合言葉を入れた端末だけ) ----------
+  // 設定は N's CAD のAIと同じ保存場所を使う。APIキーはサーバー側にあり、このページには置かない。
+  const AI_STORE = "leather-cad.ai";
+  function aiSettings() { let o = {}; try { o = JSON.parse(store.get(AI_STORE)) || {}; } catch {} return o; }
+  function saveAi() { const o = aiSettings(); o.url = $("ai-url").value.trim(); o.key = $("ai-key").value; store.set(AI_STORE, JSON.stringify(o)); }
+  { const o = aiSettings(); $("ai-url").value = o.url || ""; $("ai-key").value = o.key || ""; }
+  $("ai-url").onchange = saveAi; $("ai-key").onchange = saveAi;
+  const msgs = []; let busy = false;
+  function say(role, text) {
+    const d = document.createElement("div"); d.className = "msg " + role; d.textContent = text;
+    $("log").append(d); $("log").scrollTop = $("log").scrollHeight; return d;
+  }
+  function chartContext() {
+    const c = state.candles, ind = state.ind, i = c.length - 1, r = (v) => (v == null ? null : Math.round(v));
+    const iso = (t) => new Date((t + JST) * 1000).toISOString().slice(0, 16).replace("T", " ");
+    const pv = pivots(c), pt = (a) => a.slice(-8).map((x) => ({ time: iso(x.t), price: x.price }));
+    return {
+      symbol: "BTC/JPY (bitbank 現物)", interval: IV_NAME[state.interval], time_zone: "日本時間", price_now: c[i].c,
+      candles_note: "[開始時刻, 始値, 高値, 安値, 終値] 古い順。最後の1本は未確定",
+      candles: c.slice(-80).map((k) => [iso(k.t), k.o, k.h, k.l, k.c]),
+      ichimoku: { tenkan: r(ind.tenkan[i]), kijun: r(ind.kijun[i]), cloud_now: [r(ind.spanA[i]), r(ind.spanB[i])], cloud_26_ahead: [r(ind.spanA[i + 26]), r(ind.spanB[i + 26])] },
+      macd: { macd: r(ind.macd[i]), signal: r(ind.signal[i]), hist_last5: ind.hist.slice(-5).map(r) },
+      rsi14_last5: ind.rsi.slice(-5).map((v) => (v == null ? null : +v.toFixed(1))),
+      swings: { highs: pt(pv.highs), lows: pt(pv.lows) },
+      trendlines_now: trendNow.map((t) => ({ label: t.label, price: r(t.price) })),
+      range_90bars: { high: Math.max(...c.slice(-90).map((k) => k.h)), low: Math.min(...c.slice(-90).map((k) => k.l)) },
+      current_lines: state.lines.map((l) => ({ price: r(l.price), label: l.label, kind: l.kind })),
+    };
+  }
+  async function ask(question) {
+    if (busy || !question.trim()) return;
+    const o = aiSettings();
+    if (!o.url || !/^https:\/\//.test(o.url)) { $("settings").open = true; say("note", "AI相談を使うには、下の「AIの設定」にサーバーURL(https)と合言葉を入れてください。"); return; }
+    if (!state.candles.length) { say("note", "チャートの読み込みが終わってから質問してください。"); return; }
+    busy = true; $("send").disabled = true;
+    say("user", question); const wait = say("note", "チャートを見ています…");
+    try {
+      const r = await fetch(o.url.replace(/\/$/, "") + "/trade/chat", {
+        method: "POST", headers: { "content-type": "application/json", "x-ai-key": o.key || "" },
+        body: JSON.stringify({ question, messages: msgs.slice(-12), chart: chartContext() }),
+      });
+      const j = await r.json().catch(() => null); wait.remove();
+      if (r.status === 401 || r.status === 403) { $("settings").open = true; say("note", "合言葉が違うようです。「AIの設定」を確認してください。"); }
+      else if (r.status === 404) say("note", "AIサーバー側に、このアプリ用の受付口がまだありません(PC側の準備待ち)。");
+      else if (!r.ok || !j || typeof j.reply !== "string") say("note", "うまく答えられませんでした。時間をおいて試してください。");
+      else {
+        say("ai", j.reply); msgs.push({ role: "user", content: question }, { role: "assistant", content: j.reply });
+        if (Array.isArray(j.lines) && j.lines.length) {
+          setLines([...j.lines.filter((l) => l && l.kind !== "manual"), ...state.lines.filter((l) => l.kind === "manual")]);
+          say("note", "回答に合わせてラインを引きました。" + (typeof j.yen === "number" ? `(今回の料金 約${j.yen.toFixed(1)}円)` : ""));
+        } else if (typeof j.yen === "number") say("note", `今回の料金 約${j.yen.toFixed(1)}円`);
+      }
+    } catch { wait.remove(); say("note", "AIサーバーにつながりませんでした。URLと電波を確認してください。"); }
+    busy = false; $("send").disabled = false;
+  }
+  $("form").onsubmit = (e) => { e.preventDefault(); const q = $("q").value; $("q").value = ""; ask(q); };
+  $("q").onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("form").requestSubmit(); } };
+  $("quick").onclick = (e) => { const b = e.target.closest("button"); if (b) ask(b.textContent); };
+  say("note", "チャートを見ながら質問できます。答えに合わせて、底打ちラインや反発確認ラインが自動で引かれます。");
 
   switchIv(state.interval);
 })();
