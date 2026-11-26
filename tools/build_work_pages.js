@@ -112,8 +112,15 @@ function suspicionReasons(w) {
 }
 
 /** 検索に載せる作品か（longDesc 300字以上・ID妥当・人名等の疑いなし） */
+// 300字の判定は、末尾の【革について】（革ごとの説明と注意点・登録時に自動で付く定型の文）を除いた長さで数える（2026-11-26）。
+// 定型の文だけで300字を超えるため、除かないと説明の薄い作品まで検索掲載の対象になる。本文（renderLong）には出したまま。
+function ownDescLength(w) {
+  const t = String(w.longDesc || '');
+  const i = t.indexOf('【革について】');
+  return i < 0 ? t.length : t.slice(0, i).trim().length;   // 注意書きの無い作品は今までどおりの数え方
+}
 function classify(w) {
-  const long = String(w.longDesc || '').length >= MIN_LONGDESC;
+  const long = ownDescLength(w) >= MIN_LONGDESC;
   if (!long) return { index: false, why: 'short' };
   const reasons = suspicionReasons(w);
   if (reasons.length) return { index: false, why: 'suspect', reasons };

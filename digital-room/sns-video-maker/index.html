@@ -3220,6 +3220,13 @@ async function findWorkWithLiveFallback(finder){
   return finder();
 }
 
+// 長い説明の末尾の【革について】（革ごとの説明と注意点・商品登録GAS が登録時に足す）を外す（2026-11-26）。
+// 読み上げの台本・投稿文・AI への材料に、取り扱いの注意書きを入れないため。register.html の同名関数と同じ。
+function stripLeatherNote(text){
+  const t = String(text || '');
+  const i = t.indexOf('【革について】');
+  return i < 0 ? t : t.slice(0, i).replace(/\s+$/, '');
+}
 function normalizeWorkItem(item){
   return {
     id: String(item.id || item.name || item.title || '').trim(),
@@ -3229,7 +3236,7 @@ function normalizeWorkItem(item){
     color: String(item.color || '').trim(),
     size: String(item.size || '').trim(),
     shortDesc: String(item.shortDesc || '').trim(),
-    longDesc: String(item.longDesc || '').trim(),
+    longDesc: stripLeatherNote(item.longDesc).trim(),
     price: String(item.price == null ? '' : item.price).trim(),   // 自分の言葉でキャプション（価格の行）用
     folderId: String(item.folderId || '').trim(),
     // 購入者の声（saveVoice で記録済みの評価日・コメント）。お礼動画の欄へ自動で入れる（2026-10-04）

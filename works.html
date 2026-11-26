@@ -2955,11 +2955,18 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     /* SNS投稿用キャプションを組み立てる（2026-08-31）。
        作品集の説明文をそのままSNSへ流用しているため、末尾に作品番号と作品ページURLを付ける。 */
+    /* 長い説明の末尾の【革について】（革ごとの説明と注意点）は投稿文に入れない（2026-11-26）。詳細画面の表示では外さない。 */
+    function stripLeatherNote(text) {
+      const t = String(text || '');
+      const i = t.indexOf('【革について】');
+      return i < 0 ? t : t.slice(0, i).replace(/\s+$/, '');
+    }
     function buildWorkCaption(work) {
       if (!work) return '';
       const parts = [];
+      const longDesc = stripLeatherNote(work.longDesc).trim();
       if (work.shortDesc && String(work.shortDesc).trim()) parts.push(String(work.shortDesc).trim());
-      if (work.longDesc  && String(work.longDesc).trim())  parts.push(String(work.longDesc).trim());
+      if (longDesc)  parts.push(longDesc);
       parts.push('作品番号: ' + work.id + '\n' + workShareUrl(work));
       return parts.join('\n\n');
     }
