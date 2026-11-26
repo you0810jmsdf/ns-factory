@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>自動売買のしくみ | N's Trade</title>
+<meta name="theme-color" content="#0b1118">
+<style>
+  :root { --bg: #0b1118; --panel: #121b26; --panel2: #18232f; --line: #243140; --fg: #e6edf3; --muted: #8a99a8;
+          --phone: #6ea8ff; --cloud: #f0a030; --pc: #35c48d; --gmo: #ff5c8a; --ai: #c08cff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font: 15px/1.75 system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; padding: 0 16px 40px; }
+  main { max-width: 680px; margin: 0 auto; }
+  header { padding: 18px 0 6px; }
+  header a { color: var(--muted); font-size: 13px; text-decoration: none; }
+  h1 { font-size: 21px; margin: 6px 0 2px; }
+  h2 { font-size: 17px; margin: 30px 0 8px; padding-left: 10px; border-left: 4px solid var(--cloud); }
+  p { margin: 6px 0; }
+  .lead { color: var(--muted); font-size: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 10px 0; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: inherit; fill: var(--fg); }
+  ol.flow { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+  ol.flow li { counter-increment: s; position: relative; padding: 8px 0 8px 40px; border-bottom: 1px solid var(--line); }
+  ol.flow li:last-child { border-bottom: 0; }
+  ol.flow li::before { content: counter(s); position: absolute; left: 0; top: 9px; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--panel2); border: 1px solid var(--line); text-align: center; line-height: 27px; font-weight: 700; font-size: 14px; }
+  .who { display: inline-block; font-size: 12px; border-radius: 4px; padding: 0 6px; margin-right: 4px; color: #0b1118; font-weight: 700; }
+  .w-phone { background: var(--phone); } .w-cloud { background: var(--cloud); } .w-pc { background: var(--pc); } .w-gmo { background: var(--gmo); } .w-ai { background: var(--ai); }
+  .keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+  .key { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 8px; text-align: center; font-size: 13px; line-height: 1.5; }
+  .key b { display: block; font-size: 22px; }
+  .arrow { text-align: center; color: var(--muted); font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 6px; text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; white-space: nowrap; }
+  .warn { border-color: #6b2b3a; background: #1d1218; }
+  .small { font-size: 13px; color: var(--muted); }
+  footer { margin-top: 30px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <a href="./">← N's Trade にもどる</a>
+    <h1>自動売買のしくみ</h1>
+    <p class="lead">スマホで決めて、PC が売買する。本人だけが使う道具です（2026年11月の形）。</p>
+  </header>
+
+  <h2>全体の図</h2>
+  <div class="card">
+    <svg viewBox="0 0 360 560" role="img" aria-label="スマホのN's Trade、AIサーバー、PCの常駐、GMOコインの4つの箱と、その間のやりとりの図">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a99a8"/></marker>
+      </defs>
+      <!-- スマホ -->
+      <rect x="20" y="10" width="320" height="96" rx="14" fill="#121b26" stroke="#6ea8ff" stroke-width="2"/>
+      <text x="36" y="38" font-size="16" font-weight="700" fill="#6ea8ff">① スマホ／PC のブラウザ</text>
+      <text x="36" y="62" font-size="13">N's Trade：GMO の足を見る・AIに相談</text>
+      <text x="36" y="84" font-size="13">案の「この案で常駐に送る」を押す</text>
+      <!-- 矢印 スマホ⇄クラウド -->
+      <line x1="120" y1="108" x2="120" y2="160" stroke="#8a99a8" stroke-width="2" marker-end="url(#ah)"/>
+      <text x="128" y="138" font-size="12" fill="#8a99a8">送った案</text>
+      <line x1="240" y1="160" x2="240" y2="108" stroke="#8a99a8" stroke-width="2" marker-end="url(#ah)"/>
+      <text x="248" y="138" font-size="12" fill="#8a99a8">帳面</text>
+      <!-- クラウド -->
+      <rect x="20" y="162" width="320" height="112" rx="14" fill="#121b26" stroke="#f0a030" stroke-width="2"/>
+      <text x="36" y="190" font-size="16" font-weight="700" fill="#f0a030">② AIサーバー（Cloudflare）</text>
+      <text x="36" y="214" font-size="13">預かるだけ：送った案・帳面・毎朝のニュース</text>
+      <text x="36" y="236" font-size="13">AI（Claude）に相談をつなぐ</text>
+      <text x="36" y="258" font-size="13" fill="#ff5c8a">注文の口は無い・GMOの鍵も無い</text>
+      <!-- 矢印 クラウド⇄PC -->
+      <line x1="120" y1="330" x2="120" y2="278" stroke="#8a99a8" stroke-width="2" marker-end="url(#ah)"/>
+      <text x="128" y="300" font-size="12" fill="#8a99a8">30秒ごとに取りに行く</text>
+      <line x1="240" y1="278" x2="240" y2="330" stroke="#8a99a8" stroke-width="2" marker-start="url(#ah)"/>
+      <text x="248" y="318" font-size="12" fill="#8a99a8">3分ごとに置く</text>
+      <!-- PC -->
+      <rect x="20" y="334" width="320" height="120" rx="14" fill="#121b26" stroke="#35c48d" stroke-width="2"/>
+      <text x="36" y="362" font-size="16" font-weight="700" fill="#35c48d">③ 自宅のPC の常駐</text>
+      <text x="36" y="386" font-size="13">5秒ごとに GMO の価格を見て、線をまたいだか判定</text>
+      <text x="36" y="408" font-size="13">練習の帳面で売買（損切り・利確も自動）</text>
+      <text x="36" y="430" font-size="13">GMO の鍵はここだけ・三重の鍵もここ</text>
+      <!-- 矢印 PC→GMO -->
+      <line x1="180" y1="456" x2="180" y2="500" stroke="#ff5c8a" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#ah)"/>
+      <text x="190" y="482" font-size="12" fill="#ff5c8a">鍵が3つとも開いた時だけ</text>
+      <!-- GMO -->
+      <rect x="20" y="502" width="320" height="50" rx="14" fill="#121b26" stroke="#ff5c8a" stroke-width="2"/>
+      <text x="36" y="533" font-size="16" font-weight="700" fill="#ff5c8a">④ GMOコイン（本物の注文）</text>
+    </svg>
+    <p class="small">点線の矢印（PC → GMO）は、ふだんは閉じています。閉じている間は練習の帳面だけで動き、本物のお金は動きません。</p>
+  </div>
+
+  <h2>押してから売買されるまで</h2>
+  <div class="card">
+    <ol class="flow">
+      <li><span class="who w-phone">スマホ</span>AI相談で質問する。チャート（GMO の足）と毎朝のニュースを見て、AI が答えと線を引く。</li>
+      <li><span class="who w-ai">AI</span>根拠があるときだけ、<b>売買の案</b>を最大2つ出す（どの線を上抜け／下抜けしたら・買い／売り・損切り％・利確％・理由）。根拠が弱いときは出さない。</li>
+      <li><span class="who w-phone">スマホ</span>良い案だけ「この案で常駐に送る」を押す（数量は 0.001BTC）。押さなければ何も起きない。</li>
+      <li><span class="who w-cloud">AIサーバー</span>送った案を預かる。</li>
+      <li><span class="who w-pc">PC</span>30秒以内に案を取りに来て、自分の線の一覧に入れる（入らない条件なら理由を返す）。画面に「PC が受け付けました（線 L○）」と出る。</li>
+      <li><span class="who w-pc">PC</span>価格が線をまたぎ、さらに案の％だけ動いたら、練習の帳面で買う（売る）。そのあと損切り・利確に届いたら自動で決済。</li>
+      <li><span class="who w-gmo">GMO</span>鍵が3つとも開いているときだけ、6 と同じ注文を本物で出す（取引所側にも損切りの注文を置く）。</li>
+      <li><span class="who w-phone">スマホ</span>建玉・損益・最近の決済が、3分ごとに「帳面」に出る。左上の印で「練習」か「本物の注文」（赤）かが分かる。</li>
+    </ol>
+  </div>
+
+  <h2>本物の注文の、三重の鍵</h2>
+  <div class="card">
+    <p>3つとも開けたときだけ本物の注文になります。開けられるのは <b>PC の前だけ</b>（スマホからは開けられません）。</p>
+    <div class="keys">
+      <div class="key"><b>🔑1</b>PC の画面<br>（127.0.0.1:8775）<br>のスイッチ</div>
+      <div class="key"><b>🔑2</b>設定ファイル<br>real_mode.json<br>allow_real: true</div>
+      <div class="key"><b>🔑3</b>確認の欄に<br>「実発注」<br>と入力</div>
+    </div>
+    <p class="arrow">↓ さらに、GMO の取引用の鍵（出金の権限なし）が PC にあること</p>
+    <table>
+      <tr><th>安全の上限</th><td>1回 0.001BTC・合計 0.003BTC・1日10回まで</td></tr>
+      <tr><th>自動で止まる</th><td>1日の損失が 3,000円に届いたとき・エラーが続いたとき・追証のとき（スマホに通知）</td></tr>
+      <tr><th>手の取引</th><td>GMO の画面で手で建てた建玉・注文には触れない（数えない・決済しない）</td></tr>
+    </table>
+    <p class="small">2026年11月27日の時点では、鍵は3つとも閉じていて、GMO の取引用の鍵もありません（練習だけで動いています）。</p>
+  </div>
+
+  <h2>止めかた</h2>
+  <div class="card">
+    <table>
+      <tr><th>案を1つやめる</th><td>N's Trade の「やめる」。PC からも消える（持っている建玉はそのまま）</td></tr>
+      <tr><th>本物の注文を止める</th><td>PC の画面の「練習モードに戻す」、または <code>C:\dev\gmo-zone\real\REAL_STOP</code> を置く</td></tr>
+      <tr><th>案の受け取りを止める</th><td><code>C:\dev\gmo-zone\REMOTE_SYNC_OFF</code> を置く</td></tr>
+      <tr><th>常駐ごと止める</th><td>PC で <code>scripts\stop_paper.bat</code>（再開は <code>start_paper.bat</code>）</td></tr>
+    </table>
+  </div>
+
+  <h2>料金とデータ</h2>
+  <div class="card">
+    <table>
+      <tr><th>AI相談</th><td>1回 約6〜8円（相談したときだけ）</td></tr>
+      <tr><th>案を送る・帳面</th><td>無料（Cloudflare の無料の範囲）</td></tr>
+      <tr><th>価格</th><td>GMOコインの公開データ（BTC_JPY）。PC の判定と同じ値。合言葉を入れた端末だけ GMO で表示し、入れていない人は bitbank のまま</td></tr>
+      <tr><th>合言葉</th><td>AIサーバーの合言葉は、端末ごとに「AIの設定」に入れる（別のブラウザでは入れ直す）</td></tr>
+    </table>
+  </div>
+
+  <div class="card warn">
+    <p><b>大事なこと</b>：本物の注文を始めると、スマホから送った案の約定も本物の注文になります。損失が出ることがあります（レバレッジには追証とロスカットがあります）。案は AI が作る参考で、売買の判断と損益の責任は本人が持ちます。</p>
+  </div>
+
+  <footer>N's factory 監理幕僚室 ・ 本人用の説明（検索には出しません）</footer>
+</main>
+</body>
+</html>
