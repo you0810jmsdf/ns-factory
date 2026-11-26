@@ -81,11 +81,8 @@
   footer { color: var(--muted); font-size: 11px; padding: 0 0 20px; }
   /* 自動売買（合言葉の端末だけ・2026-11-27） */
   .auto { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
-  .auto-form { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 6px 0; }
-  .auto-form select, .auto-form input { background: var(--panel2); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; font: inherit; }
-  .auto-form option { background: var(--panel2); color: var(--fg); }
-  .auto-form input { width: 4.6em; }
-  .auto-form select#af-line { max-width: 100%; }
+  .msg.plan { border-left: 3px solid #c08cff; background: var(--panel2); display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+  .msg.plan button { margin-left: auto; }
   .plan-item { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; border-left: 3px solid #c08cff; background: var(--panel2); border-radius: 6px; padding: 6px 8px; margin: 4px 0; }
   .plan-item .st { color: var(--muted); font-size: 12px; }
   .plan-item .st.ng { color: var(--k-invalidate); }
@@ -143,16 +140,6 @@
     </div>
     <div class="auto" id="auto" hidden>
       <div class="lines-head"><b>自動売買（PCの常駐が売買します）</b> <span class="sub" id="auto-mode"></span></div>
-      <div class="auto-form">
-        <select id="af-line" aria-label="条件を付ける線"></select>
-        <select id="af-on" aria-label="抜けた向き"><option value="UP">上に抜けて</option><option value="DOWN">下に抜けて</option></select>
-        <label>さらに <input id="af-move" value="0.1" inputmode="decimal" aria-label="動き（％）">％動いたら</label>
-        <select id="af-side" aria-label="売買"><option value="BUY">買う</option><option value="SELL">売る</option></select>
-        <label>数量 <input id="af-qty" value="0.001" inputmode="decimal" aria-label="数量（BTC）">BTC</label>
-        <label>損切り <input id="af-stop" value="1" inputmode="decimal" aria-label="損切り（％）">％</label>
-        <label>利確 <input id="af-take" value="2" inputmode="decimal" aria-label="利確（％）">％</label>
-        <button class="btn" id="af-add" type="button">この条件で常駐に送る</button>
-      </div>
       <div class="hint" id="af-note" aria-live="polite"></div>
       <div id="plan-list"></div>
       <div class="ledger" id="ledger"></div>
@@ -362,7 +349,7 @@
       trendNow.push({ label: t.label, color: t.color, price: lineAt(t, c.length - 1) });
     });
     renderChips();
-    if (typeof drawPlan === "function" && !$("auto").hidden) { renderChoices(); drawPlan(); }
+    if (typeof drawPlan === "function" && !$("auto").hidden) drawPlan();
   }
 
   // ---------- ライン ----------
@@ -376,7 +363,6 @@
     store.set("nst-lines-" + state.interval, JSON.stringify(state.lines));
     renderChips();
     store.set("nst-lines-" + state.interval, JSON.stringify(state.lines));
-    if (!$("auto").hidden) renderChoices();
   }
   function renderChips() {
     const box = $("chips"); box.textContent = "";
@@ -541,6 +527,7 @@
           setLines([...j.lines.filter((l) => l && l.kind !== "manual"), ...state.lines.filter((l) => l.kind === "manual")]);
           say("note", "回答に合わせてラインを引きました。" + (typeof j.yen === "number" ? `(今回の料金 約${j.yen.toFixed(1)}円)` : ""));
         } else if (typeof j.yen === "number") say("note", `今回の料金 約${j.yen.toFixed(1)}円`);
+        if (gmoOn() && Array.isArray(j.plans) && j.plans.length) showPlans(j.plans);
       }
     } catch { wait.remove(); say("note", "AIサーバーにつながりませんでした。URLと電波を確認してください。"); }
     busy = false; $("send").disabled = false;
@@ -556,41 +543,30 @@
   const SIDE = { BUY: "買い", SELL: "売り" }, REASON = { STOP: "損切り", TAKE: "利確", TRAIL: "トレーリング", TIME: "時間切れ", SETTLE: "朝の精算", MANUAL: "手動" };
   const TF = { "1hour": "1H", "4hour": "4H", "8hour": "4H", "1day": "1D" };
   const isoNow = () => new Date().toISOString().replace(/\.\d+Z$/, "+00:00");
-  const isoOf = (chartTime) => new Date((chartTime - JST) * 1000).toISOString().replace(/\.\d+Z$/, "+00:00");
-  const num = (v) => { const s = String(v).trim(); return /^\d+(\.\d+)?$/.test(s) && +s > 0 ? s : null; };
-  function choices() {
-    return [
-      ...state.lines.map((l) => ({ name: l.label, text: `${l.label} ${yen(l.price)}円`, kind: "HLINE", points: [{ t: isoNow(), p: String(Math.round(l.price)) }] })),
-      ...state.diag.map((d, i) => { const a = d.t1 < d.t2 ? [d.t1, d.p1, d.t2, d.p2] : [d.t2, d.p2, d.t1, d.p1];
-        return { name: "斜めの線" + (i + 1), text: `斜めの線${i + 1}`, kind: "TREND", points: [{ t: isoOf(a[0]), p: String(Math.round(a[1])) }, { t: isoOf(a[2]), p: String(Math.round(a[3])) }] }; }),
-    ];
-  }
-  let choiceSig = "";
-  function renderChoices() {
-    const sel = $("af-line"), list = choices(), sig = JSON.stringify(list.map((c) => c.text));
-    if (sig === choiceSig && sel.options.length) return;   /* 中身が同じなら作り直さない（選んでいる途中を消さない） */
-    const keep = sel.selectedIndex >= 0 && sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : "";
-    choiceSig = sig; sel.textContent = "";
-    if (!list.length) { const o = document.createElement("option"); o.textContent = "先に線を引いてください"; o.value = ""; sel.append(o); return; }
-    list.forEach((c, i) => { const o = document.createElement("option"); o.value = String(i); o.textContent = c.text; if (c.text === keep) o.selected = true; sel.append(o); });
-  }
   async function sendPlan(lines) {
     const j = await relay("/trade/plan", { method: "POST", body: JSON.stringify({ lines }) });
     auto.plan = lines; renderPlan(); drawPlan(); return j;
   }
-  $("af-add").onclick = async () => {
-    const c = choices()[+$("af-line").value], on = $("af-on").value, side = $("af-side").value;
-    const v = { move: num($("af-move").value), qty: num($("af-qty").value), stop: num($("af-stop").value), take: num($("af-take").value) };
-    if (!c) { $("af-note").textContent = "先にチャートに線を引いてください。"; return; }
-    if (Object.values(v).some((x) => !x)) { $("af-note").textContent = "数字は0より大きい数で入れてください。"; return; }
-    if (auto.plan.length >= 20) { $("af-note").textContent = "送れる線は20本までです。"; return; }
-    const item = { rid: "r" + Date.now().toString(36), kind: c.kind, points: c.points, drawn_on: TF[state.interval],
-      label: `${c.name}・${on === "UP" ? "上抜け" : "下抜け"}で${SIDE[side]}`.slice(0, 40),
-      trade: { side, on, move: on, move_pct: v.move, qty: v.qty, stop_pct: v.stop, take_pct: v.take } };
-    $("af-note").textContent = "送っています…";
-    try { await sendPlan([...auto.plan, item]); $("af-note").textContent = "送りました。30秒ほどで PC の常駐が受け取ります。"; }
-    catch (e) { $("af-note").textContent = "送れませんでした（" + e.message + "）"; }
-  };
+  /* AI相談の答えに付いた売買の案（2026-11-27 事業主「ほぼAI相談どおりに売買できる体制に」決定A）。本人が押したときだけ送る。数量は 0.001BTC 固定 */
+  const QTY = "0.001";
+  const planText = (p) => `${SIDE[p.side]}：${yen(p.price)}円を${p.on === "UP" ? "上抜け" : "下抜け"}(さらに${p.move_pct}%)で入る ・ 損切り${p.stop_pct}% ・ 利確${p.take_pct}% ・ ${QTY}BTC`;
+  function showPlans(plans) {
+    plans.forEach((p) => {
+      const d = say("plan", ""), t = document.createElement("span");
+      t.textContent = `案：${planText(p)}${p.reason ? "\n" + p.reason : ""}`; t.style.whiteSpace = "pre-wrap";
+      const b = document.createElement("button"); b.className = "btn"; b.type = "button"; b.textContent = "この案で常駐に送る";
+      b.onclick = async () => {
+        if (auto.plan.length >= 20) { b.textContent = "送れるのは20件までです"; return; }
+        const item = { rid: "r" + Date.now().toString(36), kind: "HLINE", points: [{ t: isoNow(), p: String(p.price) }], drawn_on: TF[state.interval],
+          label: (p.reason || `${p.on === "UP" ? "上抜け" : "下抜け"}で${SIDE[p.side]}`).slice(0, 40),
+          trade: { side: p.side, on: p.on, move: p.on, move_pct: String(p.move_pct), qty: QTY, stop_pct: String(p.stop_pct), take_pct: String(p.take_pct) } };
+        b.disabled = true; b.textContent = "送っています…";
+        try { await sendPlan([...auto.plan, item]); b.textContent = "送りました(30秒ほどでPCが受け取ります)"; }
+        catch (e) { b.disabled = false; b.textContent = "送れませんでした・もう一度"; say("note", "送れませんでした（" + e.message + "）"); }
+      };
+      d.append(t, b);
+    });
+  }
   function syncOf(rid) { return auto.status && auto.status.sync && auto.status.sync.lines ? auto.status.sync.lines[rid] : null; }
   function renderPlan() {
     const box = $("plan-list"); box.textContent = "";
@@ -647,7 +623,7 @@
     if (!gmoOn() || document.hidden) return;
     try { const [plan, status] = await Promise.all([relay("/trade/plan"), relay("/trade/status")]); auto.plan = plan.lines || []; auto.status = status; }
     catch (e) { $("auto-mode").textContent = "AIサーバーにつながりません（" + e.message + "）"; }
-    renderChoices(); renderPlan(); drawPlan(); renderLedger();
+    renderPlan(); drawPlan(); renderLedger();
   }
   function autoShow() { $("auto").hidden = !gmoOn(); if (gmoOn()) refreshAuto(); }
   setInterval(refreshAuto, 30000);
