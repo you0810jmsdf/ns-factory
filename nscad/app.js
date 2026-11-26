@@ -1093,7 +1093,15 @@ function markByDistance(click) {
     if (s === null) { $('hint').textContent = t('markOutside', { len: len.toFixed(1), d: d }); return false; }
     stage = null; stampAt(pointAtLength(route, s), true, 'dot'); return true;
   };
-  if (!second || stage.key !== key) { /* 1 回目（別の線をクリックしたときも、そこから基準をやり直す） */
+  if (second && stage.key !== key && stage.at) {   /* 2回目に、基準の点を通る別の線（交点・端を共有する点線など）を押したら、その線へ乗り換えて、同じ基準の点から押した向きへ測る（2026-11-26 事業主「目印がうまくうてない」「点線上は無理なの？」決定A：交点で縦線が選ばれ、点線を押すと押した所から基準をやり直していた） */
+    const sb = projectOnPath(route, stage.at).s;
+    if (distance(pointAtLength(route, sb), stage.at) < 0.05) {
+      const atStart = !closed && sb < 1e-4, atEnd = !closed && sb > len - 1e-4;
+      if (atStart || atEnd) { place(sb, atStart ? 1 : -1); return; }   /* 基準の点がその線の端なら、向きは線の内側に決まる */
+      stage = { ...stage, key, s: sb };
+    }
+  }
+  if (!second || stage.key !== key) { /* 1 回目（基準の点を通らない別の線をクリックしたときは、そこから基準をやり直す） */
     const atStart = !closed && s0 < 1e-4, atEnd = !closed && s0 > len - 1e-4;
     if (atStart || atEnd) { place(s0, atStart ? 1 : -1); return; }
     const cand = [-1, 1].map(dir => { const s = markTargetS(s0, dir * d, closed, len); return s === null ? null : pointAtLength(route, s); });
@@ -4353,7 +4361,7 @@ function initDesign() {
   $('patchFill').onclick = () => { if (!lockGate('patchwork')) return; setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   /* 窓の×と、見出しのドラッグ（柄・目打ち・拡大縮小・移動の窓で共通）。×＝柄・目打ちは、そのツールをやめる（選択ツールへ）／拡大縮小・移動は、窓を右列のカードへ戻す（見出し summary の開閉は起こさない）。
      窓は、見出しをつかんで動かせる（画面の外へは出さない）。窓でないとき（右列のカード）は動かさず、今までどおり見出しで開閉する */
-  for (const [card, { head: headId, close: closeId, tool, back, hide }] of Object.entries({ patchCard: { head: 'patchWinHead', close: 'patchWinClose', tool: true }, stitchCard: { head: 'stitchWinHead', close: 'stitchWinClose', tool: true }, scaleCard: { head: 'scaleWinHead', close: 'scaleWinClose', tool: false }, moveCard: { head: 'moveWinHead', close: 'moveWinClose', tool: false }, layerCard: { head: 'layerWinHead', close: 'layerWinClose', tool: false, back: false }, holeShapeCard: { head: 'holeShapeWinHead', close: 'holeShapeWinClose', tool: false, back: false, hide: true }, textFontCard: { head: 'textFontWinHead', close: 'textFontWinClose', tool: false, back: false, hide: true }, nestCard: { head: 'nestWinHead', close: 'nestWinClose', tool: false, back: false, hide: true } })) {
+  for (const [card, { head: headId, close: closeId, tool, back, hide }] of Object.entries({ patchCard: { head: 'patchWinHead', close: 'patchWinClose', tool: true }, stitchCard: { head: 'stitchWinHead', close: 'stitchWinClose', tool: true }, markCard: { head: 'markWinHead', close: 'markWinClose', tool: true }, scaleCard: { head: 'scaleWinHead', close: 'scaleWinClose', tool: false }, moveCard: { head: 'moveWinHead', close: 'moveWinClose', tool: false }, layerCard: { head: 'layerWinHead', close: 'layerWinClose', tool: false, back: false }, holeShapeCard: { head: 'holeShapeWinHead', close: 'holeShapeWinClose', tool: false, back: false, hide: true }, textFontCard: { head: 'textFontWinHead', close: 'textFontWinClose', tool: false, back: false, hide: true }, nestCard: { head: 'nestWinHead', close: 'nestWinClose', tool: false, back: false, hide: true } })) {
     $(closeId).addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (tool) setMode('select'); else setCardWin(card, false, back !== false); if (hide) $(card).hidden = true; });   /* hide＝右列のカードに戻さず、閉じたら隠す（「菱目・丸目をまとめて変える」は、開くのは右クリックだけ） */
     const head = $(headId); let drag = null; const isWin = () => $(card).dataset.win === '1';
     head.addEventListener('click', e => { if (isWin()) e.preventDefault(); });   /* 窓のときは、見出しを押しても（ドラッグの後も）たたまない */
@@ -9777,7 +9785,7 @@ function syncToolCards() {
   $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; if (mode === 'divide') syncDivideBar(); $('rpatchBar').hidden = mode !== 'rpatch'; if (mode !== 'rpatch' && $('rpCompareWin')) $('rpCompareWin').hidden = true; if (mode === 'rpatch') syncRpatchBar(); $('rcolorBar').hidden = mode !== 'rcolor'; if (mode !== 'rcolor') { $('rcCompareWin').hidden = true; $('rcResultWin').hidden = true; } if (mode === 'rcolor') syncRcolorBar(); $('rsplitBar').hidden = mode !== 'rsplit'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; syncMarkFields(); /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('arcBar').hidden = mode !== 'arc'; $('textBar').hidden = mode !== 'text'; $('dimBar').hidden = mode !== 'dimension'; /* 円弧（描き方・向き・半径）・文字の大きさ・寸法のずらしの欄も、そのツールのときだけ上の窓に（事業主指示 2026-10-21） */
-  setCardWin('stitchCard', mode === 'stitch' || mode === 'mark'); setPatchWin(mode === 'patchfill'); document.body?.classList?.toggle('patch-focus', mode === 'patchfill');   /* 柄の窓が出ている間は、画面右の列を畳む（事業主指示 2026-10-21「パッチワークの窓が出ているときに画面右のメニューは不要。載せたいなら右クリックメニューに」） */   /* 目打ち・目印（目打ちカード）・柄は、右列でなく窓 */
+  setCardWin('stitchCard', mode === 'stitch'); if ($('markCard')) { $('markCard').hidden = mode !== 'mark'; setCardWin('markCard', mode === 'mark'); }   /* 目印は専用の小窓（2026-11-26 事業主「菱目打ちとごっちゃまぜでわかりにくい」決定C）。目印ツールのときだけ出す */ setPatchWin(mode === 'patchfill'); document.body?.classList?.toggle('patch-focus', mode === 'patchfill');   /* 柄の窓が出ている間は、画面右の列を畳む（事業主指示 2026-10-21「パッチワークの窓が出ているときに画面右のメニューは不要。載せたいなら右クリックメニューに」） */   /* 目打ち・目印（目打ちカード）・柄は、右列でなく窓 */
   if ($('autoDimCard')) $('autoDimCard').open = mode === 'dimension';   /* 寸法ツール→「寸法線を自動で入れる」カード（事業主の希望 2026-10-19「寸法メニューを押すと、右の関連する寸法自動入力カードを出してほしい」） */
   const shown = mode === 'dimension' ? $('autoDimCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる（窓にした柄・目打ち・目印・円弧・文字は寄せない・右列のタブも切り替えない） */
   if (shown) revealCard(shown);   /* ツールに対応するカードの分類のタブへ切り替える（隠れたままだと見えない） */
@@ -12063,7 +12071,7 @@ canvas.addEventListener('pointermove', e => {
 const SIDE_TABS = ['shape', 'stitch', 'color', 'fold', 'parts', 'out'], SIDE_TAB_KEY = 'leather-cad.sideTab';
 let sideTab = 'shape';
 /** 右メニューのカードの並び（分類ごと・使う順）：三つ折りは「設計→断面図→設計（厚み）→3D」・出力は先頭。HTML の並びは変えず、起動時に DOM を並べ替える（カードの中身・イベントはそのまま）。 */
-const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'textFontCard', 'drawCard', 'autoDimCard', 'stitchCard', 'holeShapeCard', 'nestCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
+const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'textFontCard', 'drawCard', 'autoDimCard', 'markCard', 'stitchCard', 'holeShapeCard', 'nestCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
 function orderSideCards() { const side = $('side'); if (!side?.appendChild) return; for (const id of SIDE_ORDER) { const el = $(id); if (el && el.parentElement === side) side.appendChild(el); } }
 const sideGroupOf = c => c?.dataset?.side || null;
 function showSideTab(name, { save = true } = {}) {
@@ -12225,7 +12233,7 @@ function toggleStitchSim() {
   $('hint').textContent = t(viewShow.stitch ? 'stitchSimOn' : 'stitchSimOff');
 }
 function fillCtxCards() {
-  const box = $('ctxCards'), cards = ctxCardList().filter(c => c !== $('patchCard')).filter(c => c !== $('holeShapeCard')).filter(c => c !== $('nestCard')).filter(c => c !== $('textFontCard')).filter(c => c !== $('moveCard') && c !== $('scaleCard'));   /* 移動・拡大縮小の窓は、「選んだ図形」の「移動…」「拡大縮小」から開く（同じ窓が、作図オプション側にも並んで重なっていた・事業主 2026-10-28「他のメニューも同様」） */   /* 「菱目・丸目をまとめて変える」は、専用の項目（ctx-holeshape）から開く窓。窓を開いている間、一覧に同じ項目が重ねて出ないようにする */ box.innerHTML = '';   /* パッチワークは、上の「パッチワーク」のまとまりの「柄（パッチワーク）」で開く（同じ窓が2つの項目から開く重複をなくす・事業主 2026-10-25） */
+  const box = $('ctxCards'), cards = ctxCardList().filter(c => c !== $('patchCard')).filter(c => c !== $('holeShapeCard')).filter(c => c !== $('markCard')).filter(c => c !== $('nestCard')).filter(c => c !== $('textFontCard')).filter(c => c !== $('moveCard') && c !== $('scaleCard'));   /* 移動・拡大縮小の窓は、「選んだ図形」の「移動…」「拡大縮小」から開く（同じ窓が、作図オプション側にも並んで重なっていた・事業主 2026-10-28「他のメニューも同様」） */   /* 「菱目・丸目をまとめて変える」は、専用の項目（ctx-holeshape）から開く窓。窓を開いている間、一覧に同じ項目が重ねて出ないようにする */ box.innerHTML = '';   /* パッチワークは、上の「パッチワーク」のまとまりの「柄（パッチワーク）」で開く（同じ窓が2つの項目から開く重複をなくす・事業主 2026-10-25） */
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
   let foldSim = false;   /* 三つ折りの分類は、カードを並べず「三つ折りシミュレーション」の1項目にする（事業主指示 2026-10-21「三つ折り機能は、統括して「三つ折りシミュレーション」として〇iの内容を表示させるだけでよい」・右メニュー＝右クリックメニュー）。押すと、これまでⓘで開いていた手順の小窓（①〜⑤とボタン）を開く */
   for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; }
