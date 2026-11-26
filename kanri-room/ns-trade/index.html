@@ -75,6 +75,8 @@
   .send { background: var(--accent); border: 0; color: #1b1203; font-weight: 700; border-radius: 8px; padding: 0 16px; cursor: pointer; }
   .send:disabled { opacity: .5; cursor: default; }
   details { padding: 0 10px 10px; font-size: 12px; color: var(--muted); }
+  details input.secret { -webkit-text-security: disc; }
+  #ai-note { color: var(--accent); margin-top: 6px; }
   details input { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; margin-top: 6px; width: 100%; }
   footer { color: var(--muted); font-size: 11px; padding: 0 0 20px; }
 </style>
@@ -138,9 +140,10 @@
     </form>
     <details id="settings">
       <summary>AIの設定(本人用)</summary>
-      N's CAD のAIと同じサーバーURLと合言葉を入れます。この端末にだけ保存され、入れていない人はAIを使えません。
-      <input id="ai-url" type="url" inputmode="url" autocomplete="off" placeholder="サーバーURL (https://…)" aria-label="サーバーURL">
-      <input id="ai-key" type="password" autocomplete="off" placeholder="合言葉" aria-label="合言葉">
+      N's CAD の「AI」欄に入れているものと同じ、AIサーバーのURLと合言葉を入れます。メールアドレスやログイン用のパスワードではありません。この端末にだけ保存され、入れていない人はAIを使えません。
+      <input id="ai-url" name="nst-ai-server" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" data-1p-ignore data-lpignore="true" placeholder="AIサーバーのURL（https:// で始まる）" aria-label="AIサーバーのURL">
+      <input id="ai-key" name="nst-ai-phrase" class="secret" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" data-1p-ignore data-lpignore="true" placeholder="合言葉" aria-label="合言葉">
+      <div id="ai-note" aria-live="polite"></div>
     </details>
   </section>
 </div>
@@ -424,9 +427,15 @@
   // 設定は N's CAD のAIと同じ保存場所を使う。APIキーはサーバー側にあり、このページには置かない。
   const AI_STORE = "leather-cad.ai";
   function aiSettings() { let o = {}; try { o = JSON.parse(store.get(AI_STORE)) || {}; } catch {} return o; }
-  function saveAi() { const o = aiSettings(); o.url = $("ai-url").value.trim(); o.key = $("ai-key").value; store.set(AI_STORE, JSON.stringify(o)); }
-  { const o = aiSettings(); $("ai-url").value = o.url || ""; $("ai-key").value = o.key || ""; }
-  $("ai-url").onchange = saveAi; $("ai-key").onchange = saveAi;
+  // https で始まるURLのときだけ保存する(ブラウザの自動入力でメールアドレス等が入っても保存しない)
+  function saveAi() {
+    const url = $("ai-url").value.trim(), ok = /^https:\/\/[^\s@]+$/.test(url);
+    $("ai-note").textContent = url && !ok ? "URLは https:// で始まるAIサーバーのアドレスを入れてください(メールアドレスではありません)。" : "";
+    if (url && !ok) return;
+    const o = aiSettings(); o.url = url; o.key = url ? $("ai-key").value : ""; store.set(AI_STORE, JSON.stringify(o));
+  }
+  { const o = aiSettings(), ok = /^https?:\/\//.test(o.url || ""); /* URLでないもの(自動入力されたメールアドレス等)が残っていたら消す */ if (o.url && !ok) { o.url = ""; o.key = ""; store.set(AI_STORE, JSON.stringify(o)); } $("ai-url").value = o.url || ""; $("ai-key").value = o.key || ""; }
+  $("ai-url").oninput = saveAi; $("ai-key").oninput = saveAi;
   const msgs = []; let busy = false;
   function say(role, text) {
     const d = document.createElement("div"); d.className = "msg " + role; d.textContent = text;
