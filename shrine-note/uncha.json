@@ -1,0 +1,965 @@
+{
+ "noindex": true,
+ "updated": "2026-11-27",
+ "h1": {
+  "ja": "神社うんちく：噂は本当？ 資料で確かめました",
+  "en": "Shrine Trivia: Are the Rumors True? Checked Against Sources"
+ },
+ "description": {
+  "ja": "本殿の向きで祭神が分かる？ 千木・鰹木、鳥居の色、参拝の作法。神社にまつわるよくある噂を、神社の公式サイト・文化庁・大学などの資料で確かめてまとめたページ。",
+  "en": "Can you tell the enshrined deity from the direction the main hall faces? Chigi and katsuogi, torii colors, and worship etiquette. This page checks common rumors about shrines against sources such as shrine official websites, the Agency for Cultural Affairs, and universities."
+ },
+ "intro": {
+  "ja": "神社には「本当かな？」と思う話がたくさんあります。ここでは、よく聞く噂を、神社の公式サイト・神社庁・文化庁・大学などの資料で確かめて、「正しい知識」と「俗説」と「分からないこと」に分けて載せます。",
+  "en": "There are many stories about shrines that make people wonder, \"Is that really true?\" Here, common rumors are checked against sources such as shrine official websites, shrine agencies, the Agency for Cultural Affairs, and universities, and sorted into \"correct knowledge,\" \"myth,\" and \"what is not known.\""
+ },
+ "method": {
+  "ja": "ブログ・個人サイト・まとめサイトは使いません。資料に書いてあることだけを書き、書いていないことは「分からない」と書きます。出典の原文は、各項目の「出典」から読めます。引用は、資料のページを取り直して、一字一句ある（原文のとおり）ことを機械で照合しています。",
+  "en": "Blogs, personal sites, and curation sites are not used. Only what the sources say is written, and what they do not say is described as \"not known.\" The original text of each source can be read from \"Source\" under each item. Quotations are re-fetched from the source pages and machine-checked to confirm that they appear word for word (exactly as in the original)."
+ },
+ "topics": [
+  {
+   "id": "muki",
+   "title": {
+    "ja": "コラム：本殿の向きで、祀られている神様が分かる？",
+    "en": "Column: Can You Tell the Enshrined Deity from the Direction of the Main Hall?"
+   },
+   "lead": {
+    "ja": "「本殿が向いている方角を見れば、祀られている神様が分かる」という噂を聞きました。本当でしょうか。神社巡りノートの153社について、公式サイト・文化庁・自治体などの資料に、本殿の向きが書かれているかを調べました。",
+    "en": "I heard a rumor: \"If you look at the direction the main hall faces, you can tell which deity is enshrined.\" Is it true? For the 153 shrines in the Shrine Note, we checked whether sources such as official websites, the Agency for Cultural Affairs, and local governments state the direction of the main hall."
+   },
+   "summary": {
+    "ja": "結論：この説を裏づける公的な資料は、見つかりませんでした。向きの記述が資料で確かめられたのは153社のうち18社だけで、数が少なく、祭神との対応を調べることはできませんでした。向きは地形や古い方位観など、神社ごとの事情で決まるようで、出雲大社や鹿島神宮のように、よく言われる説に当てはまらない例もあります。ただし「俗説」という判定は、対応を示す記述が見つからず、反例があることによるもので、説を全面的に否定する資料があるわけではありません。",
+    "en": "Conclusion: No official source supporting this theory was found. The direction was confirmed in sources for only 18 of the 153 shrines, too few to examine any correspondence with the enshrined deity. The direction seems to depend on each shrine's circumstances, such as terrain and old ideas about directions, and there are examples such as Izumo Taisha and Kashima Jingū that do not fit the commonly stated theory. However, the \"myth\" verdict rests on the absence of any description showing a correspondence and on the existence of counterexamples; no source flatly denies the theory."
+   },
+   "table": {
+    "caption": {
+     "ja": "資料で向きが確かめられた18社",
+     "en": "18 shrines whose direction was confirmed in sources"
+    },
+    "rows": [
+     {
+      "id": "kashima",
+      "dir": {
+       "ja": "北向き",
+       "en": "Facing north"
+      },
+      "target": "本殿",
+      "url": "https://online.bunka.go.jp/heritages/detail/110797"
+     },
+     {
+      "id": "okunitamajinja",
+      "dir": {
+       "ja": "北向き",
+       "en": "Facing north"
+      },
+      "target": "本殿",
+      "url": "https://www.ookunitamajinja.or.jp/mame/q02.php",
+      "note": {
+       "ja": "かつて南向きだった社殿を、1051年に北向きに改めたと神社が説明",
+       "en": "The shrine explains that the shrine buildings, which once faced south, were changed to face north in 1051"
+      }
+     },
+     {
+      "id": "aso",
+      "dir": {
+       "ja": "東向き",
+       "en": "Facing east"
+      },
+      "target": "その他",
+      "url": "https://asojinja.or.jp/about/building/",
+      "note": {
+       "ja": "神殿3棟と諸門3棟が東向き",
+       "en": "Three sanctuary buildings and three gates face east"
+      }
+     },
+     {
+      "id": "takachiho",
+      "dir": {
+       "ja": "南東向き",
+       "en": "Facing southeast"
+      },
+      "target": "本殿",
+      "url": "https://kunishitei.bunka.go.jp/heritage/detail/102/00003883"
+     },
+     {
+      "id": "chokaisan",
+      "dir": {
+       "ja": "南向き",
+       "en": "Facing south"
+      },
+      "target": "本殿",
+      "url": "https://online.bunka.go.jp/heritages/detail/210295"
+     },
+     {
+      "id": "dewa",
+      "dir": {
+       "ja": "南向き",
+       "en": "Facing south"
+      },
+      "target": "社殿",
+      "url": "https://kunishitei.bunka.go.jp/heritage/detail/102/3675"
+     },
+     {
+      "id": "iwashimizu",
+      "dir": {
+       "ja": "南向き",
+       "en": "Facing south"
+      },
+      "target": "本殿",
+      "url": "https://www.city.yawata.kyoto.jp/0000003044.html"
+     },
+     {
+      "id": "izumo",
+      "dir": {
+       "ja": "南向き",
+       "en": "Facing south"
+      },
+      "target": "本殿",
+      "url": "https://izumooyashiro.or.jp/precinct/keidai-index/gohonden",
+      "note": {
+       "ja": "建物は南向き。中の御神座は西向き",
+       "en": "The building faces south. The inner sanctum seat of the deity (goshinza) faces west"
+      }
+     },
+     {
+      "id": "kumanonachi",
+      "dir": {
+       "ja": "南向き",
+       "en": "Facing south"
+      },
+      "target": "社殿",
+      "url": "https://www.pref.wakayama.lg.jp/prefg/081300/d00214990.html",
+      "note": {
+       "ja": "第一殿〜第五殿が南向き、第六殿・御県彦社は東向き",
+       "en": "The first to fifth halls face south; the sixth hall and Miagatahiko Shrine face east"
+      }
+     },
+     {
+      "id": "miyazaki",
+      "dir": {
+       "ja": "南向き",
+       "en": "Facing south"
+      },
+      "target": "その他",
+      "url": "https://kunishitei.bunka.go.jp/heritage/detail/101/00008076"
+     },
+     {
+      "id": "nukisaki",
+      "dir": {
+       "ja": "南向き",
+       "en": "Facing south"
+      },
+      "target": "その他",
+      "url": "https://nukisaki.or.jp/go_yui_sho.html"
+     },
+     {
+      "id": "oosaki",
+      "dir": {
+       "ja": "南向き",
+       "en": "Facing south"
+      },
+      "target": "社殿",
+      "url": "https://www.oosaki-hachiman.or.jp/thisweek/index_2017.html"
+     },
+     {
+      "id": "otori",
+      "dir": {
+       "ja": "南向き",
+       "en": "Facing south"
+      },
+      "target": "社殿",
+      "url": "https://www.city.sakai.lg.jp/kanko/rekishi/bunkazai/bunkazai/shokai/bunya/kenzobutu/ootoritaisya.html"
+     },
+     {
+      "id": "yusuhara",
+      "dir": {
+       "ja": "南向き",
+       "en": "Facing south"
+      },
+      "target": "その他",
+      "url": "https://kunishitei.bunka.go.jp/bsys/maindetails/102/00004531"
+     },
+     {
+      "id": "samukawa",
+      "dir": {
+       "ja": "南西向き",
+       "en": "Facing southwest"
+      },
+      "target": "本殿",
+      "url": "https://samukawajinjya.jp/about/shinen.html"
+     },
+     {
+      "id": "shiogama",
+      "dir": {
+       "ja": "西向き",
+       "en": "Facing west"
+      },
+      "target": "社殿",
+      "url": "https://kunishitei.bunka.go.jp/bsys/maindetails/102/3738",
+      "note": {
+       "ja": "左右宮は南向き、別宮は西向き。ここでは主祭神の別宮の向き",
+       "en": "The Sayū-gū (left and right shrines) faces south, and the betsugū (auxiliary shrine) faces west. The direction shown here is that of the auxiliary shrine of the principal deity"
+      }
+     },
+     {
+      "id": "sumiyoshi",
+      "dir": {
+       "ja": "西向き",
+       "en": "Facing west"
+      },
+      "target": "本殿",
+      "url": "https://sumiyoshitaisha.net/grounds/honden.html"
+     },
+     {
+      "id": "itsukushima",
+      "dir": {
+       "ja": "北西向き",
+       "en": "Facing northwest"
+      },
+      "target": "社殿",
+      "url": "https://online.bunka.go.jp/heritages/detail/148361",
+      "note": {
+       "ja": "社殿全体の向き（海中に造営）",
+       "en": "Direction of the shrine buildings as a whole (built in the sea)"
+      }
+     }
+    ],
+    "foot": {
+     "ja": "向きの内訳（資料が書く向き）：南10社、北2社、西2社、東・南東・南西・北西が各1社。「何の向き」は、資料が本殿と明記したものは「本殿」、社殿全体は「社殿」、神殿や境内の向きを述べたものは「神殿・境内」としています。残りの135社は、公式サイト・文化庁・自治体・神社庁などの資料を探しましたが、向きの記述が見つからなかったか、サイトを開けませんでした（諏訪大社上社本宮と大神神社は、そもそも本殿を設けていません）。資料に書かれるのは、向きが特徴的な神社に偏る可能性があります。",
+     "en": "Breakdown of directions (as stated in sources): south, 10 shrines; north, 2; west, 2; and east, southeast, southwest, and northwest, 1 each. For \"what is facing,\" the table says \"main hall\" where the source explicitly states the honden, \"shrine buildings\" for the shrine buildings as a whole, and \"sanctuary and precinct\" where the source describes the direction of a sanctuary or the precinct. For the remaining 135 shrines, we searched sources such as official websites, the Agency for Cultural Affairs, local governments, and shrine agencies, but either no description of direction was found or the site could not be opened (Suwa Taisha Kamisha Honmiya and Ōmiwa Shrine do not have a main hall at all). Sources may tend to describe shrines whose direction is distinctive."
+    }
+   },
+   "claims": [
+    {
+     "claim": {
+      "ja": "本殿が向いている方角を見れば、祀られている神様が分かる",
+      "en": "If you look at the direction the main hall faces, you can tell which deity is enshrined"
+     },
+     "verdict": "myth",
+     "explanation": {
+      "ja": "向きと祭神を対応づける記述は見つからず、出雲大社は建物と御神座で向きが違い、春日大社は向きが変わった例も資料にある。",
+      "en": "No description linking direction to the enshrined deity was found. At Izumo Taisha the building and the seat of the deity face different directions, and the sources also record a case where the direction of Kasuga Taisha changed."
+     },
+     "sources": [
+      {
+       "url": "https://izumooyashiro.or.jp/precinct/keidai-index/gohonden",
+       "quote": "従って、御神座は御本殿と同じ南向きではなく、西向きになります。",
+       "label": "神社公式（izumooyashiro.or.jp）"
+      },
+      {
+       "url": "https://d-museum.kokugakuin.ac.jp/eos/detail/?id=8669",
+       "quote": "the shrine was built to face south, and the worship orientation changed to the north.",
+       "label": "大学・研究機関（d-museum.kokugakuin.ac.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "神様の性格（祖霊・自然神など）によって、社殿の向きが決まってくる",
+      "en": "The nature of the deity (ancestral spirits, nature deities, and so on) determines the direction of the shrine buildings"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "集落の神社を調べた科研費研究が、祭神の性格で向きが定まると報告。ただし一部地域の調査で、全国共通の決まりとは書かれていない。大國魂神社の公式も「御祭神に関係する方角を向いていたり…各社の由緒によって向きを決めた神社もある」と説明する。",
+      "en": "A research project funded by a Grant-in-Aid for Scientific Research (KAKENHI), which studied village shrines, reported that the nature of the enshrined deity determines the direction. However, it was a survey of some regions, and it is not described as a rule common to all of Japan. Ōkunitama Jinja's official site also says that some shrines face a direction related to their deity or decide their direction by their own history."
+     },
+     "sources": [
+      {
+       "url": "https://kaken.nii.ac.jp/ja/grant/KAKENHI-PROJECT-04801006/",
+       "quote": "祭神の性格によって神社の面する向きが定められて来ることになり",
+       "label": "大学・研究機関（kaken.nii.ac.jp）"
+      },
+      {
+       "url": "https://www.ookunitamajinja.or.jp/mame/q02.php",
+       "quote": "神社は南か東を向いています。古くから「天子南面す」と言われるように玉座は南、太陽の方角を向いていました。神様も同じように南を向くのが多いようです。この他、御祭神に関係する方角を向いていたり、太陽の出る方角等各社の由緒によって向きを決めた神社もあり",
+       "label": "神社公式（ookunitamajinja.or.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "神社の社殿は南向きが多い",
+      "en": "Many shrine buildings face south"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "大学の解説は南面が通例とする。ただ文化庁は配置に決まりはなかったとし、伊勢の別宮も土宮だけ東向き。古くは東西軸が優位だったとも。大國魂神社の公式も「神社は南か東を向いている」と説明する。",
+      "en": "A university explanation says that facing south is usual. However, the Agency for Cultural Affairs says there was no fixed rule for layout, and among the Ise auxiliary shrines only Tsuchinomiya faces east. It is also said that the east-west axis was dominant in ancient times. Ōkunitama Jinja's official site also says that shrines face south or east."
+     },
+     "sources": [
+      {
+       "url": "https://g.kyoto-art.ac.jp/reports/1307/",
+       "quote": "全国の神社の多くが南面を通例とするなかで珍しい例である。",
+       "label": "大学・研究機関（g.kyoto-art.ac.jp）"
+      },
+      {
+       "url": "https://www.isejingu.or.jp/about/geku/betsugu.html",
+       "quote": "さて、他の別宮が全て南面するのに対して土宮だけが東面しています。",
+       "label": "伊勢神宮（isejingu.or.jp）"
+      },
+      {
+       "url": "https://d-museum.kokugakuin.ac.jp/eos/detail/?id=8669",
+       "quote": "this was superseded by the south-north dominant Chinese worldview",
+       "label": "大学・研究機関（d-museum.kokugakuin.ac.jp）"
+      },
+      {
+       "url": "https://www.ookunitamajinja.or.jp/mame/q02.php",
+       "quote": "神社は南か東を向いています。古くから「天子南面す」と言われるように玉座は南、太陽の方角を向いていました。神様も同じように南を向くのが多いようです。この他、御祭神に関係する方角を向いていたり、太陽の出る方角等各社の由緒によって向きを決めた神社もあり",
+       "label": "神社公式（ookunitamajinja.or.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "社殿の向きは、山・川・神体山などの自然地形で決まる",
+      "en": "The direction of shrine buildings is decided by natural terrain such as mountains, rivers, and sacred mountains"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "文化庁は、場所が山や川など自然地形に沿って選ばれ配置に決まりはなかったと説明。春日大社は元は神体山へ東向きとの説。一律の規則は不明。",
+      "en": "The Agency for Cultural Affairs explains that sites were chosen along natural terrain such as mountains and rivers, and that there was no fixed rule for layout. One theory holds that Kasuga Taisha originally faced east toward a sacred mountain. No uniform rule is known."
+     },
+     "sources": [
+      {
+       "url": "https://online.bunka.go.jp/suisensyo/kyoto/APPENDIX-5/appendix5-1-j.html",
+       "quote": "場所は聖域と考えられた山や川など自然地形に沿って選定され、社殿の配置も特に定まったものはなかった。",
+       "label": "文化庁（online.bunka.go.jp）"
+      },
+      {
+       "url": "https://d-museum.kokugakuin.ac.jp/eos/detail/?id=8669",
+       "quote": "the Kasuga Shrine (Kasuga Taisha) faced east toward its sacred hill, Mount Mikasa",
+       "label": "大学・研究機関（d-museum.kokugakuin.ac.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "出雲大社の本殿は南向きだが、祀られている大国主大神の御神座は西向きである",
+      "en": "The honden of Izumo Taisha faces south, but the seat of the deity, Ōkuninushi-no-Ōkami, faces west"
+     },
+     "verdict": "correct",
+     "explanation": {
+      "ja": "公式サイトは、御神座は本殿と同じ南向きではなく西向きと明記。国交省の多言語解説も、入口は南側で聖室は西に面すると記す。",
+      "en": "The official website states clearly that the seat of the deity faces west, not south like the honden. A multilingual explanation by the Ministry of Land, Infrastructure, Transport and Tourism also says that the entrance is on the south side and the sacred chamber faces west."
+     },
+     "sources": [
+      {
+       "url": "https://izumooyashiro.or.jp/precinct/keidai-index/gohonden",
+       "quote": "従って、御神座は御本殿と同じ南向きではなく、西向きになります。",
+       "label": "神社公式（izumooyashiro.or.jp）"
+      },
+      {
+       "url": "https://www.mlit.go.jp/tagengo-db/R3-00180.html",
+       "quote": "大国主神が祀られている内側の聖室は、「上段」の右側の区画にあり、西に面しています。",
+       "label": "その他（mlit.go.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "鹿島神宮の本殿は北向きで、それは北方の蝦夷に備えるためである",
+      "en": "The honden of Kashima Jingū faces north, in order to guard against the Emishi in the north"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "本殿が北面なのは文化庁データベースで確認できた。蝦夷への備えは大学系解説の解釈で、神宮公式や文化庁には理由の記述がない。",
+      "en": "That the honden faces north could be confirmed in the Agency for Cultural Affairs database. Guarding against the Emishi is an interpretation in a university-related explanation; neither the official site of the Jingū nor the Agency for Cultural Affairs gives a reason."
+     },
+     "sources": [
+      {
+       "url": "https://online.bunka.go.jp/heritages/detail/110797",
+       "quote": "三間社流造、向拝一間、檜皮葺、北面",
+       "label": "文化庁（online.bunka.go.jp）"
+      },
+      {
+       "url": "https://g.kyoto-art.ac.jp/reports/1307/",
+       "quote": "つまり北方鎮護の社であったことを意味している。",
+       "label": "大学・研究機関（g.kyoto-art.ac.jp）"
+      }
+     ]
+    }
+   ],
+   "unknown": [
+    {
+     "ja": "伊勢神宮の内宮・外宮の正殿が何向きか（公式サイトでは別宮が南面との記述のみ確認。正殿の向きを明記した公的資料は見つからなかった）",
+     "en": "Which way the main sanctuaries (shōden) of the Naigū (Inner Shrine) and Gegū (Outer Shrine) of Ise Jingū face (on the official website, only a description of the auxiliary shrines facing south was confirmed; no official source stating the direction of the shōden was found)"
+    },
+    {
+     "ja": "伊勢神宮の土宮だけが東向きの理由（公式サイトも「詳らかにしません」としている）",
+     "en": "Why only Tsuchinomiya of Ise Jingū faces east (the official website also says it does not make this clear)"
+    },
+    {
+     "ja": "鹿島神宮が北向きである理由（神宮公式・文化庁の資料には記述なし）",
+     "en": "Why Kashima Jingū faces north (not described in the official sources of the Jingū or the Agency for Cultural Affairs)"
+    },
+    {
+     "ja": "全国の神社で南向き・東向きなどがそれぞれ何割かという統計",
+     "en": "Statistics on what proportion of shrines in Japan face south, east, and so on"
+    },
+    {
+     "ja": "社殿の向きを決める一般的な基準（太陽・参道・海などの取り方）を定めた公的な規定（文化庁は『特に定まったものはなかった』と説明）",
+     "en": "An official rule setting a general standard for deciding the direction of shrine buildings (how to take the sun, the approach, the sea, and so on) (the Agency for Cultural Affairs explains that \"there was nothing in particular fixed\")"
+    }
+   ]
+  },
+  {
+   "id": "chigi",
+   "title": {
+    "ja": "千木と鰹木で、祭神の性別が分かる？",
+    "en": "Can You Tell the Deity's Gender from Chigi and Katsuogi?"
+   },
+   "lead": {
+    "ja": "屋根の上の交差した木（千木）と、横に並んだ丸太（鰹木）。「千木の先の削ぎ方や鰹木の本数で、男神か女神かが分かる」と聞いたことはありませんか。",
+    "en": "The crossed timbers on the roof (chigi) and the logs lined up across it (katsuogi). Have you heard that \"the way the tips of the chigi are cut and the number of katsuogi show whether the deity is male or female\"?"
+   },
+   "summary": {
+    "ja": "千木の削ぎ方（外削ぎ＝男神・内削ぎ＝女神）や鰹木の偶数・奇数（偶数＝女神・奇数＝男神）は、伊勢神宮の内宮・外宮に実際に見られ、他の多くの神社もこれに倣うとされるが、決まりではない。日本建築学会論文の調査でも285棟中76.50%が適合した程度で、建築史では根拠が不確かとされてきた説である。",
+    "en": "The way chigi are cut (outward cut = male deity, inward cut = female deity) and whether the number of katsuogi is even or odd (even = female deity, odd = male deity) can actually be seen at the Naigū and Gegū of Ise Jingū, and many other shrines are said to follow them, but this is not a rule. In a survey in a paper of the Architectural Institute of Japan, only 76.50% of 285 buildings matched, and in architectural history the theory has been regarded as having an uncertain basis."
+   },
+   "claims": [
+    {
+     "claim": {
+      "ja": "千木の先が外削ぎなら男神、内削ぎなら女神が祀られている",
+      "en": "If the tips of the chigi are cut outward, a male deity is enshrined; if inward, a female deity"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "伊勢の例に倣う神社が多いが規則ではない。論文の調査では285棟中76.50%が適合し、建築史では根拠不確かとされてきた説。",
+      "en": "Many shrines follow the example of Ise, but it is not a rule. In the paper's survey, 76.50% of 285 buildings matched, and in architectural history the theory has been regarded as having an uncertain basis."
+     },
+     "sources": [
+      {
+       "url": "https://d-museum.kokugakuin.ac.jp/eos/detail/id=9688",
+       "quote": "Many other shrines follow this practice.",
+       "label": "大学・研究機関（d-museum.kokugakuin.ac.jp）"
+      },
+      {
+       "url": "https://www.jstage.jst.go.jp/article/aija/90/830/90_826/_article/-char/ja",
+       "quote": "Analyzing 285 shrine buildings, 76.50% conformed to the theory",
+       "label": "大学・研究機関（jstage.jst.go.jp）"
+      },
+      {
+       "url": "https://www.jstage.jst.go.jp/article/aija/89/821/89_1358/_article/-char/ja",
+       "quote": "often considered unsubstantiated",
+       "label": "大学・研究機関（jstage.jst.go.jp）"
+      },
+      {
+       "url": "https://www.jstage.jst.go.jp/article/aija/89/821/89_1358/_article/-char/ja",
+       "quote": "some instances like Sumiyoshi Shrine and Kumano Nachi Taisha suggest its relevance",
+       "label": "大学・研究機関（jstage.jst.go.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "鰹木の数が偶数なら女神、奇数なら男神が祀られている",
+      "en": "If the number of katsuogi is even, a female deity is enshrined; if odd, a male deity"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "伊勢神宮の正殿で内宮は10本・外宮は9本。国学院大学の事典は伊勢の伝統として記すが、全国共通の決まりとは書かれていない。",
+      "en": "The shōden of Ise Jingū has 10 katsuogi at the Naigū and 9 at the Gegū. Kokugakuin University's encyclopedia describes this as a tradition of Ise, but it is not described as a rule common to all of Japan."
+     },
+     "sources": [
+      {
+       "url": "https://www.isejingu.or.jp/about/architecture/",
+       "quote": "10本（偶数）",
+       "label": "伊勢神宮（isejingu.or.jp）"
+      },
+      {
+       "url": "https://www.isejingu.or.jp/about/architecture/",
+       "quote": "9本（奇数）",
+       "label": "伊勢神宮（isejingu.or.jp）"
+      },
+      {
+       "url": "https://d-museum.kokugakuin.ac.jp/eos/detail/id=9688",
+       "quote": "Many other shrines follow this practice.",
+       "label": "大学・研究機関（d-museum.kokugakuin.ac.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "伊勢神宮の内宮は内削ぎで鰹木10本、外宮は外削ぎで鰹木9本と、両宮で違う",
+      "en": "At Ise Jingū, the Naigū has inward-cut chigi and 10 katsuogi, and the Gegū has outward-cut chigi and 9 katsuogi, so the two shrines differ"
+     },
+     "verdict": "correct",
+     "explanation": {
+      "ja": "神宮公式の比較表に、両正宮の正殿の鰹木の数と千木の削ぎ方の違いが載る。祭神の性別との関係は同ページに記述なし。",
+      "en": "A comparison table on the Jingū's official website lists the difference in the number of katsuogi and the way the chigi are cut on the shōden of the two main shrines. The same page does not describe any relation to the gender of the deity."
+     },
+     "sources": [
+      {
+       "url": "https://www.isejingu.or.jp/about/architecture/",
+       "quote": "10本（偶数）",
+       "label": "伊勢神宮（isejingu.or.jp）"
+      },
+      {
+       "url": "https://www.isejingu.or.jp/about/architecture/",
+       "quote": "9本（奇数）",
+       "label": "伊勢神宮（isejingu.or.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "千木・鰹木は、祭神の性別を示すために付けられたものだ",
+      "en": "Chigi and katsuogi were added to show the gender of the deity"
+     },
+     "verdict": "myth",
+     "explanation": {
+      "ja": "資料は千木を本来は構造の補強、今は神聖さを示す象徴と説明し、性別を表す目的とは書いていない。鰹木は貴族の家にもあった。",
+      "en": "The sources explain chigi as originally a structural reinforcement and now a symbol of sacredness, and do not state that their purpose was to indicate gender. Katsuogi were also found on the houses of nobles."
+     },
+     "sources": [
+      {
+       "url": "https://d-museum.kokugakuin.ac.jp/eos/detail/id=9688",
+       "quote": "but today, most serve as symbols emphasizing the sacred nature of the structure.",
+       "label": "大学・研究機関（d-museum.kokugakuin.ac.jp）"
+      },
+      {
+       "url": "https://d-museum.kokugakuin.ac.jp/eos/detail/id=9688",
+       "quote": "adorned the homes of members of the court and aristocracy",
+       "label": "大学・研究機関（d-museum.kokugakuin.ac.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "千木・鰹木は古代の建築に由来する",
+      "en": "Chigi and katsuogi originate in ancient architecture"
+     },
+     "verdict": "correct",
+     "explanation": {
+      "ja": "千木は屋根を組む古い工法の名残とされ、両者とも古代からある。国指定文化財の解説も出雲大社本殿に千木と堅魚木を置くと記す。",
+      "en": "Chigi are said to be a remnant of an old method of building roofs, and both have existed since ancient times. The explanation of the nationally designated cultural property also states that chigi and katsuogi are placed on the honden of Izumo Taisha."
+     },
+     "sources": [
+      {
+       "url": "https://d-museum.kokugakuin.ac.jp/bts/detail/?id=3672",
+       "quote": "Both date to ancient times.",
+       "label": "大学・研究機関（d-museum.kokugakuin.ac.jp）"
+      },
+      {
+       "url": "https://d-museum.kokugakuin.ac.jp/eos/detail/id=9688",
+       "quote": "believed to be a vestige of primitive construction practices",
+       "label": "大学・研究機関（d-museum.kokugakuin.ac.jp）"
+      },
+      {
+       "url": "https://kunishitei.bunka.go.jp/heritage/detail/102/2971",
+       "quote": "大棟の上に千木と堅魚木をおく",
+       "label": "文化庁（kunishitei.bunka.go.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "出雲大社の千木・鰹木はこの説の例外になっている",
+      "en": "The chigi and katsuogi of Izumo Taisha are an exception to this theory"
+     },
+     "verdict": "unknown",
+     "explanation": {
+      "ja": "出雲大社公式は千木7.9m・勝男木5.45mと記すのみ、文化庁も削ぎ方・本数を記さない。例外かどうかは確かめられなかった。",
+      "en": "Izumo Taisha's official website only gives the chigi as 7.9 m and the katsuogi as 5.45 m, and the Agency for Cultural Affairs also does not state how they are cut or how many there are. Whether it is an exception could not be confirmed."
+     },
+     "sources": [
+      {
+       "url": "https://izumooyashiro.or.jp/archives/sengu/6495",
+       "quote": "千木は長さ7.9メートル、勝男木は長さ5.45ｍもあり",
+       "label": "神社公式（izumooyashiro.or.jp）"
+      },
+      {
+       "url": "https://kunishitei.bunka.go.jp/heritage/detail/102/2971",
+       "quote": "大棟の上に千木と堅魚木をおく",
+       "label": "文化庁（kunishitei.bunka.go.jp）"
+      }
+     ]
+    }
+   ],
+   "unknown": [
+    {
+     "ja": "出雲大社御本殿の千木の削ぎ方と勝男木の本数（公式・文化庁のページに記述なし）",
+     "en": "How the chigi of the honden of Izumo Taisha are cut and how many katsuogi it has (not described on the official pages or the pages of the Agency for Cultural Affairs)"
+    },
+    {
+     "ja": "伊勢神宮の外宮の祭神の性別と削ぎ方・本数との関係（神宮公式の建築ページに記述なし）",
+     "en": "The relation between the gender of the deity of the Gegū of Ise Jingū and the way the chigi are cut and the number of katsuogi (not described on the architecture page of the Jingū's official website)"
+    },
+    {
+     "ja": "千木の削ぎ方と祭神の性別の説がいつ・なぜ広まったか（論文は千木の削ぎ方が変えられた時期の研究が今後の課題としている）",
+     "en": "When and why the theory linking the cutting of chigi and the gender of the deity spread (the paper says that research on when the cutting of chigi was changed is a task for the future)"
+    },
+    {
+     "ja": "神社本庁が千木・鰹木について定めた公式の基準（今回開けたページには見つからず）",
+     "en": "Any official standard set by the Shrine Association of Japan for chigi and katsuogi (not found on the pages opened this time)"
+    }
+   ]
+  },
+  {
+   "id": "torii",
+   "title": {
+    "ja": "鳥居の色には、決まりがある？",
+    "en": "Are There Rules for the Color of Torii?"
+   },
+   "lead": {
+    "ja": "赤い鳥居は稲荷神社だけ？ 白木の鳥居は格が高い？ 鳥居の色にまつわる話を確かめました。",
+    "en": "Are red torii only for Inari shrines? Are unpainted wood torii of higher rank? We checked the stories about the color of torii."
+   },
+   "summary": {
+    "ja": "朱塗りは稲荷神社だけではなく、伏見稲荷大社自身が他にも朱塗りの神社は多いと述べている。朱の原料の丹は木材の防腐剤にもなり、魔除けの色とする説明もあるが、魔除けと考える由来は諸説あり定かでない。鳥居の種類は神社庁が神明系と明神系に大別するが、色は種類で定まるとは書かれていない。",
+    "en": "Vermilion lacquer is not limited to Inari shrines; Fushimi Inari Taisha itself says that many other shrines are also painted vermilion. Tan, the raw material of vermilion, also served as a wood preservative, and some explanations describe the color as a charm against evil, but the reasons for regarding it as a charm are varied and not settled. The shrine agency classifies torii broadly into the Shinmei type and the Myōjin type, but does not state that the color is fixed by type."
+   },
+   "claims": [
+    {
+     "claim": {
+      "ja": "鳥居が朱色（赤）なのは稲荷神社だけである",
+      "en": "Only Inari shrines have vermilion (red) torii"
+     },
+     "verdict": "myth",
+     "explanation": {
+      "ja": "伏見稲荷大社自身が「お稲荷さんだけが朱塗りではない」と説明。嚴島神社の大鳥居も朱塗りと自治体が紹介している。",
+      "en": "Fushimi Inari Taisha itself explains that \"Inari shrines are not the only ones painted vermilion.\" A local government also introduces the great torii of Itsukushima Shrine as vermilion."
+     },
+     "sources": [
+      {
+       "url": "https://inari.jp/about/faq/",
+       "quote": "ただ、お稲荷さんだけが朱塗りではなく、朱塗りの神社は他にも多くあります。",
+       "label": "神社公式（inari.jp）"
+      },
+      {
+       "url": "https://www.city.hatsukaichi.hiroshima.jp/hatsutabi/kanko/itsukushimashrine.html",
+       "quote": "海上にそびえ立つ朱塗りの大鳥居とともに宮島を象徴するシンボルになっています。",
+       "label": "自治体（city.hatsukaichi.hiroshima.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "赤い鳥居の朱色は魔除けの意味である",
+      "en": "The vermilion of red torii means protection against evil"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "朱を魔除けの色とみる説明は神社側にある。ただし魔除けと考える由来は日本古来か中国伝来か諸説あり、定説はない。",
+      "en": "Shrines offer explanations that see vermilion as a color that wards off evil. However, whether the idea of warding off evil comes from ancient Japan or from China is disputed, and there is no established view."
+     },
+     "sources": [
+      {
+       "url": "https://inari.jp/about/faq/",
+       "quote": "朱色は、魔力に対抗する色ともされていて、古代の宮殿や神社仏閣に多く用いられています。",
+       "label": "神社公式（inari.jp）"
+      },
+      {
+       "url": "http://www.tokyo-jinjacho.or.jp/inochinokotoba/r0607/",
+       "quote": "朱を魔除けと考える所以が、日本古代からであるか中国伝来であるかは諸説あり定かではありません",
+       "label": "神社本庁（tokyo-jinjacho.or.jp）"
+      },
+      {
+       "url": "https://niutsuhime.or.jp/about/goyuisho/",
+       "quote": "古来この丹には魔を退ける力があるとされ、貴ばれてきました。",
+       "label": "神社公式（niutsuhime.or.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "鳥居が朱色なのは、丹（水銀系の顔料）に木材の防腐の効果があったからである",
+      "en": "Torii are vermilion because tan (a mercury-based pigment) had a preservative effect on wood"
+     },
+     "verdict": "correct",
+     "explanation": {
+      "ja": "朱の原料の丹は昔から木材の防腐剤に使われ、丹塗りは6世紀以降に中国から伝わったと神社側は説明する。決定的な唯一の理由とまでは書かれていない。",
+      "en": "Shrines explain that tan, the raw material of vermilion, has long been used as a wood preservative and that tan painting came from China in or after the 6th century. They do not go as far as saying that it was the single decisive reason."
+     },
+     "sources": [
+      {
+       "url": "https://inari.jp/about/faq/",
+       "quote": "また朱の原材料は水銀＝丹です。これは昔から木材の防腐剤として使われてきました。",
+       "label": "神社公式（inari.jp）"
+      },
+      {
+       "url": "http://www.tokyo-jinjacho.or.jp/inochinokotoba/r0607/",
+       "quote": "六世紀以降に中国から防腐剤の機能をもつ「丹（に）塗り」技術が伝わると",
+       "label": "神社本庁（tokyo-jinjacho.or.jp）"
+      },
+      {
+       "url": "https://niutsuhime.or.jp/about/goyuisho/",
+       "quote": "「丹」とは、辰砂（朱砂）の鉱石より採取される赤い顔料をあらわします。",
+       "label": "神社公式（niutsuhime.or.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "白木（無塗装）の鳥居は、朱塗りの鳥居より格が高い",
+      "en": "Unpainted wood (shiraki) torii are of higher rank than vermilion-painted torii"
+     },
+     "verdict": "unknown",
+     "explanation": {
+      "ja": "鳥居の色で神社の格や祭神を区別するという記述は、開いた公的資料の中に見つからなかった。",
+      "en": "No description distinguishing the rank or deity of a shrine by the color of its torii was found in the public sources we opened."
+     },
+     "sources": []
+    },
+    {
+     "claim": {
+      "ja": "鳥居の種類で色が決まっている（神明鳥居は白木、明神鳥居は朱塗り）",
+      "en": "The type of torii determines the color (Shinmei torii are unpainted wood, Myōjin torii are vermilion)"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "神社庁の分類は形の系統（神明系・明神系）で、色の規定は書かれていない。材も木・石・コンクリートがあり、明神型の石造や神明型のコンクリート造の例がある。",
+      "en": "The shrine agency's classification is by form (Shinmei type and Myōjin type) and does not state any rule on color. Materials also include wood, stone, and concrete, and there are examples of stone Myōjin-type torii and concrete Shinmei-type torii."
+     },
+     "sources": [
+      {
+       "url": "http://www.tokyo-jinjacho.or.jp/qa/jinja_shisetsu/01/",
+       "quote": "これらを大別すると、神明鳥居系と、神明鳥居が装飾的に発展した明神鳥居系の二つになります。",
+       "label": "神社本庁（tokyo-jinjacho.or.jp）"
+      },
+      {
+       "url": "https://online.bunka.go.jp/heritages/detail/217327",
+       "quote": "鉄筋コンクリート造、表面モルタル洗出仕上げの神明鳥居で",
+       "label": "文化庁（online.bunka.go.jp）"
+      },
+      {
+       "url": "https://online.bunka.go.jp/heritages/detail/294430",
+       "quote": "境内西寄りに置かれた石造明神鳥居。",
+       "label": "文化庁（online.bunka.go.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "鳥居には朱塗りだけでなく、塗らない素木（しらき）のものもある",
+      "en": "Besides vermilion torii, there are also torii of unpainted plain wood (shiraki)"
+     },
+     "verdict": "correct",
+     "explanation": {
+      "ja": "明治神宮は2022年に建てた南参道鳥居を素木の杉材とした、と公式の社報で述べている。素木の鳥居の分布や格を述べた資料は確認できなかった。",
+      "en": "Meiji Jingū states in its official bulletin that the south approach torii built in 2022 is made of unpainted cedar. No source describing the distribution or rank of plain-wood torii could be confirmed."
+     },
+     "sources": [
+      {
+       "url": "https://www.meijijingu.or.jp/books_top/?id=1662441992-023936",
+       "quote": "最終的に「素木（しらき）で国産のもの」ということで杉に決定しました。",
+       "label": "神社公式（meijijingu.or.jp）"
+      }
+     ]
+    }
+   ],
+   "unknown": [
+    {
+     "ja": "神明鳥居・明神鳥居の形の違い（笠木が直線か、両端が反るか）の定義：神社本庁の「鳥居について」(https://www.jinjahoncho.or.jp/omairi/torii/)がメンテナンス中で本文を開けなかった",
+     "en": "The definition of the difference in form between Shinmei and Myōjin torii (whether the kasagi is straight or both ends curve upward): the Shrine Association of Japan's page \"About Torii\" (https://www.jinjahoncho.or.jp/omairi/torii/) was under maintenance and its text could not be opened"
+    },
+    {
+     "ja": "白木の鳥居は朱塗りより格が高いという説の根拠（鳥居の色で神社の格を分ける公的な記述は見つからなかった）",
+     "en": "The basis for the theory that plain-wood torii are of higher rank than vermilion ones (no public description dividing the rank of shrines by the color of torii was found)"
+    },
+    {
+     "ja": "伊勢神宮の鳥居の色（宇治橋の鳥居の再利用は公式にあるが、塗装の有無は書かれていなかった）",
+     "en": "The color of the torii of Ise Jingū (the official site mentions the reuse of the torii of Uji Bridge, but does not say whether it is painted)"
+    },
+    {
+     "ja": "朱色が使われ始めた時期と、鳥居に朱を塗る習慣が定着した時期",
+     "en": "When vermilion began to be used, and when the custom of painting torii vermilion became established"
+    }
+   ]
+  },
+  {
+   "id": "sanpai",
+   "title": {
+    "ja": "参拝の作法は、必ず「二礼二拍手一礼」？",
+    "en": "Is the Worship Etiquette Always \"Two Bows, Two Claps, One Bow\"?"
+   },
+   "lead": {
+    "ja": "参拝の作法にまつわる「必ず〜しなければならない」を、神社側の説明で確かめました。",
+    "en": "We checked the \"you must always...\" claims about worship etiquette against explanations from the shrines."
+   },
+   "summary": {
+    "ja": "二礼二拍手一礼（二拝二拍手一拝）は東京都神社庁・伊勢神宮・明治神宮が基本として案内する作法だが、東京都神社庁は作法に厳格なきまりはないとし、出雲大社は四拍手が正式。鳥居の一礼や参道の中央を避けることは「敬意の表れ・礼儀とされる」作法で、通ってはいけないという決まりとは書かれていない。",
+    "en": "Two bows, two claps, one bow (written 二礼二拍手一礼 or 二拝二拍手一拝 in Japanese) is the etiquette that the Tokyo Metropolitan Shrine Agency, Ise Jingū, and Meiji Jingū present as basic, but the Tokyo Metropolitan Shrine Agency says there are no strict rules for etiquette, and at Izumo Taisha four claps is the formal practice. Bowing once at the torii and avoiding the center of the approach are etiquette described as \"an expression of respect and courtesy\"; they are not described as a rule that one must not pass through."
+   },
+   "claims": [
+    {
+     "claim": {
+      "ja": "参拝は必ず二礼二拍手一礼（二拝二拍手一拝）で行わなければならない",
+      "en": "Worship must always be performed with two bows, two claps, and one bow (also written nihai nihakushu ippai)"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "二拝二拍手一拝は基本の作法。ただし東京都神社庁は厳格なきまりはないとし、出雲大社は二礼四拍手一礼を正式としている。",
+      "en": "Two bows, two claps, one bow is the basic etiquette. However, the Tokyo Metropolitan Shrine Agency says there are no strict rules, and Izumo Taisha treats two bows, four claps, and one bow as the formal practice."
+     },
+     "sources": [
+      {
+       "url": "http://www.tokyo-jinjacho.or.jp/sanpai/",
+       "quote": "私たちが神社にお参りする際の作法には厳格なきまりはありません。",
+       "label": "その他（tokyo-jinjacho.or.jp）"
+      },
+      {
+       "url": "https://www.isejingu.or.jp/qa/",
+       "quote": "二拝・二拍手・一拝のご作法でご参拝ください。",
+       "label": "伊勢神宮（isejingu.or.jp）"
+      },
+      {
+       "url": "https://izumooyashiro.or.jp/archives/faq/7898",
+       "quote": "一般的には「２礼２拍手１礼」ですが、出雲大社の正式な参拝作法は「２礼４拍手１礼」となります。",
+       "label": "神社公式（izumooyashiro.or.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "鳥居では一礼してからくぐる",
+      "en": "You bow once before passing through a torii"
+     },
+     "verdict": "correct",
+     "explanation": {
+      "ja": "東京都神社庁は、一礼してくぐるのが丁寧なくぐり方とし、境内を出る際も社殿の方に向き直って一礼するとよいと案内している。",
+      "en": "The Tokyo Metropolitan Shrine Agency says that bowing once before passing through is the polite way to pass through, and that when leaving the precinct it is good to turn back toward the shrine buildings and bow once."
+     },
+     "sources": [
+      {
+       "url": "http://www.tokyo-jinjacho.or.jp/sanpai/",
+       "quote": "目上の方のお宅を訪問するような気持ちで、一礼してからくぐるのが丁寧なくぐり方とされています。",
+       "label": "その他（tokyo-jinjacho.or.jp）"
+      },
+      {
+       "url": "http://www.tokyo-jinjacho.or.jp/qa/sanpai_kitou/03/",
+       "quote": "まず鳥居をくぐる前に一揖（いちゆう）をします。",
+       "label": "その他（tokyo-jinjacho.or.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "参道の真ん中は神様の通り道だから歩いてはいけない",
+      "en": "You must not walk in the middle of the approach because it is the path of the deity"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "中央は正中といい神様の通り道とされ、避けて歩くのが礼儀・敬意の表れとされる。禁止とは書かれず、横切る際の礼の作法も示されている。",
+      "en": "The center is called seichū and is said to be the path of the deity, and walking to the side is regarded as courtesy and an expression of respect. It is not described as a prohibition, and the etiquette for bowing when crossing it is also given."
+     },
+     "sources": [
+      {
+       "url": "http://www.tokyo-jinjacho.or.jp/qa/sanpai_kitou/03/",
+       "quote": "その中央は正中（せいちゅう）といわれ、神さまの通り道とされているので、そこを避けて歩くことが神さまに対する礼儀とされています。",
+       "label": "その他（tokyo-jinjacho.or.jp）"
+      },
+      {
+       "url": "http://www.tokyo-jinjacho.or.jp/sanpai/",
+       "quote": "神社参拝の際、参道の中央を避けて進むのは敬意の表れの１つといえます。",
+       "label": "その他（tokyo-jinjacho.or.jp）"
+      },
+      {
+       "url": "https://www.meijijingu.or.jp/faq/",
+       "quote": "昔の人たちは真ん中を歩かないように心がけていました。",
+       "label": "神社公式（meijijingu.or.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "手水は柄杓1杯の水を、左手・右手・口・柄の順に分けて使い切る",
+      "en": "For temizu, you use up one ladle of water by dividing it among the left hand, right hand, mouth, and handle, in that order"
+     },
+     "verdict": "partly",
+     "explanation": {
+      "ja": "伊勢神宮の手順は最初に水をくみ、最後に残った水で柄を洗う流れ。東京都神社庁は汲む回数を示さず、流水や柄杓のない手水舎は別手順。",
+      "en": "The procedure at Ise Jingū draws water at the start and washes the handle with the remaining water at the end. The Tokyo Metropolitan Shrine Agency does not give the number of times to draw water, and temizu pavilions with running water or without ladles follow different steps."
+     },
+     "sources": [
+      {
+       "url": "https://www.isejingu.or.jp/visit/manner/",
+       "quote": "たっぷりと水をくみ、左手を清めます。",
+       "label": "伊勢神宮（isejingu.or.jp）"
+      },
+      {
+       "url": "https://www.isejingu.or.jp/visit/manner/",
+       "quote": "残った水で柄杓の",
+       "label": "伊勢神宮（isejingu.or.jp）"
+      },
+      {
+       "url": "http://www.tokyo-jinjacho.or.jp/qa/sanpai_kitou/01/",
+       "quote": "最後に水を入れた柄杓を立て、柄に水を流してから柄杓置きに伏せて置きます。",
+       "label": "その他（tokyo-jinjacho.or.jp）"
+      },
+      {
+       "url": "https://www.meijijingu.or.jp/sanpai/2.php",
+       "quote": "2.両手に水をため口をすすぎます。",
+       "label": "神社公式（meijijingu.or.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "出雲大社の参拝は二礼四拍手一礼で、他の神社と作法が違う",
+      "en": "Worship at Izumo Taisha is two bows, four claps, and one bow, which differs from other shrines"
+     },
+     "verdict": "correct",
+     "explanation": {
+      "ja": "出雲大社の公式FAQは正式作法を二礼四拍手一礼とし、八拍手は5月14日の例祭のみ。拝礼は神社ごとに異なることがある。",
+      "en": "Izumo Taisha's official FAQ gives two bows, four claps, and one bow as the formal etiquette, with eight claps only at the annual festival (reisai) on May 14. Worship etiquette may differ from shrine to shrine."
+     },
+     "sources": [
+      {
+       "url": "https://izumooyashiro.or.jp/archives/faq/7898",
+       "quote": "ただし、８拍手は年に１度の例祭（勅祭）の時のみの作法としています。",
+       "label": "神社公式（izumooyashiro.or.jp）"
+      },
+      {
+       "url": "https://izumooyashiro.or.jp/archives/faq/7898",
+       "quote": "ご本殿以外のご社殿をお参りの際にも、この作法にてご参拝下さい。",
+       "label": "神社公式（izumooyashiro.or.jp）"
+      }
+     ]
+    },
+    {
+     "claim": {
+      "ja": "伊勢神宮では参拝者も八開手（拍手を8回）で参拝する",
+      "en": "At Ise Jingū, worshippers also worship with the eight-clap form (八開手)"
+     },
+     "verdict": "myth",
+     "explanation": {
+      "ja": "伊勢神宮の公式は、参拝者に二拝・二拍手・一拝を案内している。八開手そのものは公式ページで確認できなかった。",
+      "en": "The official site of Ise Jingū guides worshippers to make two bows, two claps, and one bow. Yahirade itself could not be confirmed on the official pages."
+     },
+     "sources": [
+      {
+       "url": "https://www.isejingu.or.jp/qa/",
+       "quote": "二拝・二拍手・一拝のご作法でご参拝ください。",
+       "label": "伊勢神宮（isejingu.or.jp）"
+      },
+      {
+       "url": "https://www.isejingu.or.jp/visit/manner/",
+       "quote": "肩幅程度に両手を開き、2回拍手を打ちます。",
+       "label": "伊勢神宮（isejingu.or.jp）"
+      }
+     ]
+    }
+   ],
+   "unknown": [
+    {
+     "ja": "神社本庁の公式サイト（参拝方法・手水舎・境内の各ページ）は取得時にメンテナンス中（HTTP 503）で本文を読めなかったため、神社本庁自身の記述は確認できなかった。",
+     "en": "The official website of the Shrine Association of Japan (the pages on worship methods, temizu pavilions, and the precinct) was under maintenance (HTTP 503) when fetched and the text could not be read, so the Association's own descriptions could not be confirmed."
+    },
+    {
+     "ja": "伊勢神宮の八開手（八度拝）が神職の作法として存在するか、その内容は、公式ページ・指定資料では確認できなかった。",
+     "en": "Whether the eight-clap form (八開手, also called 八度拝, \"eight bows\") exists as an etiquette for priests at Ise Jingū, and what it involves, could not be confirmed in the official pages or the designated sources."
+    },
+    {
+     "ja": "手水で柄杓の水を何回に分けるかを数字で定めた公的資料は見つからなかった。",
+     "en": "No public source was found that sets by number how many times the water in the ladle is divided for temizu."
+    },
+    {
+     "ja": "二礼二拍手一礼（二拝二拍手一拝）が現在の形に広まった時期・経緯は、指定資料では確認できなかった。",
+     "en": "When and how two bows, two claps, one bow (nihai nihakushu ippai) spread to its present form could not be confirmed in the designated sources."
+    }
+   ]
+  }
+ ]
+}
