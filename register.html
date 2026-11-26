@@ -3368,7 +3368,7 @@ function generateHandwrittenPrPrompt() {
   const productId   = p.productId || '';
   const productName = p.name || '';
   const shortDesc   = (p.shortDesc || '').trim();
-  const longDesc    = (p.longDesc  || '').trim();
+  const longDesc    = stripLeatherNote(p.longDesc || '').trim();
   const descSource  = shortDesc || longDesc;
 
   if (!descSource) {
@@ -3549,7 +3549,14 @@ function downloadReferenceImage(url, filename) {
    作品ページのURLを付けた形で取り出せるようにする。作品番号を載せておくと、
    お客様が「インスタで見た○○」と言ったときにオーダー相談AIが番号で特定できる。 */
 const WORKS_PAGE_BASE = 'https://you0810jmsdf.github.io/ns-factory/works/';
+// 長い説明の末尾の【革について】（革ごとの説明と注意点・GAS が登録時に足す）は、SNS の投稿文には入れない（2026-11-26）
+function stripLeatherNote(text) {
+  const t = String(text || '');
+  const i = t.indexOf('【革について】');
+  return i < 0 ? t : t.slice(0, i).replace(/\s+$/, '');
+}
 function buildIgCaption(productId, shortDesc, longDesc, hashtags) {
+  longDesc = stripLeatherNote(longDesc);
   const parts = [];
   if (shortDesc && shortDesc.trim()) parts.push(shortDesc.trim());
   if (longDesc  && longDesc.trim())  parts.push(longDesc.trim());
@@ -3592,7 +3599,7 @@ async function generateSnsCaption() {
     price: val('f_price'),
     // 「この作品について」の3行も本人が書いた事実としてメモに添える（2026-09-27）
     memo: [val('igMemo')].concat(intentLines()).filter(Boolean).join('\n'),
-    longDesc: stripIntentBlock(val('f_longDesc'))
+    longDesc: stripLeatherNote(stripIntentBlock(val('f_longDesc')))
   };
   try {
     const res = await fetch(GAS_URL, {
