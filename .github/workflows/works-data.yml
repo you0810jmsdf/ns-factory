@@ -40,20 +40,22 @@ jobs:
       - name: Build works-data.json
         run: node tools/build_works_data.js
 
-      # SNSに1作品を名指しで貼るためのOGP付き案内ページ（works/<商品ID>.html）。
+      # 作品ごとのページ（works/<商品ID>.html）・作品一覧（works-list.html）・sitemap.xml の WORKS 区間。
+      # longDesc 300字以上は検索に載せる読めるページ、それ以外は SNS 用の転送ページ（2026-11-26 事業主決定）。
       # works-data.json を入力にするので必ずこの順で実行する。
-      - name: Build per-work share pages
+      - name: Build per-work pages, list page and sitemap section
         run: node tools/build_work_pages.js
 
       - name: Commit updated data
         run: |
-          if git diff --quiet -- works-data.json works/; then
+          # 新規ファイル（works-list.html・新しい作品ページ）も検出するため status で見る
+          if [ -z "$(git status --porcelain -- works-data.json works/ works-list.html sitemap.xml)" ]; then
             echo "変更なし。"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add works-data.json works/
+          git add works-data.json works/ works-list.html sitemap.xml
           git commit -m "auto: 作品集フォールバックデータと作品ページを更新"
           # 他の push と重なると「fetch first」で拒否される（2026-09-16 に実際に失敗し、作品集が古いままになった）。
           # 取り込み直して最大3回まで送り直す。
