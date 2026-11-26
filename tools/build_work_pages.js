@@ -270,7 +270,8 @@ function buildIndexedHtml(w, head) {
     description: lead || desc,
     brand: { '@type': 'Brand', name: "N's factory" },
   };
-  if (w.category) product.category = toHalf(String(w.category).split('／')[0].trim());
+  // category は入れない（2026-11-26 Search Console「項目 category の値が無効です」。
+  //   Google は決まった分類体系の値を求めるため、自由な日本語の種類名は無効になる）。
   if (w.material) product.material = String(w.material).trim();
   if (w.color) product.color = String(w.color).trim();
   if (available) {
