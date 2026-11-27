@@ -94,7 +94,8 @@
   .ledger th:first-child, .ledger td:first-child { text-align: left; }
   .mode-real { color: #fff; background: #c0392b; border-radius: 4px; padding: 0 6px; }
   /* ラインをタップ → 案 → 売買開始（2026-11-27） */
-  .chip.tap { cursor: pointer; }
+  .chip.tap { cursor: pointer; font: inherit; font-size: 14px; color: var(--fg); padding: 8px 12px; min-height: 40px; touch-action: manipulation; }
+  .chip.tap:active { background: var(--line); }
   .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; padding: 0 12px max(12px, env(safe-area-inset-bottom)); }
   .sheet-in { max-width: 560px; margin: 0 auto; background: var(--panel); border: 1px solid #c08cff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 -6px 24px rgba(0,0,0,.6); }
   .sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -147,7 +148,7 @@
     </div>
     <div class="auto" id="auto" hidden>
       <div class="lines-head"><b>自動売買（PCの常駐が売買します）</b> <a class="sub" href="./how.html" style="color:var(--accent)">しくみ</a> <span class="sub" id="auto-mode"></span></div>
-      <div class="sub">チャートの水平線か、上の「引いてあるライン」の札をタップすると、売買の案が出ます。</div>
+      <div class="sub">上の「引いてあるライン」の札（▶ の付いたもの）を押すと、その線の売買の案が出ます。</div>
       <div class="hint" id="af-note" aria-live="polite"></div>
       <div id="plan-list"></div>
       <div class="ledger" id="ledger"></div>
@@ -388,10 +389,11 @@
       e.textContent = "まだラインはありません。上のボタンで引けます。"; box.append(e);
     }
     all.sort((a, b) => b.price - a.price).forEach((l) => {
-      const chip = document.createElement("div"); chip.className = "chip" + (l.line && gmoOn() ? " tap" : ""); chip.style.borderLeftColor = l.color;
-      if (l.line) chip.onclick = () => openSheet(l.line);
+      const tap = !!(l.line && gmoOn());   /* 合言葉の端末では、水平線の札をボタンにする（押すと売買の案） */
+      const chip = document.createElement(tap ? "button" : "div"); chip.className = "chip" + (tap ? " tap" : ""); chip.style.borderLeftColor = l.color;
+      if (tap) { chip.type = "button"; chip.addEventListener("click", () => openSheet(l.line)); }
       const s = document.createElement("span"); s.textContent = String(l.label);
-      chip.append(s, document.createTextNode(yen(l.price) + "円")); box.append(chip);
+      chip.append(s, document.createTextNode(yen(l.price) + "円" + (tap ? " ▶" : ""))); box.append(chip);
     });
   }
   const saveDiag = () => store.set("nst-diag-" + state.interval, JSON.stringify(state.diag));
