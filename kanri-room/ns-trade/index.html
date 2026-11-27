@@ -595,35 +595,31 @@
       d.append(t, b);
     });
   }
-  // ---------- ラインをタップ → 売買の案 → 売買開始（2026-11-27 事業主「ラインをクリックすると案を出して、売買開始ボタンを押すだけ」決定A） ----------
-  // 直前の AI相談に同じ線の案があればすぐ出す。無ければ、その線についての案を1つだけ AI に聞く（1回 約6〜8円）。
-  let lastPlans = [], sheetPlan = null, sheetSeq = 0;
+  // ---------- 札を押す → 売買の案 → 売買開始（2026-11-27 事業主「ラインをクリックすると案を出して、売買開始ボタンを押すだけ」） ----------
+  // 直前の AI相談に同じ線の案があればそれを出す。無ければ、決めておいた条件で案を作る（AI は使わない＝料金なし・事業主 2026-11-27「線を引くところまで課金・売買は条件を決めておく」）。
+  // 決めておいた条件：線が今の価格より上なら「上抜け＋RULE.move％で買い」、下なら「下抜け＋RULE.move％で売り」。損切り・利確は入った価格からの％。
+  const RULE = { move: 0.1, stop: 1, take: 2 };
+  let lastPlans = [], sheetPlan = null;
+  function rulePlan(price) {
+    const now = state.candles.length ? state.candles[state.candles.length - 1].c : null;
+    if (!now) return null;
+    const up = price > now;
+    return { price, side: up ? "BUY" : "SELL", on: up ? "UP" : "DOWN", move_pct: RULE.move, stop_pct: RULE.stop, take_pct: RULE.take,
+      reason: `${up ? "上抜けで買い" : "下抜けで売り"}（決めておいた条件）` };
+  }
   function openSheet(line) {
     if (!gmoOn()) return;
-    const seq = ++sheetSeq, price = Math.round(line.price);
+    const price = Math.round(line.price);
     sheetPlan = null; $("sheet").hidden = false; $("sh-name").textContent = `${line.label} ${yen(price)}円`;
     const go = $("sh-go"); go.hidden = true; go.disabled = false; go.textContent = "売買開始";
     const hit = lastPlans.find((p) => Math.abs(p.price - price) / price < 0.001);
-    if (hit) { showSheetPlan({ ...hit, price }, "直前のAI相談の案です。"); return; }
-    $("sh-body").textContent = "AIに、この線での案を聞いています…（数秒・約6〜8円）";
-    askLine(line, price).then((r) => { if (seq !== sheetSeq) return; if (r.plan) showSheetPlan(r.plan, r.note); else $("sh-body").textContent = r.note; });
+    if (hit) { showSheetPlan({ ...hit, price }, "AI相談の案です（料金はかかりません）。"); return; }
+    const rp = rulePlan(price);
+    if (!rp) { $("sh-body").textContent = "チャートの読み込みが終わってから、もう一度押してください。"; return; }
+    showSheetPlan(rp, "AI は使っていません（料金はかかりません）。");
   }
   function showSheetPlan(p, note) { sheetPlan = p; $("sh-body").textContent = [planText(p), p.reason, note].filter(Boolean).join("\n"); $("sh-go").hidden = false; }
-  async function askLine(line, price) {
-    if (!state.candles.length) return { note: "チャートの読み込みが終わってから、もう一度タップしてください。" };
-    const o = aiSettings();
-    const question = `「${line.label}」(${price}円)の線をきっかけにした売買の案を、plans に1つだけ出してください。price は ${price} にしてください。根拠が弱ければ plans は空にして、reply に理由を短く書いてください。`;
-    try {
-      const r = await fetch(o.url.replace(/\/$/, "") + "/trade/chat", { method: "POST", headers: { "content-type": "application/json", "x-ai-key": o.key || "" }, body: JSON.stringify({ question, messages: [], chart: chartContext() }) });
-      const j = await r.json().catch(() => null);
-      if (!r.ok || !j) return { note: "AIが答えられませんでした。時間をおいて試してください。" };
-      const cost = typeof j.yen === "number" ? `今回の料金 約${j.yen.toFixed(1)}円` : "";
-      const p = Array.isArray(j.plans) ? j.plans[0] : null;
-      if (!p) return { note: ["AIはこの線では案を出しませんでした。", j.reply, cost].filter(Boolean).join("\n") };
-      return { plan: { ...p, price }, note: cost };
-    } catch { return { note: "AIサーバーにつながりませんでした。電波を確認してください。" }; }
-  }
-  $("sh-close").onclick = () => { $("sheet").hidden = true; sheetSeq++; };
+  $("sh-close").onclick = () => { $("sheet").hidden = true; };
   $("sh-go").onclick = async () => {
     if (!sheetPlan) return;
     const b = $("sh-go"); b.disabled = true; b.textContent = "送っています…";
