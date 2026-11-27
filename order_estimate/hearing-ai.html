@@ -402,7 +402,7 @@ const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent
 const VISIT_SRC_KEY='nsf_hearing_src', VISIT_SRC_ASKED_KEY='nsf_hearing_src_asked';
 const VISIT_SRC_CODES={ig:'Instagram',th:'Threads',fb:'Facebook',line:'LINE',yt:'YouTube',note:'note',
   qr:'QRコード（チラシ・名刺）',event:'イベント・教室',mail:'メール',base:'BASE',creema:'Creema',minne:'minne',
-  meishi:'名刺のQR',flyer:'チラシ',furusato:'ふるさと納税の同梱カード',dm:'DM・個別のご案内',oldsite:'旧サイト'};
+  meishi:'名刺のQR',mei:'名刺のQR',card:'ショップカードのQR',flyer:'チラシ',furusato:'ふるさと納税の同梱カード',dm:'DM・個別のご案内',oldsite:'旧サイト'};
 (function initVisitSource(){
   let code='';
   try{ code=(new URLSearchParams(location.search).get('from')||'').toLowerCase(); }catch(e){}
