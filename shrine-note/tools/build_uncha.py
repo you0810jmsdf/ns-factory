@@ -63,7 +63,17 @@ th { color: var(--muted); font-weight: 600; font-size: 12px; }
 a { color: var(--gold); }
 .legend span { margin-right: 6px; }
 ul.unk { padding-left: 1.2em; }
+figure { margin: 14px 0 18px; }
+figure img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); }
+figcaption { margin-top: 6px; color: var(--muted); font: 12px/1.5 system-ui, sans-serif; text-align: right; }
 """
+
+CAPTION = {'ja': '想像図（実在の神社の写真ではありません）', 'en': 'Illustration (not a photograph of an actual shrine)'}
+
+def fig(im, lg, eager=False):
+    lazy = '' if eager else ' loading="lazy"'
+    return (f'<figure><img src="assets/uncha/{e(im["file"])}" alt="{e(T(im["alt"], lg))}" width="1600" height="900"'
+            f'{lazy} decoding="async"><figcaption>{e(CAPTION[lg])}</figcaption></figure>')
 
 def render(lg):
     L = LBL[lg]
@@ -82,12 +92,14 @@ def render(lg):
     A(f'<nav><a href="map/{"?lang=en" if lg == "en" else ""}">{e(L["back"])}</a><a href="{L["switch_href"]}">{e(L["switch"])}</a></nav>')
     A('<div class="eyebrow">SHRINE LORE</div>')
     A(f'<h1>{e(T(D["h1"], lg))}</h1>')
+    if D.get('hero'): A(fig(D['hero'], lg, eager=True))
     A(f'<p class="lead">{e(T(D["intro"], lg))}</p>')
     A(f'<div class="card"><b>{e(L["legend"])}</b><p class="legend">' +
       ''.join(f'<span class="badge v-{k}">{e(L["verdict"][k])}</span>' for k in ('correct', 'partly', 'myth', 'unknown')) + f'</p><p>{e(T(D["method"], lg))}</p></div>')
     for t in D['topics']:
         A(f'<section id="{e(t["id"])}">')
         A(f'<h2>{e(T(t["title"], lg))}</h2>')
+        if t.get('image'): A(fig(t['image'], lg))
         A(f'<p class="lead">{e(T(t["lead"], lg))}</p>')
         A(f'<div class="summary">{e(T(t["summary"], lg))}</div>')
         tb = t.get('table')
