@@ -9,9 +9,11 @@
   const GAS = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
   const SIZES = { a5: 'A5', a5slim: 'A5スリム', a6: 'A6', bible: 'バイブル', mini6: 'Mini6', micro5: 'Micro5' };
   const KINDS = { weekly: '週間', vertical: '週間バーチカル', monthly: '月間', daily: '日次' };
+  // 登録した人の利用（誰が・いつ）：admin_guard GAS の refillUses（管理パスワード必須・読むだけ）。名簿は N's CAD の利用登録と共通。
+  const GUARD = 'https://script.google.com/macros/s/AKfycbwzqQnnPluysWrt6rr53eq3LoOE3adXvmkiTVp-vvnr0bbrO1FMh25C9jJYtpX4qIr5/exec';
   const OPS = { pdf: 'PDFを生成', print: '印刷', reminder: 'カレンダーに次の予定', homescreen: 'ホーム画面に追加' };
   const RE = /^\/?event\/(f\/([^/]+)|pdf|print|reminder|homescreen)\/(.+)$/;
-  let state = { counts: null, daily: null, period: '30', loading: false, wired: false };
+  let state = { counts: null, daily: null, uses: null, usesTotal: 0, usesError: '', period: '30', loading: false, wired: false };
 
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   function toolName(slug) {
@@ -106,6 +108,38 @@
     const p = lastParts(date);
     return p ? `${p.md}<div class="ru-id">${p.ago}</div>` : '<span class="ru-id">60日より前</span>';
   }
+  async function loadUses() {
+    let key = '';
+    try { key = sessionStorage.getItem('nsf_admin_key') || ''; } catch (e) {}
+    if (!key) { state.uses = null; state.usesError = '管理画面にログインし直すと表示されます。'; return; }
+    try {
+      const j = await fetch(GUARD, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'refillUses', adminKey: key, limit: 300 }) }).then(r => r.json());
+      if (!j || !j.ok) throw new Error((j && j.error) || '応答が不正です');
+      state.uses = j.uses || []; state.usesTotal = +j.total || 0; state.usesError = '';
+    } catch (e) { state.uses = null; state.usesError = '読み込めませんでした（' + (e.message || e) + '）。'; }
+  }
+  function whenText(iso) {
+    const d = new Date(iso);
+    if (!iso || isNaN(d)) return '—';
+    const p = n => String(n).padStart(2, '0');
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function usesHtml() {
+    if (state.usesError) return `<div class="ru-box">${esc(state.usesError)}</div>`;
+    const list = state.uses || [];
+    if (!list.length) return '<div class="ru-box">登録した人の利用は、まだありません（PDF・印刷のときの利用登録は 2026-11-27 から）。</div>';
+    const kindL = { student: '生徒', general: '一般' }, opL = { pdf: 'PDFを作る', print: '印刷' };
+    const people = new Map();
+    for (const u of list) {
+      const k = u.name + '|' + u.kind, v = people.get(k) || { name: u.name, kind: u.kind, n: 0, last: '', tools: new Set() };
+      v.n++; if (u.at > v.last) v.last = u.at; if (u.tool) v.tools.add(u.tool); people.set(k, v);
+    }
+    const pRows = [...people.values()].sort((a, b) => (b.last > a.last ? 1 : -1)).map(v => `<tr><td><b>${esc(v.name || '（名前なし）')}</b></td><td>${esc(kindL[v.kind] || '—')}</td><td class="ru-n">${v.n}</td><td class="ru-n">${whenText(v.last)}</td><td>${[...v.tools].map(t => esc(toolName(t))).join('、')}</td></tr>`).join('');
+    const rows = list.slice(0, 50).map(u => `<tr><td class="ru-n">${whenText(u.at)}</td><td><b>${esc(u.name || '（名前なし）')}</b></td><td>${esc(kindL[u.kind] || '—')}</td><td>${esc(opL[u.op] || u.op)}</td><td>${esc(toolName(u.tool))}</td></tr>`).join('');
+    return `<div class="ru-scroll"><table class="ru-t"><thead><tr><th>お名前</th><th>区分</th><th>回数</th><th>最後に使った日時</th><th>使ったツール</th></tr></thead><tbody>${pRows}</tbody></table></div>
+      <div class="ru-scroll" style="margin-top:10px"><table class="ru-t"><thead><tr><th>日時</th><th>お名前</th><th>区分</th><th>操作</th><th>ツール</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="ru-note" style="margin-top:6px">新しい順に50件（記録は全部で ${state.usesTotal} 件）。</p>`;
+  }
   function dailySeries(days) {
     const out = [];
     for (let i = days - 1; i >= 0; i--) {
@@ -153,13 +187,15 @@
         <div class="ru-card"><span>印刷</span><b>${a.ops.print}</b></div>
         <div class="ru-card"><span>最後に使われた日</span><b>${lastAll ? lastAll.md : '—'}</b><span>${lastAll ? lastAll.ago : '直近60日に記録なし'}</span></div>
       </div>
+      <h3 class="ru-h">誰が・いつ（登録した人の PDF・印刷）</h3>
+      ${usesHtml()}
       <h3 class="ru-h">機能ランキング（${per}）</h3>
       ${a.featList.length ? `<div class="ru-scroll"><table class="ru-t"><thead><tr><th>#</th><th>機能（画面の文字）</th><th>回数</th><th>人数</th><th>ツール数</th><th>最後に使われた日</th><th></th></tr></thead><tbody>${featRows}</tbody></table></div>` : '<div class="ru-box">この期間に記録された機能の利用はまだありません（機能の記録は 2026-11-13 から）。</div>'}
       <h3 class="ru-h">ツール別（${per}）</h3>
       ${toolRows ? `<div class="ru-scroll"><table class="ru-t"><thead><tr><th>ツール</th><th>機能の利用</th><th>PDF</th><th>印刷</th><th>最後に使われた日</th><th>よく使われた機能</th></tr></thead><tbody>${toolRows}</tbody></table></div>` : '<div class="ru-box">記録はまだありません。</div>'}
       <h3 class="ru-h">日別（過去30日）<small><i style="background:#7A5540"></i>機能の利用 <i style="background:#c9a96e"></i>PDF・印刷</small></h3>
       <div class="ru-days">${dayBars}</div>
-      <p class="ru-note">数え方：同じ人が1回の表示で同じ機能を何度使っても1回（人数は日ごとの人数の合計）。PDF・印刷は押した回数（10秒以内の連打は1回）。入力した日付や文字は送っていません。「最後に使われた日」は日単位で、直近60日の記録から出しています（時刻と、誰が使ったかは記録していません）。<b>この端末は、このタブを開いた時点で「作家の端末」として除外しました</b>（N's CAD 利用モニタと同じ）。機能の記録は 2026-11-13 から、PDF・印刷は 2026-10-30 から。</p>`;
+      <p class="ru-note">数え方：同じ人が1回の表示で同じ機能を何度使っても1回（人数は日ごとの人数の合計）。PDF・印刷は押した回数（10秒以内の連打は1回）。入力した日付や文字は送っていません。「最後に使われた日」は日単位で、直近60日の記録から出しています（機能ごとの時刻と、誰が使ったかは記録していません）。「誰が・いつ」は、PDF・印刷のときに利用登録（2026-11-27 から・名簿は N's CAD と共通）をした人の記録です。作家の端末には登録を求めず、記録もしません。<b>この端末は、このタブを開いた時点で「作家の端末」として除外しました</b>（N's CAD 利用モニタと同じ）。機能の記録は 2026-11-13 から、PDF・印刷は 2026-10-30 から。</p>`;
   }
   function style() {
     if (document.getElementById('ru-style')) return;
@@ -188,6 +224,7 @@
     try {
       const [c, d] = await Promise.all([getJson(GAS + '?action=counts'), getJson(GAS + '?action=daily&days=60')]);
       state.counts = c.counts || []; state.daily = d.rows || [];
+      await loadUses();
     } catch (e) { state.error = e.message || String(e); }
     state.loading = false; render();
   }

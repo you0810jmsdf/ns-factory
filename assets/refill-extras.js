@@ -3,6 +3,7 @@
 //     印刷ズレ補正は「印刷がずれるとき」として独立した折りたたみにする。
 //  2. 設定の保存・読み込み: 端末に保存された設定（nsf_ で始まるキー）をファイルに書き出し／読み込む（機種変更・ブラウザ変更用）
 //  3. ホーム画面に追加（PWA）: manifest と Service Worker を登録する（開いたページは電波がなくても開ける）
+//  5. 利用登録（2026-11-27）: PDF・印刷のとき、最初の1回だけ名前・メール・区分を登録してもらう（名簿は N's CAD と共通）
 //  4. 使われ方の計測（PDF生成・印刷の回数）と、印刷のあとの「次の分を作るきっかけ」の案内（カレンダー・ホーム画面）
 // ⛔ 畳むのは DOM を <details> の中へ「移す」だけ。要素の id と onclick はそのまま動く。要素を作り直さない。
 (function () {
@@ -210,6 +211,118 @@
       help.textContent = isIOS ? 'Safari の下の「共有」ボタン → 「ホーム画面に追加」を選ぶと、アプリのように開けます。'
         : 'キーボードの Ctrl＋D（Mac は ⌘＋D）でブックマークに入れておくと、次回すぐ開けます。スマホは、ブラウザのメニューの「ホーム画面に追加」から。';
     });
+  }
+
+  // ── 利用登録（2026-11-27 事業主決定A：PDF・印刷のとき最初の1回だけ・名簿は N's CAD と共通） ──
+  // 見る・試すのは自由。「PDFを作る」「印刷」を押した最初の1回だけ、お名前・メール・区分を登録してもらう。
+  // 登録の部品と名簿は N's CAD と同じ（nscad/registration.js・localStorage leather-cad.reg）。N's CAD で登録済みのブラウザは、入力なしで通る。
+  // 登録後は「誰が・いつ・どのツールで PDF／印刷をしたか」だけを登録サーバーへ送る（機能名 refill_pdf / refill_print とツール名）。入力した日付や文字は送らない。
+  // 事業主の端末（nsf_internal）と、部品を読み込めないとき（電波なし・古いブラウザ）は、登録を求めずに通す。
+  // ⛔ ブラウザのメニューからの印刷は止められない（止めるのはボタンと Ctrl+P）。ブラウザの中の仕組みなので、書き換えられる人は外せる（登録を促すのが目的）。
+  let reg = null;
+  const REG_TEST = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]regtest=1(&|$)/.test(location.search);   // 手元の確認用（本番のアドレスでは効かない）
+  function regActive() { return !!reg && reg.enabled() && (!isInternal() || REG_TEST); }
+  function regNeeded() { try { return regActive() && reg.state().status !== 'ok'; } catch (e) { return false; } }
+  const regSent = {};
+  function regTrack(kind) {
+    try {
+      if (!regActive() || reg.state().status !== 'ok') return;
+      const now = Date.now();
+      if (regSent[kind] && now - regSent[kind] < 10000) return;   // 連打は1回に
+      regSent[kind] = now;
+      reg.track('refill_' + kind, toolSlug());
+    } catch (e) {}
+  }
+  const REG_ERR = {
+    email: 'メールアドレスの形が正しくありません。', name: 'お名前を入れてください。', kind: '区分（受講生か、それ以外か）を選んでください。',
+    consent: '同意のチェックを入れてください。', limit: '短い間に何度も申し込まれています。しばらくしてから、もう一度お試しください。',
+    network: '送れませんでした。ネットワークを確かめて、もう一度お試しください。', server: '登録を受け付けられませんでした。時間をおいて、もう一度お試しください。'
+  };
+  function openReg(what, go) {
+    if (document.getElementById('nsfReg')) return;
+    const w = document.createElement('div');
+    w.id = 'nsfReg';
+    w.setAttribute('role', 'dialog'); w.setAttribute('aria-modal', 'true'); w.setAttribute('aria-labelledby', 'nsfRegTitle');
+    w.style.cssText = 'position:fixed;inset:0;z-index:100002;background:rgba(40,28,18,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:16px;font:14px/1.7 -apple-system,"Hiragino Sans",Meiryo,sans-serif;';
+    const inp = 'display:block;width:100%;box-sizing:border-box;font-size:16px;padding:8px 10px;border:1px solid #cdbba8;border-radius:6px;margin-top:3px;background:#fff;color:#3b2a1d;';
+    const btn = 'border-radius:6px;padding:9px 14px;font-weight:700;cursor:pointer;font-size:14px;';
+    w.innerHTML = '<form id="nsfRegForm" novalidate style="background:#fff;color:#3b2a1d;width:min(100%,440px);border-radius:12px;padding:18px 18px 14px;margin:auto;box-shadow:0 10px 40px rgba(0,0,0,.35);">'
+      + '<h2 id="nsfRegTitle" style="font-size:17px;margin:0 0 6px;">利用登録（最初の1回だけ）</h2>'
+      + '<p style="margin:0 0 10px;font-size:13px;">' + what + 'の前に、お名前・メールアドレス・区分を1回だけ登録してください。このブラウザが覚えるので、次からは聞きません（別のパソコン・スマホでは、もう一度お願いします）。確認メールは届きません。入れたらすぐ使えます。<br>N\'s CAD で登録済みの方は、同じメールアドレスを入れてください。</p>'
+      + '<label style="display:block;margin-bottom:8px;font-weight:700;font-size:13px;">お名前（必須）<input id="nsfRegName" type="text" maxlength="30" autocomplete="name" style="' + inp + '"></label>'
+      + '<label style="display:block;margin-bottom:8px;font-weight:700;font-size:13px;">メールアドレス（必須）<input id="nsfRegEmail" type="email" maxlength="254" autocomplete="email" inputmode="email" style="' + inp + '"></label>'
+      + '<div style="margin-bottom:8px;font-size:13px;"><b>区分（必須）：</b><br>'
+      + '<label style="margin-right:14px;white-space:nowrap;"><input type="radio" name="nsfRegKind" value="student"> 教室・講座の受講生</label>'
+      + '<label style="white-space:nowrap;"><input type="radio" name="nsfRegKind" value="general"> それ以外</label></div>'
+      + '<p style="margin:0 0 8px;font-size:11.5px;color:#6b5646;background:#FAF6F1;border-radius:6px;padding:8px 10px;">預かるのは、お名前・メールアドレス・区分です。目的は、どなたが・いつ・どのリフィルツールでPDF作成・印刷をしたかを運営者が把握し、ツールの改善に役立てることです。入力した日付・文字・予定の中身は送りません。お名前とメールアドレスは運営者（N\'s factory）だけが見て、第三者へは提供しません。登録の削除は、運営者へメールでお知らせください。</p>'
+      + '<label style="display:block;margin-bottom:10px;font-size:13px;"><input id="nsfRegConsent" type="checkbox"> 上の内容に同意して登録する</label>'
+      + '<div id="nsfRegMsg" role="alert" style="display:none;margin-bottom:10px;font-size:13px;color:#9b2c2c;"></div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
+      + '<button type="submit" id="nsfRegSend" style="' + btn + 'background:#7A5540;color:#fff;border:1px solid #7A5540;">登録する</button>'
+      + '<button type="button" id="nsfRegLater" style="' + btn + 'display:none;background:#F3ECE4;color:#4a3a2c;border:1px solid #E0D2C2;">今回はこのまま使う</button>'
+      + '<button type="button" id="nsfRegClose" style="margin-left:auto;background:none;border:none;color:#8a7362;cursor:pointer;font-size:13px;padding:9px 4px;">やめる</button>'
+      + '</div></form>';
+    document.body.appendChild(w);
+    const q = id => w.querySelector('#' + id), form = q('nsfRegForm'), msg = q('nsfRegMsg'), send = q('nsfRegSend');
+    const close = () => { document.removeEventListener('keydown', onKey, true); w.remove(); };
+    const say = (text, ok) => { msg.textContent = text; msg.style.display = text ? 'block' : 'none'; msg.style.color = ok ? '#2f6b3a' : '#9b2c2c'; };
+    const proceed = () => { close(); try { go(); } catch (e) {} };
+    function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } }
+    document.addEventListener('keydown', onKey, true);
+    q('nsfRegClose').addEventListener('click', close);
+    q('nsfRegLater').addEventListener('click', proceed);   // つながらないときだけ出る。登録していないので、次のときにまた聞く
+    try { const s = reg.state(); if (s.nick) q('nsfRegName').value = s.nick; if (s.email) q('nsfRegEmail').value = s.email; } catch (e) {}
+    setTimeout(() => { try { q('nsfRegName').focus(); } catch (e) {} }, 50);
+    let done = false;
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (done) { proceed(); return; }
+      if (send.disabled) return;
+      const kind = (w.querySelector('input[name="nsfRegKind"]:checked') || {}).value || '';
+      send.disabled = true; send.textContent = '送っています…'; say('');
+      let r;
+      try { r = await reg.register({ email: q('nsfRegEmail').value, name: q('nsfRegName').value, kind: kind, consent: q('nsfRegConsent').checked }); } catch (err) { r = { ok: false, error: 'network' }; }
+      send.disabled = false;
+      if (r && r.ok && r.status === 'ok') {
+        done = true;
+        form.querySelectorAll('input').forEach(i => { i.disabled = true; });
+        q('nsfRegLater').style.display = 'none'; q('nsfRegClose').style.display = 'none';
+        say('登録できました。ありがとうございます。', true);
+        send.textContent = '▶ ' + what + 'へ進む';
+        try { send.focus(); } catch (err) {}
+        return;
+      }
+      send.textContent = '登録する';
+      if (r && r.ok) { say('このメールアドレスは、届いた確認メールのリンクを開くと登録が完了します。開いたあと、もう一度「登録する」を押してください。'); return; }
+      const code = (r && r.error) || 'server';
+      say(REG_ERR[code] || REG_ERR.server);
+      if (code === 'network' || code === 'server' || code === 'limit') q('nsfRegLater').style.display = '';
+    });
+  }
+  function regGate() {
+    if (!SRC) return;
+    try {
+      // 古いブラウザで、このファイル全体が読めなくならないよう、import は文字列から作る
+      new Function('u', 'return import(u)')(new URL('../nscad/registration.js', SRC).href).then(m => {
+        reg = m.createRegistration({ storage: localStorage, fetchFn: (u, o) => fetch(u, o), version: 'refill:' + toolSlug() });
+        if (regActive()) reg.refresh();
+      }).catch(() => {});
+    } catch (e) { return; }
+    let pass = false;
+    // usage() より先に登録する（登録前の押下は、PDFの回数にも数えない）
+    document.addEventListener('click', e => {
+      const b = e.target && e.target.closest && e.target.closest('#btnPdf, [data-nsf-pdf]');
+      if (!b) return;
+      if (pass || !regNeeded()) { regTrack('pdf'); return; }
+      e.preventDefault(); e.stopImmediatePropagation();
+      openReg('PDFを作る', () => { pass = true; try { b.click(); } finally { pass = false; } });
+    }, true);
+    const nativePrint = window.print.bind(window);
+    window.print = function () { if (regNeeded()) { openReg('印刷', nativePrint); return; } nativePrint(); };
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && String(e.key).toLowerCase() === 'p' && regNeeded()) { e.preventDefault(); e.stopPropagation(); openReg('印刷', nativePrint); }
+    }, true);
+    window.addEventListener('beforeprint', () => regTrack('print'));
   }
 
   function usage() {
@@ -420,6 +533,9 @@
       if (typeof HISTORY_ENTRIES !== 'undefined' && Array.isArray(HISTORY_ENTRIES) && !HISTORY_ENTRIES.some(x => x.title === '紙面の上に「PDFを作る・印刷・続きから作る」'))
       HISTORY_ENTRIES.push({ date: '2026-11-24', type: 'improve', title: '紙面の上に「PDFを作る・印刷・続きから作る」',
         detail: 'PDF・印刷のボタンを、☰を開かなくても押せるように紙面の上に出しました。PDF・印刷のときに作った期間をこの端末に覚えておき、次に開いたとき「▶ 続きから作る」で、前回の翌日から同じ長さの期間を用意します（週間は週単位・月間は月単位でそろえます）。iPhone・iPad では、原寸で印刷するための注意をボタンの下に出します。' });
+      if (typeof HISTORY_ENTRIES !== 'undefined' && Array.isArray(HISTORY_ENTRIES) && !HISTORY_ENTRIES.some(x => x.title === 'PDF・印刷のとき、最初に1回だけ利用登録'))
+      HISTORY_ENTRIES.push({ date: '2026-11-27', type: 'improve', title: 'PDF・印刷のとき、最初に1回だけ利用登録',
+        detail: '「PDFを作る」「印刷」を初めて押したときに、お名前・メールアドレス・区分（教室・講座の受講生／それ以外）の登録をお願いするようにしました。見る・試すのは、これまでどおり登録なしでできます。登録はこのブラウザが覚えるので、次からは聞きません。N\'s CAD で登録済みのブラウザは、そのまま使えます。リフィルに入れた日付や文字は送りません。' });
     } catch (e) {} };
     setTimeout(() => {
       const m = $id('nsf-refill-mobile-js');
@@ -461,7 +577,7 @@
     } catch (e) {}
   }
 
-  function mount() { injectStyle(); fold(); holeRow(); mountBackup(); pwa(); usage(); actionBar(); loadMobile(); }
+  function mount() { injectStyle(); fold(); holeRow(); mountBackup(); pwa(); regGate(); usage(); actionBar(); loadMobile(); }
   // print-adjust.js が DOMContentLoaded で差し込む設定欄を待ってから畳む
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(mount, 0)); else setTimeout(mount, 0);
 })();
