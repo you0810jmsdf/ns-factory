@@ -81,6 +81,31 @@
     const toolList = [...tools.values()].sort((a, b) => (b.feat + b.pdf + b.print) - (a.feat + a.pdf + a.print));
     return { lab, featList, toolList, ops, featTotal };
   }
+  // 最後に使われた日（日別の記録＝直近60日から求める。上の期間の切り替えには左右されない）
+  function lastUsed() {
+    const feat = new Map(), tool = new Map();
+    let all = '';
+    for (const r of state.daily || []) {
+      if (!(+r.pv > 0)) continue;
+      const p = parse(String(r.page || '').replace(/^\/+/, ''));
+      if (!p) continue;
+      if (p.type === 'f' && (feat.get(p.kind) || '') < r.date) feat.set(p.kind, r.date);
+      if ((tool.get(p.tool) || '') < r.date) tool.set(p.tool, r.date);
+      if (all < r.date) all = r.date;
+    }
+    return { feat, tool, all };
+  }
+  function lastParts(date) {
+    if (!date) return null;
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    const [y, m, d] = String(date).split('-').map(Number);
+    const n = Math.round((t - new Date(y, m - 1, d)) / 86400000);
+    return { md: m + '/' + d, ago: n <= 0 ? '今日' : n === 1 ? 'きのう' : n + '日前' };
+  }
+  function lastCell(date) {
+    const p = lastParts(date);
+    return p ? `${p.md}<div class="ru-id">${p.ago}</div>` : '<span class="ru-id">60日より前</span>';
+  }
   function dailySeries(days) {
     const out = [];
     for (let i = days - 1; i >= 0; i--) {
@@ -107,12 +132,12 @@
     if (!root) return;
     if (state.error) { root.innerHTML = `<div class="ru-box ru-err">読み込めませんでした：${esc(state.error)}<br><button type="button" class="ru-btn" data-ru="reload">もう一度読み込む</button></div>`; return; }
     if (!state.counts) { root.innerHTML = '<div class="ru-box">読み込み中…（アクセスカウンターから集計しています）</div>'; return; }
-    const a = aggregate(state.period), maxF = a.featList[0] ? a.featList[0].pv : 0;
+    const a = aggregate(state.period), last = lastUsed(), lastAll = lastParts(last.all), maxF = a.featList[0] ? a.featList[0].pv : 0;
     const per = { '7': '過去7日', '30': '過去30日', all: '記録の始まりから' }[state.period];
-    const featRows = a.featList.slice(0, 60).map((f, i) => `<tr><td class="ru-n">${i + 1}</td><td><b>${esc(f.label)}</b><div class="ru-id">${esc(f.kind)}</div></td><td class="ru-n">${f.pv}</td><td class="ru-n">${f.uu}</td><td class="ru-n">${f.tools.size}</td><td style="width:34%">${bar(f.pv, maxF, '#7A5540')}</td></tr>`).join('');
+    const featRows = a.featList.slice(0, 60).map((f, i) => `<tr><td class="ru-n">${i + 1}</td><td><b>${esc(f.label)}</b><div class="ru-id">${esc(f.kind)}</div></td><td class="ru-n">${f.pv}</td><td class="ru-n">${f.uu}</td><td class="ru-n">${f.tools.size}</td><td class="ru-n">${lastCell(last.feat.get(f.kind))}</td><td style="width:30%">${bar(f.pv, maxF, '#7A5540')}</td></tr>`).join('');
     const toolRows = a.toolList.map(t => {
       const top = [...t.kinds.entries()].sort((x, y) => y[1] - x[1]).slice(0, 3).map(([k, n]) => `${esc(a.lab[k] || k)}（${n}）`).join('、');
-      return `<tr><td><b>${esc(toolName(t.tool))}</b><div class="ru-id">${esc(t.tool)}</div></td><td class="ru-n">${t.feat}</td><td class="ru-n">${t.pdf}</td><td class="ru-n">${t.print}</td><td>${top || '<span class="ru-id">—</span>'}</td></tr>`;
+      return `<tr><td><b>${esc(toolName(t.tool))}</b><div class="ru-id">${esc(t.tool)}</div></td><td class="ru-n">${t.feat}</td><td class="ru-n">${t.pdf}</td><td class="ru-n">${t.print}</td><td class="ru-n">${lastCell(last.tool.get(t.tool))}</td><td>${top || '<span class="ru-id">—</span>'}</td></tr>`;
     }).join('');
     const ds = dailySeries(30), maxD = Math.max(1, ...ds.map(d => Math.max(d.f, d.out)));
     const dayBars = ds.map(d => `<div class="ru-day" title="${d.date}：機能 ${d.f}・PDF/印刷 ${d.out}"><div class="ru-col"><div style="height:${Math.round(d.f / maxD * 100)}%;background:#7A5540"></div></div><div class="ru-col"><div style="height:${Math.round(d.out / maxD * 100)}%;background:#c9a96e"></div></div><span>${+d.date.slice(8)}</span></div>`).join('');
@@ -126,14 +151,15 @@
         <div class="ru-card"><span>使われた機能の種類</span><b>${a.featList.length}</b></div>
         <div class="ru-card"><span>PDFを生成</span><b>${a.ops.pdf}</b></div>
         <div class="ru-card"><span>印刷</span><b>${a.ops.print}</b></div>
+        <div class="ru-card"><span>最後に使われた日</span><b>${lastAll ? lastAll.md : '—'}</b><span>${lastAll ? lastAll.ago : '直近60日に記録なし'}</span></div>
       </div>
       <h3 class="ru-h">機能ランキング（${per}）</h3>
-      ${a.featList.length ? `<div class="ru-scroll"><table class="ru-t"><thead><tr><th>#</th><th>機能（画面の文字）</th><th>回数</th><th>人数</th><th>ツール数</th><th></th></tr></thead><tbody>${featRows}</tbody></table></div>` : '<div class="ru-box">この期間に記録された機能の利用はまだありません（機能の記録は 2026-11-13 から）。</div>'}
+      ${a.featList.length ? `<div class="ru-scroll"><table class="ru-t"><thead><tr><th>#</th><th>機能（画面の文字）</th><th>回数</th><th>人数</th><th>ツール数</th><th>最後に使われた日</th><th></th></tr></thead><tbody>${featRows}</tbody></table></div>` : '<div class="ru-box">この期間に記録された機能の利用はまだありません（機能の記録は 2026-11-13 から）。</div>'}
       <h3 class="ru-h">ツール別（${per}）</h3>
-      ${toolRows ? `<div class="ru-scroll"><table class="ru-t"><thead><tr><th>ツール</th><th>機能の利用</th><th>PDF</th><th>印刷</th><th>よく使われた機能</th></tr></thead><tbody>${toolRows}</tbody></table></div>` : '<div class="ru-box">記録はまだありません。</div>'}
+      ${toolRows ? `<div class="ru-scroll"><table class="ru-t"><thead><tr><th>ツール</th><th>機能の利用</th><th>PDF</th><th>印刷</th><th>最後に使われた日</th><th>よく使われた機能</th></tr></thead><tbody>${toolRows}</tbody></table></div>` : '<div class="ru-box">記録はまだありません。</div>'}
       <h3 class="ru-h">日別（過去30日）<small><i style="background:#7A5540"></i>機能の利用 <i style="background:#c9a96e"></i>PDF・印刷</small></h3>
       <div class="ru-days">${dayBars}</div>
-      <p class="ru-note">数え方：同じ人が1回の表示で同じ機能を何度使っても1回（人数は日ごとの人数の合計）。PDF・印刷は押した回数（10秒以内の連打は1回）。入力した日付や文字は送っていません。<b>この端末は、このタブを開いた時点で「作家の端末」として除外しました</b>（N's CAD 利用モニタと同じ）。機能の記録は 2026-11-13 から、PDF・印刷は 2026-10-30 から。</p>`;
+      <p class="ru-note">数え方：同じ人が1回の表示で同じ機能を何度使っても1回（人数は日ごとの人数の合計）。PDF・印刷は押した回数（10秒以内の連打は1回）。入力した日付や文字は送っていません。「最後に使われた日」は日単位で、直近60日の記録から出しています（時刻と、誰が使ったかは記録していません）。<b>この端末は、このタブを開いた時点で「作家の端末」として除外しました</b>（N's CAD 利用モニタと同じ）。機能の記録は 2026-11-13 から、PDF・印刷は 2026-10-30 から。</p>`;
   }
   function style() {
     if (document.getElementById('ru-style')) return;
@@ -181,6 +207,6 @@
       style(); wire();
       if (!state.counts && !state.loading) load(); else render();
     },
-    _state: state, _parse: parse, _aggregate: aggregate, _toolName: toolName
+    _state: state, _parse: parse, _aggregate: aggregate, _toolName: toolName, _lastUsed: lastUsed
   };
 })();
