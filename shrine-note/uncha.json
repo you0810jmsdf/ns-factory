@@ -401,7 +401,14 @@
      "ja": "社殿の向きを決める一般的な基準（太陽・参道・海などの取り方）を定めた公的な規定（文化庁は『特に定まったものはなかった』と説明）",
      "en": "An official rule setting a general standard for deciding the direction of shrine buildings (how to take the sun, the approach, the sea, and so on) (the Agency for Cultural Affairs explains that \"there was nothing in particular fixed\")"
     }
-   ]
+   ],
+   "image": {
+    "file": "uncha_01_muki.jpg",
+    "alt": {
+     "ja": "朝日が差す山の斜面の神社の本殿。社殿から長い影が伸びている",
+     "en": "A shrine main hall on a hillside in the morning sun, casting long shadows"
+    }
+   }
   },
   {
    "id": "chigi",
@@ -594,7 +601,14 @@
      "ja": "神社本庁が千木・鰹木について定めた公式の基準（今回開けたページには見つからず）",
      "en": "Any official standard set by the Shrine Association of Japan for chigi and katsuogi (not found on the pages opened this time)"
     }
-   ]
+   ],
+   "image": {
+    "file": "uncha_02_chigi.jpg",
+    "alt": {
+     "ja": "白木の社殿の屋根の棟に、交差して突き出す千木と、並んだ鰹木",
+     "en": "Crossed chigi finials and a row of katsuogi logs on the ridge of a plain-wood shrine roof"
+    }
+   }
   },
   {
    "id": "torii",
@@ -766,7 +780,14 @@
      "ja": "朱色が使われ始めた時期と、鳥居に朱を塗る習慣が定着した時期",
      "en": "When vermilion began to be used, and when the custom of painting torii vermilion became established"
     }
-   ]
+   ],
+   "image": {
+    "file": "uncha_03_torii.jpg",
+    "alt": {
+     "ja": "森の参道に立つ、朱塗りの鳥居と、塗らない白木の鳥居",
+     "en": "A vermilion torii and an unpainted plain-wood torii on a forest path"
+    }
+   }
   },
   {
    "id": "sanpai",
@@ -959,7 +980,21 @@
      "ja": "二礼二拍手一礼（二拝二拍手一拝）が現在の形に広まった時期・経緯は、指定資料では確認できなかった。",
      "en": "When and how two bows, two claps, one bow (nihai nihakushu ippai) spread to its present form could not be confirmed in the designated sources."
     }
-   ]
+   ],
+   "image": {
+    "file": "uncha_04_sanpai.jpg",
+    "alt": {
+     "ja": "手水舎の石の水盤と竹の柄杓、奥に注連縄と鈴緒のある拝殿",
+     "en": "A stone water basin with a bamboo ladle, and a worship hall with a sacred rope and bell rope beyond"
+    }
+   }
   }
- ]
+ ],
+ "hero": {
+  "file": "uncha_00.jpg",
+  "alt": {
+   "ja": "夕方の光が差す、石灯籠の並ぶ神社の参道と、奥の白木の鳥居",
+   "en": "A shrine approach lined with stone lanterns, evening light, and a plain-wood torii at the far end"
+  }
+ }
 }
