@@ -17813,7 +17813,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n34ec31c212ba",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/oyama.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（石板の参道と拝殿、遠景の雪の山並みのイメージ）。"
       },
       "checked": "2026-10-12",
       "note_geo": "国土地理院の注記『雄山神社前立社壇』の位置に合わせた（住所検索の値 36.6085,137.3147 とは約340m ずれていたため。2026-10-12 確認）。（雄山神社は、山頂の峰本社・中宮祈願殿・前立社壇の3か所に鎮座。ここでは前立社壇の位置）"
@@ -19748,7 +19750,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/ne0929646148c",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/komagata.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（黒松に囲まれた拝殿と石畳の参道のイメージ）。"
       },
       "checked": "2026-10-12",
       "note_geo": "国土地理院の注記『駒形神社』と約35m以内で一致（2026-10-12 確認）。"
@@ -20651,7 +20655,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n64f8e9ad8db4",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/tamura.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（巨大な鳥居と大きな木、石段の上の拝殿のイメージ）。"
       },
       "checked": "2026-10-12",
       "note_geo": "国土地理院の注記『田村神社』と約8m以内で一致（2026-10-12 確認）。"
@@ -20882,7 +20888,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n875d1570390b",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/oosaki.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（黒と金の社殿と杉木立のイメージ）。"
       },
       "checked": "2026-10-12",
       "note_geo": "国土地理院の注記『大崎八幡宮』と約20m以内で一致（2026-10-12 確認）。"
@@ -22559,7 +22567,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n042f7247f743",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/minashijinja.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（杉の巨木を背にした拝殿と回廊、白い砂利の境内のイメージ）。"
       },
       "checked": "2026-10-12",
       "note_geo": "OpenStreetMap の神社の位置（36.0854,137.2518）に合わせた（住所検索が町域の代表点を返しており、実際の社殿の位置から約5.8km離れていた。 元の値 36.0524,137.2013 とは約5835m ずれていたため。2026-10-12 確認）。"
@@ -24665,7 +24675,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n3124f10056e3",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/shitoriyurihama.jpg",
+        "note": "AIが描いた想像図です。実在の社殿や神像を写した写真ではありません（森の中の素朴な木造の拝殿と石の参道のイメージ）。"
       },
       "checked": "2026-10-16",
       "note_geo": "OpenStreetMap の神社の位置と約86m以内で一致（2026-10-16 確認）。"
