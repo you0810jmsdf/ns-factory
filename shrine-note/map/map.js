@@ -1905,9 +1905,10 @@ if (EN) {   // index.html の静的な日本語を、英語表示のときだけ
   if (fsp[0] && fsp[0].firstChild && fsp[0].lastChild) { const a = fsp[0].querySelector('a'); if (a) a.textContent = 'Geospatial Information Authority of Japan'; fsp[0].firstChild.textContent = 'Terrain and roads: '; fsp[0].lastChild.textContent = ' (elevation tiles, optimized vector tiles), processed. Heights are exaggerated; fine relief in the foreground is decorative.'; }
   if (fsp[1]) fsp[1].textContent = '3D: three.js (MIT)';
   setT('gaNote', 'We count only visits and how often each shrine and feature is viewed, anonymously. Your location, stamp records and photos are never sent.');
-  if (fsp[2]) { const a = fsp[2].querySelector('a'); if (a) { a.textContent = 'Listing criteria'; a.href = '../criteria-en.html'; } }
-  if (fsp[3]) { const a = fsp[3].querySelector('a'); if (a) a.textContent = 'Feedback'; }
-  if (fsp[4] && fsp[4].firstChild) fsp[4].firstChild.textContent = 'Music: ';
+  if (fsp[3]) { const a = fsp[3].querySelector('a'); if (a) { a.textContent = 'Listing criteria'; a.href = '../criteria-en.html'; } }
+  if (fsp[4]) { const a = fsp[4].querySelector('a'); if (a) { a.textContent = 'Shrine lore'; a.href = '../uncha-en.html'; } }
+  if (fsp[5]) { const a = fsp[5].querySelector('a'); if (a) a.textContent = 'Feedback'; }
+  if (fsp[6] && fsp[6].firstChild) fsp[6].firstChild.textContent = 'Music: ';
 }
 $('btnFind').addEventListener('click', () => { track.section(LG(), 'find'); openFinder(true); });
 $('btnFindClose').addEventListener('click', () => openFinder(false));
