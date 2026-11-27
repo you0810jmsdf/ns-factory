@@ -93,6 +93,13 @@
   .ledger th, .ledger td { border-bottom: 1px solid var(--line); padding: 3px 6px; text-align: right; white-space: nowrap; }
   .ledger th:first-child, .ledger td:first-child { text-align: left; }
   .mode-real { color: #fff; background: #c0392b; border-radius: 4px; padding: 0 6px; }
+  /* ラインをタップ → 案 → 売買開始（2026-11-27） */
+  .chip.tap { cursor: pointer; }
+  .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; padding: 0 12px max(12px, env(safe-area-inset-bottom)); }
+  .sheet-in { max-width: 560px; margin: 0 auto; background: var(--panel); border: 1px solid #c08cff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 -6px 24px rgba(0,0,0,.6); }
+  .sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  #sh-body { white-space: pre-wrap; max-height: 40vh; overflow: auto; margin: 8px 0 0; }
+  #sh-go { width: 100%; margin-top: 10px; padding: 10px; }
 </style>
 </head>
 <body>
@@ -140,6 +147,7 @@
     </div>
     <div class="auto" id="auto" hidden>
       <div class="lines-head"><b>自動売買（PCの常駐が売買します）</b> <a class="sub" href="./how.html" style="color:var(--accent)">しくみ</a> <span class="sub" id="auto-mode"></span></div>
+      <div class="sub">チャートの水平線か、上の「引いてあるライン」の札をタップすると、売買の案が出ます。</div>
       <div class="hint" id="af-note" aria-live="polite"></div>
       <div id="plan-list"></div>
       <div class="ledger" id="ledger"></div>
@@ -166,6 +174,14 @@
       <div id="ai-note" aria-live="polite"></div>
     </details>
   </section>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-in" role="dialog" aria-label="この線の売買の案">
+    <div class="sheet-head"><b id="sh-name"></b><button class="btn" id="sh-close" type="button">閉じる</button></div>
+    <div id="sh-body" aria-live="polite"></div>
+    <button class="send" id="sh-go" type="button" hidden>売買開始</button>
+  </div>
 </div>
 
 <footer id="foot">価格はbitbankの公開データ(現物BTC/JPY、約20秒ごとに更新)。GMOコインの暗号資産FXとは数千円ほど差が出ます。ラインは値動きから機械的に計算した参考情報で、売買の判断はご自身で行ってください。</footer>
@@ -366,13 +382,14 @@
   }
   function renderChips() {
     const box = $("chips"); box.textContent = "";
-    const all = [...state.lines.map((l) => ({ label: l.label, price: l.price, color: KIND[l.kind].color })), ...trendNow.map((t) => ({ ...t, label: t.label + "(いまの位置)" }))];
+    const all = [...state.lines.map((l) => ({ label: l.label, price: l.price, color: KIND[l.kind].color, line: l })), ...trendNow.map((t) => ({ ...t, label: t.label + "(いまの位置)" }))];
     if (!all.length) {
       const e = document.createElement("div"); e.className = "empty";
       e.textContent = "まだラインはありません。上のボタンで引けます。"; box.append(e);
     }
     all.sort((a, b) => b.price - a.price).forEach((l) => {
-      const chip = document.createElement("div"); chip.className = "chip"; chip.style.borderLeftColor = l.color;
+      const chip = document.createElement("div"); chip.className = "chip" + (l.line && gmoOn() ? " tap" : ""); chip.style.borderLeftColor = l.color;
+      if (l.line) chip.onclick = () => openSheet(l.line);
       const s = document.createElement("span"); s.textContent = String(l.label);
       chip.append(s, document.createTextNode(yen(l.price) + "円")); box.append(chip);
     });
@@ -388,8 +405,13 @@
   $("draw-horiz").onclick = () => setMode("horiz");
   // チャートのタップ位置を、時刻と価格に直して受け取る
   $("c-main").addEventListener("click", (ev) => {
-    if (!state.mode) return;
     const box = $("c-main").getBoundingClientRect();
+    if (!state.mode) {   /* 線を引いていないとき：タップした高さに近い水平線（14px 以内）の案を出す */
+      const y = ev.clientY - box.top; let best = null, dist = 15;
+      state.lines.forEach((l) => { const c = sCandle.priceToCoordinate(l.price); if (c != null && Math.abs(c - y) < dist) { dist = Math.abs(c - y); best = l; } });
+      if (best) openSheet(best);
+      return;
+    }
     const p = { time: cMain.timeScale().coordinateToTime(ev.clientX - box.left) };
     const price = sCandle.coordinateToPrice(ev.clientY - box.top);
     if (p.time == null || price == null || !(price > 0)) { $("hint").textContent = "ローソク足のある範囲をタップしてください。"; return; }
@@ -527,7 +549,8 @@
           setLines([...j.lines.filter((l) => l && l.kind !== "manual"), ...state.lines.filter((l) => l.kind === "manual")]);
           say("note", "回答に合わせてラインを引きました。" + (typeof j.yen === "number" ? `(今回の料金 約${j.yen.toFixed(1)}円)` : ""));
         } else if (typeof j.yen === "number") say("note", `今回の料金 約${j.yen.toFixed(1)}円`);
-        if (gmoOn() && Array.isArray(j.plans) && j.plans.length) showPlans(j.plans);
+        lastPlans = Array.isArray(j.plans) ? j.plans : [];
+        if (gmoOn() && lastPlans.length) showPlans(lastPlans);
       }
     } catch { wait.remove(); say("note", "AIサーバーにつながりませんでした。URLと電波を確認してください。"); }
     busy = false; $("send").disabled = false;
@@ -550,23 +573,61 @@
   /* AI相談の答えに付いた売買の案（2026-11-27 事業主「ほぼAI相談どおりに売買できる体制に」決定A）。本人が押したときだけ送る。数量は 0.001BTC 固定 */
   const QTY = "0.001";
   const planText = (p) => `${SIDE[p.side]}：${yen(p.price)}円を${p.on === "UP" ? "上抜け" : "下抜け"}(さらに${p.move_pct}%)で入る ・ 損切り${p.stop_pct}% ・ 利確${p.take_pct}% ・ ${QTY}BTC`;
+  async function startPlan(p) {
+    if (auto.plan.length >= 20) throw new Error("送れるのは20件までです");
+    const item = { rid: "r" + Date.now().toString(36), kind: "HLINE", points: [{ t: isoNow(), p: String(p.price) }], drawn_on: TF[state.interval],
+      label: (p.reason || `${p.on === "UP" ? "上抜け" : "下抜け"}で${SIDE[p.side]}`).slice(0, 40),
+      trade: { side: p.side, on: p.on, move: p.on, move_pct: String(p.move_pct), qty: QTY, stop_pct: String(p.stop_pct), take_pct: String(p.take_pct) } };
+    await sendPlan([...auto.plan, item]);
+  }
   function showPlans(plans) {
     plans.forEach((p) => {
       const d = say("plan", ""), t = document.createElement("span");
       t.textContent = `案：${planText(p)}${p.reason ? "\n" + p.reason : ""}`; t.style.whiteSpace = "pre-wrap";
-      const b = document.createElement("button"); b.className = "btn"; b.type = "button"; b.textContent = "この案で常駐に送る";
+      const b = document.createElement("button"); b.className = "btn"; b.type = "button"; b.textContent = "売買開始";
       b.onclick = async () => {
-        if (auto.plan.length >= 20) { b.textContent = "送れるのは20件までです"; return; }
-        const item = { rid: "r" + Date.now().toString(36), kind: "HLINE", points: [{ t: isoNow(), p: String(p.price) }], drawn_on: TF[state.interval],
-          label: (p.reason || `${p.on === "UP" ? "上抜け" : "下抜け"}で${SIDE[p.side]}`).slice(0, 40),
-          trade: { side: p.side, on: p.on, move: p.on, move_pct: String(p.move_pct), qty: QTY, stop_pct: String(p.stop_pct), take_pct: String(p.take_pct) } };
         b.disabled = true; b.textContent = "送っています…";
-        try { await sendPlan([...auto.plan, item]); b.textContent = "送りました(30秒ほどでPCが受け取ります)"; }
+        try { await startPlan(p); b.textContent = "開始しました(30秒ほどでPCが受け取ります)"; }
         catch (e) { b.disabled = false; b.textContent = "送れませんでした・もう一度"; say("note", "送れませんでした（" + e.message + "）"); }
       };
       d.append(t, b);
     });
   }
+  // ---------- ラインをタップ → 売買の案 → 売買開始（2026-11-27 事業主「ラインをクリックすると案を出して、売買開始ボタンを押すだけ」決定A） ----------
+  // 直前の AI相談に同じ線の案があればすぐ出す。無ければ、その線についての案を1つだけ AI に聞く（1回 約6〜8円）。
+  let lastPlans = [], sheetPlan = null, sheetSeq = 0;
+  function openSheet(line) {
+    if (!gmoOn()) return;
+    const seq = ++sheetSeq, price = Math.round(line.price);
+    sheetPlan = null; $("sheet").hidden = false; $("sh-name").textContent = `${line.label} ${yen(price)}円`;
+    const go = $("sh-go"); go.hidden = true; go.disabled = false; go.textContent = "売買開始";
+    const hit = lastPlans.find((p) => Math.abs(p.price - price) / price < 0.001);
+    if (hit) { showSheetPlan({ ...hit, price }, "直前のAI相談の案です。"); return; }
+    $("sh-body").textContent = "AIに、この線での案を聞いています…（数秒・約6〜8円）";
+    askLine(line, price).then((r) => { if (seq !== sheetSeq) return; if (r.plan) showSheetPlan(r.plan, r.note); else $("sh-body").textContent = r.note; });
+  }
+  function showSheetPlan(p, note) { sheetPlan = p; $("sh-body").textContent = [planText(p), p.reason, note].filter(Boolean).join("\n"); $("sh-go").hidden = false; }
+  async function askLine(line, price) {
+    if (!state.candles.length) return { note: "チャートの読み込みが終わってから、もう一度タップしてください。" };
+    const o = aiSettings();
+    const question = `「${line.label}」(${price}円)の線をきっかけにした売買の案を、plans に1つだけ出してください。price は ${price} にしてください。根拠が弱ければ plans は空にして、reply に理由を短く書いてください。`;
+    try {
+      const r = await fetch(o.url.replace(/\/$/, "") + "/trade/chat", { method: "POST", headers: { "content-type": "application/json", "x-ai-key": o.key || "" }, body: JSON.stringify({ question, messages: [], chart: chartContext() }) });
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j) return { note: "AIが答えられませんでした。時間をおいて試してください。" };
+      const cost = typeof j.yen === "number" ? `今回の料金 約${j.yen.toFixed(1)}円` : "";
+      const p = Array.isArray(j.plans) ? j.plans[0] : null;
+      if (!p) return { note: ["AIはこの線では案を出しませんでした。", j.reply, cost].filter(Boolean).join("\n") };
+      return { plan: { ...p, price }, note: cost };
+    } catch { return { note: "AIサーバーにつながりませんでした。電波を確認してください。" }; }
+  }
+  $("sh-close").onclick = () => { $("sheet").hidden = true; sheetSeq++; };
+  $("sh-go").onclick = async () => {
+    if (!sheetPlan) return;
+    const b = $("sh-go"); b.disabled = true; b.textContent = "送っています…";
+    try { await startPlan(sheetPlan); b.textContent = "開始しました（30秒ほどでPCが受け取ります）"; }
+    catch (e) { b.disabled = false; b.textContent = "送れませんでした・もう一度（" + e.message + "）"; }
+  };
   function syncOf(rid) { return auto.status && auto.status.sync && auto.status.sync.lines ? auto.status.sync.lines[rid] : null; }
   function renderPlan() {
     const box = $("plan-list"); box.textContent = "";

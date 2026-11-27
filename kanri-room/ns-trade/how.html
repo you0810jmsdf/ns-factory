@@ -59,7 +59,7 @@
       <rect x="20" y="10" width="320" height="96" rx="14" fill="#121b26" stroke="#6ea8ff" stroke-width="2"/>
       <text x="36" y="38" font-size="16" font-weight="700" fill="#6ea8ff">① スマホ／PC のブラウザ</text>
       <text x="36" y="62" font-size="13">N's Trade：GMO の足を見る・AIに相談</text>
-      <text x="36" y="84" font-size="13">案の「この案で常駐に送る」を押す</text>
+      <text x="36" y="84" font-size="13">線をタップ → 案 → 「売買開始」を押す</text>
       <!-- 矢印 スマホ⇄クラウド -->
       <line x1="120" y1="108" x2="120" y2="160" stroke="#8a99a8" stroke-width="2" marker-end="url(#ah)"/>
       <text x="128" y="138" font-size="12" fill="#8a99a8">送った案</text>
@@ -95,9 +95,9 @@
   <h2>押してから売買されるまで</h2>
   <div class="card">
     <ol class="flow">
-      <li><span class="who w-phone">スマホ</span>AI相談で質問する。チャート（GMO の足）と毎朝のニュースを見て、AI が答えと線を引く。</li>
-      <li><span class="who w-ai">AI</span>根拠があるときだけ、<b>売買の案</b>を最大2つ出す（どの線を上抜け／下抜けしたら・買い／売り・損切り％・利確％・理由）。根拠が弱いときは出さない。</li>
-      <li><span class="who w-phone">スマホ</span>良い案だけ「この案で常駐に送る」を押す（数量は 0.001BTC）。押さなければ何も起きない。</li>
+      <li><span class="who w-phone">スマホ</span>チャートの水平線（または下の線の札）を<b>タップ</b>する。線は AI相談か「水平ラインを自動で引く」で引いておく。</li>
+      <li><span class="who w-ai">AI</span>下に小窓が出て、その線の<b>売買の案</b>が出る（上抜け／下抜け・買い／売り・損切り％・利確％・理由）。直前の AI相談に同じ線の案があればすぐ、無ければ AI に聞く（数秒・約6〜8円）。根拠が弱いときは「案なし」。</li>
+      <li><span class="who w-phone">スマホ</span>良ければ「<b>売買開始</b>」を押す（数量は 0.001BTC）。押さなければ何も起きない。</li>
       <li><span class="who w-cloud">AIサーバー</span>送った案を預かる。</li>
       <li><span class="who w-pc">PC</span>30秒以内に案を取りに来て、自分の線の一覧に入れる（入らない条件なら理由を返す）。画面に「PC が受け付けました（線 L○）」と出る。</li>
       <li><span class="who w-pc">PC</span>価格が線をまたぎ、さらに案の％だけ動いたら、練習の帳面で買う（売る）。そのあと損切り・利確に届いたら自動で決済。</li>
@@ -136,7 +136,7 @@
   <h2>料金とデータ</h2>
   <div class="card">
     <table>
-      <tr><th>AI相談</th><td>1回 約6〜8円（相談したときだけ）</td></tr>
+      <tr><th>AI相談</th><td>1回 約6〜8円（相談したとき・案の無い線をタップしたときだけ）</td></tr>
       <tr><th>案を送る・帳面</th><td>無料（Cloudflare の無料の範囲）</td></tr>
       <tr><th>価格</th><td>GMOコインの公開データ（BTC_JPY）。PC の判定と同じ値。合言葉を入れた端末だけ GMO で表示し、入れていない人は bitbank のまま</td></tr>
       <tr><th>合言葉</th><td>AIサーバーの合言葉は、端末ごとに「AIの設定」に入れる（別のブラウザでは入れ直す）</td></tr>
