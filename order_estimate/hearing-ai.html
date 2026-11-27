@@ -397,7 +397,7 @@ const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent
   fresh: false, resumed: false, leather: '', src: '', ask: false,
   vid: Date.now().toString(36)+Math.random().toString(36).slice(2,10), sig: '', seq: 0 };   // vid＝この訪問だけの使い捨て番号（同じ訪問の送り直しを工房側で同じ行にまとめる）
 /* 流入元（2026-11-17 事業主決定C）: 案内するリンク・QR に ?from=ig などの印を付ける。印が無く、まだ聞いていない
-   端末にだけ、最初に1タップの質問を出す（askVisitSource）。答えは端末に覚え、訪問記録の「流入元」に載せる。
+   端末にだけ、商品を選んだ直後に1タップの質問を出す（askVisitSource）。答えは端末に覚え、訪問記録の「流入元」に載せる。
    ⛔ 印は決まった短い英数字だけ受け取る（名前・連絡先など個人の情報を URL に載せない）。 */
 const VISIT_SRC_KEY='nsf_hearing_src', VISIT_SRC_ASKED_KEY='nsf_hearing_src_asked';
 const VISIT_SRC_CODES={ig:'Instagram',th:'Threads',fb:'Facebook',line:'LINE',yt:'YouTube',note:'note',
@@ -1009,19 +1009,22 @@ function productQuickItems(){
 }
 /* 流入元の質問（2026-11-17 事業主決定C）。リンクの印が無く、まだ聞いていない端末に1回だけ出す。
    ⛔ 必須にしない（スキップ・文章で話しかけても先へ進める）。入口の質問で帰る人が増えていないかは、
-      訪問記録の「画面での操作」が空のまま帰った件数で見る。日本語のみ（英語は最初からAI会話のため出さない）。 */
+      訪問記録の「画面での操作」が空のまま帰った件数で見る。日本語のみ（英語は最初からAI会話のため出さない）。
+   2026-11-27 事業主決定A: 最初の画面では聞かず、商品を選んだ直後（最初の質問の前）に聞く。
+      最初の画面がこの質問だけになり、商品のボタンが出る前に帰る方がいたため。
+      ⛔ startPicker（最初の画面）へ戻さない。作品集の「この作品をもとに相談」から来た方には聞かない（従来どおり）。 */
 const VISIT_SRC_CHOICES=['Instagram','Threads','Facebook','知人の紹介','イベント・教室','検索','その他'];
 function shouldAskVisitSource(){
   if(!VISIT.ask || VISIT.src) return false;
   try{ if(localStorage.getItem(VISIT_SRC_ASKED_KEY)) return false; }catch(e){ return false; }
   return true;
 }
-function askVisitSource(){
+function askVisitSource(next){
   try{ localStorage.setItem(VISIT_SRC_ASKED_KEY,'1'); }catch(e){}
   showTyping();
   setTimeout(()=>{
     hideTyping();
-    addMsg('bot','はじめに1つだけ🧵 この窓口を、どちらでお知りになりましたか？（スキップもできます）');
+    addMsg('bot','ありがとうございます🧵 ご相談の前に1つだけ。この窓口を、どちらでお知りになりましたか？（スキップもできます）');
     const done=(label)=>{
       // 質問への答え・スキップは「画面での操作」に数えない（流入元の欄に入るため。答えただけで帰った方を「操作あり」にしない）
       const last=VISIT.acts[VISIT.acts.length-1]||''; if(last.indexOf(label||'スキップ')===0) VISIT.acts.pop();
@@ -1031,7 +1034,8 @@ function askVisitSource(){
         addMsg('user',label);
       }
       quickEl.innerHTML='';
-      startPicker();
+      if(state.liveMode) return;   // 質問の途中で文章を送ってAI会話に入った方は、ガイドの質問へ戻さない
+      if(typeof next==='function') next();
     };
     renderQuick(VISIT_SRC_CHOICES.map(c=>({label:c,sub:'',val:'',onClick:()=>done(c)}))
       .concat([{label:'スキップ',sub:'',val:'',onClick:()=>done('')}]));
@@ -1043,7 +1047,6 @@ function askVisitSource(){
 }
 function startPicker(){
   if(isEN()){ startEnglishLive(); return; }
-  if(shouldAskVisitSource()){ askVisitSource(); return; }
   showTyping();
   setTimeout(()=>{
     hideTyping();
@@ -1137,7 +1140,9 @@ function beginProduct(key){
   state.flow=state.prod.steps.concat(state.prod.tail || withContact(COMMON_TAIL));
   state.step=0; state._picking=false;
   if(state.prod.tail) simLoad();   // 手帳（見積もり連動）のときだけ見積もりページを裏で読む
-  runStep();
+  // 流入元の質問は商品を選んだ直後に1回だけ（2026-11-27）。答えてもスキップしても最初の質問へ進む
+  if(!state._refWork && shouldAskVisitSource()) askVisitSource(runStep);
+  else runStep();
 }
 function runStep(){
   const a=state.answers;
