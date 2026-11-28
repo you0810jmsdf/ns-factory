@@ -1138,7 +1138,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <section id="cat-entrance" class="cat-entrance" aria-labelledby="cat-entrance-title" hidden></section>
     <div id="filters" class="filters"></div>
     <div class="tools">
-      <input id="search" class="search" type="search" placeholder="作品名で探す" aria-label="作品名で探す" data-i18n-placeholder="tools.search">
+      <input id="search" class="search" type="search" placeholder="作品名・番号で探す（例: 665）" aria-label="作品名・番号で探す" data-i18n-placeholder="tools.search">
       <button id="missing-price-filter" class="admin-filter-btn" type="button" hidden>価格未設定だけ</button>
       <div id="count" class="count" data-i18n="tools.loading">読み込み中</div>
     </div>
@@ -1333,7 +1333,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'guide.s4': 'After sending, you can check your selections and progress anytime on the <a class="guide-link" href="orderprogress.html">order progress page</a>',
     'guide.p2': 'If a piece makes you think “I like this” or “could this be made this way?”, feel free to ask. This gallery is also a sample book for future orders.',
     'guide.p3': '<strong>Important:</strong> SOLDOUT means “a past commissioned work”, not “no longer made”. If something catches your eye, feel free to <a class="guide-link" href="orderprogress.html">request a quote</a>. We will work closely with your wishes and craft it with care.',
-    'tools.search': 'Search by item name',
+    'tools.search': 'Search by name or number (e.g. 665)',
     'tools.loading': 'Loading',
     'tools.loadFail': 'Failed to load',
     'filter.all': 'All',
@@ -1756,21 +1756,33 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       const keyword = normalize(search.value).trim();
       const cardBar = document.getElementById('card-filter-bar');
       if (cardBar) cardBar.hidden = !showCardOnly;
-      filtered = works.filter((work) => {
+      // 数字だけの入力（例: 665）は作品番号（NF2026_665 の末尾）として探す。全角数字も可。
+      const numKeyText = keyword.normalize('NFKC');
+      const numKey = /^[0-9]+$/.test(numKeyText) ? parseInt(numKeyText, 10) : null;
+      const workNoOf = (work) => {
+        const m = /_([0-9]+)$/.exec(String(work.id || ''));
+        return m ? parseInt(m[1], 10) : null;
+      };
+      const base = works.filter((work) => {
         if (showMissingPriceOnly && !isMissingPrice(work)) return false;
         if (showCardOnly && !cardSaleOf(work)) return false;
         if (activeMajor && !workCats(work).some((c) => majorOf(c) === activeMajor)) return false;
         if (activeCategory && !workCats(work).includes(activeCategory)) return false;
         if (activeSize && sizeOf(work) !== activeSize) return false;
-        return !keyword || normalize([
-          work.title,
-          work.category,
-          work.material,
-          work.color,
-          work.size,
-          work.shortDesc,
-        ].join(' ')).includes(keyword);
+        return true;
       });
+      const byNumber = numKey === null ? [] : base.filter((work) => workNoOf(work) === numKey);
+      // 番号で当たればその作品だけ。当たらなければ今までどおり文字で探す。
+      // NF2026_665 のような入力は作品番号の文字でも探す（数字だけのときは「2026」などに当たるので番号の文字は見ない）。
+      filtered = !keyword ? base : byNumber.length ? byNumber : base.filter((work) => normalize([
+        numKey === null ? work.id : '',
+        work.title,
+        work.category,
+        work.material,
+        work.color,
+        work.size,
+        work.shortDesc,
+      ].join(' ')).includes(keyword));
       count.textContent = isEN()
         ? `${filtered.length} items / ${filtered.reduce((sum, work) => sum + work.photos.length, 0)} photos`
         : `${filtered.length}件 / 写真 ${filtered.reduce((sum, work) => sum + work.photos.length, 0)}枚`;
