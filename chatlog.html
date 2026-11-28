@@ -251,6 +251,15 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
 .live-row.ctx{align-items:stretch}
 .live-row.ctx details{background:#11161d;border:1px solid #30363d;border-radius:8px;padding:6px 10px;font-size:12px;color:#9aa4af}
 .live-row.ctx summary{cursor:pointer;color:#c9d1d9}
+.live-status{font-size:11.5px;font-weight:400;color:#9aa4af;margin-left:6px}
+.live-status.live-err{color:#ff7b72}
+.live-item.stale{opacity:.62}
+.live-badge.stale{background:#21262d;border-color:#484f58;color:#9aa4af}
+.live-ailog{margin-bottom:8px;max-height:44vh}
+.live-ailog-head{font-size:11.5px;color:#9aa4af}
+.live-row.ai{align-items:flex-end}
+.live-row.ai .live-bubble{background:#0d2a1a;border:1px solid #2ea043;color:#d2f5dc;border-top-right-radius:3px}
+#liveThread:empty{display:none}
 .live-row.ctx pre{white-space:pre-wrap;word-break:break-word;margin:6px 0 0;font-family:inherit;font-size:12px;max-height:30vh;overflow-y:auto}
 .live-input{display:flex;gap:8px;margin-top:8px;align-items:flex-end}
 .live-input textarea{flex:1;min-width:0;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:8px;padding:8px;font-size:14px;font-family:inherit;resize:vertical}
@@ -305,7 +314,8 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
   <!-- ライブ対応：職人がAIから会話を引き継ぐ（2026-09-05）。通知メールの #live=<相談ID> で直接開く -->
   <div class="panel" id="livePanel">
     <h2>🎧 ライブ対応 <span class="sub">通知が来た相談を、AIの代わりに自分で受け答えする</span>
-      <button class="btn sub live-mini" type="button" id="liveRefreshBtn">更新</button></h2>
+      <button class="btn sub live-mini" type="button" id="liveRefreshBtn">更新</button>
+      <span id="liveStatus" class="live-status" aria-live="polite"></span></h2>
     <div id="liveSessions" class="live-sessions"><div class="live-empty">読み込み中…</div></div>
     <div id="liveThreadWrap" hidden>
       <div class="live-head">
@@ -315,6 +325,8 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
         <button class="btn live-mini" type="button" id="liveTakeBtn">🏭 私が引き継ぐ</button>
         <button class="btn sub live-mini" type="button" id="liveReleaseBtn">🤖 AIに戻す</button>
       </div>
+      <!-- AI対応中のやり取り（接客ログ＝オーダー相談の recentlog から同じ相談IDの分を出す・2026-11-28） -->
+      <div id="liveAiLog" class="live-thread live-ailog"></div>
       <div id="liveThread" class="live-thread"></div>
       <div class="live-input">
         <textarea id="liveText" rows="2" placeholder="お客様への返信（引き継ぎ中だけ送れます）"></textarea>
@@ -1271,13 +1283,56 @@ function liveFmtWhen(s) {
   return s.slice(0, 10) === today ? s.slice(11, 16) : (parseInt(s.slice(5, 7), 10) + '/' + parseInt(s.slice(8, 10), 10) + ' ' + s.slice(11, 16));
 }
 
-async function liveLoadSessions() {
+/* お客様の画面は相談中 6〜15秒ごとに取りに来る（lastSeen が進む）。
+   3分以上進んでいなければ、画面を閉じたか1時間の見張りが終わったとみなす（2026-11-28）。 */
+const LIVE_STALE_MS = 3 * 60 * 1000;
+function liveAgeMs(s) {
+  const d = new Date(String(s || '').replace(' ', 'T') + '+09:00');
+  return isNaN(d) ? NaN : Date.now() - d.getTime();
+}
+function liveIsStale(s) { const a = liveAgeMs(s); return !isNaN(a) && a > LIVE_STALE_MS; }
+function liveAgoText(s) {
+  const m = Math.floor(liveAgeMs(s) / 60000);
+  if (isNaN(m)) return '';
+  return m < 60 ? m + '分前' : Math.floor(m / 60) + '時間' + (m % 60 ? (m % 60) + '分' : '') + '前';
+}
+function liveSetStatus(text, isErr) {
+  const el = document.getElementById('liveStatus');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('live-err', !!isErr);
+}
+
+// manual === true は「更新」ボタンから。押した結果（時刻・件数・変化の有無）を必ず画面に出す。
+async function liveLoadSessions(manual) {
+  manual = manual === true;
   const box = document.getElementById('liveSessions');
   if (!box) return;
+  const btn = document.getElementById('liveRefreshBtn');
+  if (manual && btn) { btn.disabled = true; btn.textContent = '更新中…'; }
   let data;
   try { data = await liveGet({ action: 'liveSessions', key: getKey() }); }
   catch (e) { data = null; }
+  if (manual && btn) { btn.disabled = false; btn.textContent = '更新'; }
   const list = (data && data.ok && Array.isArray(data.sessions)) ? data.sessions : [];
+  const now = new Date().toLocaleTimeString('ja-JP', { hour12: false });
+  if (data && data.ok) {
+    // 接続時刻（lastSeen）は数秒ごとに進むので比べない。相談の増減・担当・直近の発言・接続の有無だけを見る
+    const sig = list.map(s => [s.sid, s.mode, s.last || s.first || '', liveIsStale(s.lastSeen) ? 'x' : 'o'].join('|')).join('\n');
+    const changed = sig !== LIVEO.listSig;
+    LIVEO.listSig = sig;
+    const live = list.filter(s => !liveIsStale(s.lastSeen)).length;
+    liveSetStatus(now + ' 更新・' + list.length + '件（いま接続中 ' + live + '件）' + (manual ? (changed ? '・変化あり' : '・変化なし') : ''));
+  } else {
+    liveSetStatus(now + ' 一覧を取得できませんでした', true);
+  }
+  LIVEO.sessions = {};
+  list.forEach(s => { LIVEO.sessions[s.sid] = s; });
+  // 開いている相談のAIとのやり取りも取り直す（接続中の相談は10秒ごと・手動更新は必ず）
+  if (LIVEO.sid && (manual || (LIVEO.mode === 'ai' && LIVEO.sessions[LIVEO.sid] && !liveIsStale(LIVEO.sessions[LIVEO.sid].lastSeen)))) {
+    liveLoadAiLog(LIVEO.sid);
+  }
+  if (manual && LIVEO.sid) livePollOwner();
   box.textContent = '';
   if (!list.length) {
     const e = document.createElement('div');
@@ -1289,7 +1344,8 @@ async function liveLoadSessions() {
   list.forEach(s => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'live-item' + (s.sid === LIVEO.sid ? ' active' : '');
+    const stale = liveIsStale(s.lastSeen);
+    b.className = 'live-item' + (s.sid === LIVEO.sid ? ' active' : '') + (stale ? ' stale' : '');
     b.dataset.sid = s.sid;
     const badge = document.createElement('span');
     badge.className = 'live-badge ' + (s.mode === 'owner' ? 'owner' : 'ai');
@@ -1300,21 +1356,88 @@ async function liveLoadSessions() {
     const w = document.createElement('span');
     w.className = 'live-when';
     w.textContent = liveFmtWhen(s.lastSeen);
-    b.appendChild(badge); b.appendChild(t); b.appendChild(w);
+    b.appendChild(badge);
+    if (stale) {
+      // 引き継いでも、お客様の画面が開いていなければ届かない。押す前に分かるようにする
+      const off = document.createElement('span');
+      off.className = 'live-badge stale';
+      off.textContent = '接続なし（' + liveAgoText(s.lastSeen) + '）';
+      off.title = 'お客様の画面からの最後の接続が3分以上前です。画面を閉じた可能性が高く、引き継いでも届きません。';
+      b.appendChild(off);
+    }
+    b.appendChild(t); b.appendChild(w);
     b.addEventListener('click', () => liveOpen(s.sid));
     box.appendChild(b);
   });
 }
 
 function liveOpen(sid) {
-  LIVEO.sid = sid; LIVEO.since = 0; LIVEO.seen = {};
+  LIVEO.sid = sid; LIVEO.since = 0; LIVEO.seen = {}; LIVEO.aiSig = null;
   document.getElementById('liveThread').textContent = '';
+  const aiBox = document.getElementById('liveAiLog');
+  aiBox.textContent = '';
+  const wait = document.createElement('div');
+  wait.className = 'live-ailog-head';
+  wait.textContent = '🤖 AIとのやり取りを読み込み中…';
+  aiBox.appendChild(wait);
+  liveLoadAiLog(sid);
   document.getElementById('liveThreadWrap').hidden = false;
   document.getElementById('liveHeadSid').textContent = '相談ID ' + sid;
   liveSetModeUI('ai');   // 取得結果で上書きされるまでの初期表示
   document.querySelectorAll('.live-item').forEach(x => x.classList.toggle('active', x.dataset.sid === sid));
   livePollOwner();
   document.getElementById('liveThreadWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* AI対応中のやり取りを、接客ログ（オーダー相談の recentlog）から同じ相談IDで取り出して出す（2026-11-28）。
+   それまでは引き継ぐまで枠が空で、会話が進んでいるのか分からなかった。
+   ⛔ 読み取りだけ（recentlog）。お客様の文面は textContent で描く。
+   ⛔ ボタン選択だけの相談（AIを呼ばない）は recentlog に無いので、その旨を出す。 */
+async function liveLoadAiLog(sid) {
+  const box = document.getElementById('liveAiLog');
+  if (!box || !sid) return;
+  let data = null;
+  try {
+    const qs = new URLSearchParams({ action: 'recentlog', key: getKey() });
+    const res = await fetch(SOURCES.hearing.url + '?' + qs.toString());
+    const text = await res.text();
+    if (text.trim().startsWith('{')) data = JSON.parse(text);
+  } catch (e) { data = null; }
+  if (sid !== LIVEO.sid) return;   // 途中で別の相談に切り替えた
+  const ok = !!(data && data.status === 'ok');
+  const items = ok ? (data.log || []).filter(o => String(o.sid || '') === sid) : [];
+  const lastItem = items[items.length - 1];
+  const sig = ok ? items.length + '|' + (lastItem ? String(lastItem.t || '') + '|' + String(lastItem.r || '').length : '') : 'err';
+  if (sig === LIVEO.aiSig) return;   // 変化が無ければ描き直さない（読んでいる位置を動かさない）
+  LIVEO.aiSig = sig;
+  box.textContent = '';
+  const head = document.createElement('div');
+  head.className = 'live-ailog-head';
+  box.appendChild(head);
+  if (!ok) { head.textContent = '🤖 AIとのやり取りを取得できませんでした（「更新」でもう一度読み込めます）'; return; }
+  if (!items.length) {
+    head.textContent = '🤖 この相談のAIとのやり取りは、接客ログにまだありません（ボタン選択だけの相談は残りません。古い相談は直近60件から外れます）';
+    return;
+  }
+  head.textContent = '🤖 AIとのやり取り（' + items.length + '往復・接客ログより）';
+  items.forEach(o => {
+    const when = liveFmtWhen(String(o.t || '') + ':00');
+    const add = (cls, who, text) => {
+      const row = document.createElement('div');
+      row.className = 'live-row ' + cls;
+      const w = document.createElement('div');
+      w.className = 'live-who';
+      w.textContent = who + '　' + when;
+      const b = document.createElement('div');
+      b.className = 'live-bubble';
+      b.textContent = text;
+      row.appendChild(w); row.appendChild(b);
+      box.appendChild(row);
+    };
+    add('customer', '👤 お客様' + (Number(o.img || 0) ? '（📷' + Number(o.img) + '枚）' : ''), String(o.q || ''));
+    add('ai', '🤖 AI', o.legacy ? '（旧形式のため応答本文は未保存）' : String(o.r || ''));
+  });
+  box.scrollTop = box.scrollHeight;
 }
 
 function liveSetModeUI(mode) {
@@ -1404,7 +1527,7 @@ async function liveSend() {
 }
 
 function liveInit() {
-  document.getElementById('liveRefreshBtn').addEventListener('click', liveLoadSessions);
+  document.getElementById('liveRefreshBtn').addEventListener('click', () => liveLoadSessions(true));
   document.getElementById('liveTakeBtn').addEventListener('click', () => liveTakeover(true));
   document.getElementById('liveReleaseBtn').addEventListener('click', () => liveTakeover(false));
   document.getElementById('liveSendBtn').addEventListener('click', liveSend);
