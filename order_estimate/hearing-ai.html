@@ -806,6 +806,34 @@ function coreOpts(){
 function withContact(tail){
   return tail.map(s=>s.last ? Object.assign({}, s, {last:false}) : s).concat(CORE.CONTACT_STEPS || []);
 }
+/* 発注票（金額の目安）を見せた後、お名前を聞く前に「正式な見積もりを作るか」を1問だけ聞く（2026-11-28 事業主決定A）。
+   価格を見て帰る方に、いきなり名前を聞かないため。「はい」の方だけお名前→ご連絡先へ進む。
+   「まだ」の方は連絡先を聞かずに終える（控えは残るので7日以内は続きから再開できる）。
+   ⛔ この答えは state.answers に入れない（発注票・工房への送信に出さない）。 */
+const QUOTE_STEP={ key:'wantQuote',
+  say:'この内容で、正式なお見積りをお作りしますか？\n「はい」の場合だけ、職人からご連絡するためにお名前とご連絡先をうかがいます。',
+  quick:[
+    {label:'はい、見積もりをお願いする', sub:'お名前とご連絡先をうかがいます', val:'yes'},
+    {label:'まだ考えたい', sub:'連絡先は不要です', val:'no'}
+  ] };
+function withQuoteAsk(flow){
+  const i=flow.findIndex(s=>s.key==='custName');
+  return i<0 ? flow : flow.slice(0,i).concat([QUOTE_STEP], flow.slice(i));
+}
+function quoteAnswer(v){
+  v=String(v||'').trim();
+  if(v==='yes' || v==='no') return v;
+  if(/(まだ|いいえ|いらない|要らない|不要|考え|検討|結構|やめ|また今度)/.test(v)) return 'no';
+  if(/(はい|お願い|ほしい|欲しい|作って|頼み|頼む)/.test(v) || /^(yes|ok)/i.test(v)) return 'yes';
+  return '';
+}
+function declineQuote(){
+  addMsg('bot','かしこまりました。お名前・ご連絡先はうかがわずに、ここまでにいたします。\n選んだ内容はこの端末に7日間残りますので、同じページを開くと「前回の続きから」再開できます。上の発注票は「📄 PDFで保存」で控えを残せます。\nお見積りが必要になりましたら、下のボタンからどうぞ🧵');
+  renderQuick([
+    {label:'📨 やっぱり見積もりをお願いする', sub:'お名前とご連絡先をうかがいます', val:'', onClick:()=>{ addMsg('user','見積もりをお願いする'); renderQuick([]); state.step++; runStep(); }},
+    {label:'最初からやり直す', sub:'', val:'', onClick:()=>{ clearSavedGuide(); location.reload(); }}
+  ]);
+}
 function simCatalog(spec){
   const api=simApi(); if(!api) return null;
   const s=Object.assign({}, spec||{});
@@ -1127,7 +1155,7 @@ async function startFromWork(id){
 function updateProgress(){
   const el=document.getElementById('progress'); if(!el) return;
   if(state.liveMode || state._done || state._picking || !state.flow){ el.hidden=true; return; }
-  const total=state.flow.filter(s=>s.key!=='custName' && s.key!=='custContact').length;
+  const total=state.flow.filter(s=>s.key!=='custName' && s.key!=='custContact' && s.key!=='wantQuote').length;
   if(!total){ el.hidden=true; return; }
   const n=Math.max(1, Math.min(state.step+1, total));
   el.hidden=false;
@@ -1137,7 +1165,7 @@ function updateProgress(){
 function beginProduct(key){
   hideIntro();
   state.productKey=key; state.prod=PRODUCTS[key];
-  state.flow=state.prod.steps.concat(state.prod.tail || withContact(COMMON_TAIL));
+  state.flow=withQuoteAsk(state.prod.steps.concat(state.prod.tail || withContact(COMMON_TAIL)));
   state.step=0; state._picking=false;
   if(state.prod.tail) simLoad();   // 手帳（見積もり連動）のときだけ見積もりページを裏で読む
   // 流入元の質問は商品を選んだ直後に1回だけ（2026-11-27）。答えてもスキップしても最初の質問へ進む
@@ -1155,7 +1183,7 @@ function runStep(){
   // お名前・連絡先を聞く前に、発注票（内容と金額の目安）を先に見せる（2026-11-07）。
   // 訪問記録では、最後の質問まで90〜160秒かけて答えた人が「お名前を教えてください」で帰っていた。
   const nextKey = typeof step.key==='function' ? step.key(a) : step.key;
-  if((nextKey==='custName' || nextKey==='custContact') && !state._sheetShown){
+  if((nextKey==='wantQuote' || nextKey==='custName' || nextKey==='custContact') && !state._sheetShown){
     addMsg('bot','ここまでの内容を発注票にまとめました。金額の目安もこちらです👇');
     renderSheetCard();
   }
@@ -1195,6 +1223,19 @@ function handleAnswer(val, label){
   if(curStep && curStep.validate && state._awaitKey===curStep.key){
     const err = curStep.validate(val);
     if(err){ addMsg('user', label||val); addMsg('bot', err); txt.focus(); return; }
+  }
+  // 「正式な見積もりを作りますか？」の答え（2026-11-28）。回答には残さず、進むか終えるかだけ決める
+  if(state._awaitKey==='wantQuote'){
+    const yn=quoteAnswer(val);
+    addMsg('user', label||val);
+    if(!yn){ addMsg('bot','「はい、見積もりをお願いする」か「まだ考えたい」のどちらかを、下のボタンでお選びください。'); return; }
+    state._awaitKey=null;
+    renderQuick([]);
+    simEntry.innerHTML='';
+    if(yn==='no'){ declineQuote(); return; }
+    state.step++;
+    runStep();
+    return;
   }
   addMsg('user', label||val);
   const key = state._awaitKey;
@@ -2076,10 +2117,13 @@ function offerGuideResume(){
 function resumeGuided(d){
   state.liveMode=false; state._autoLive=false; state._picking=false; state._done=false; state._sheetShown=false;
   state.productKey=d.productKey; state.prod=PRODUCTS[d.productKey];
-  state.flow=state.prod.steps.concat(state.prod.tail || withContact(COMMON_TAIL));
+  state.flow=withQuoteAsk(state.prod.steps.concat(state.prod.tail || withContact(COMMON_TAIL)));
   state.answers=Object.assign({}, d.answers);
   state._refWork=d.refWork||'';
   state.step=Math.max(0, Math.min(parseInt(d.step,10)||0, state.flow.length));
+  // お名前の途中で帰った方も、戻ったら「見積もりを作りますか？」から聞き直す（2026-11-28）
+  const quoteIdx=state.flow.findIndex(s=>s.key==='wantQuote');
+  if(quoteIdx>=0 && state.step>quoteIdx) state.step=quoteIdx;
   hideIntro();
   chat.innerHTML=''; quickEl.innerHTML='';
   if(state.prod.tail) simLoad();   // 手帳（見積もり連動）のときだけ見積もりページを裏で読む
