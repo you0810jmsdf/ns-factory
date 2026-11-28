@@ -987,18 +987,19 @@ function renderOptionsPanel(){
   // 各オプションの差額（今の組み合わせに足したら／外したらいくら変わるか）
   if(cur && cur.total){
     a._total=cur.total;
+    const sel=optSel;   // 計算の途中で「決定」が押されると optSel は null になる（2026-11-28：そのまま読んでJSエラーになっていた）
     (async()=>{
       for(const d of list){
-        await nextTick(); if(token!==SIM.token) return;
-        const s2=new Set(optSel);
+        await nextTick(); if(token!==SIM.token || optSel!==sel) return;   // 決定済みなら残りの差額は計算しない
+        const s2=new Set(sel);
         if(s2.has(d.id)) s2.delete(d.id); else { if(d.group) OPTION_DEFS.forEach(x=>{ if(x.group===d.group) s2.delete(x.id); }); s2.add(d.id); }
         const q=simQuote(Object.assign({}, base, {options: optsSpec(s2)}));
         if(!q) continue;
-        const diff=optSel.has(d.id) ? cur.total-q.total : q.total-cur.total;
+        const diff=sel.has(d.id) ? cur.total-q.total : q.total-cur.total;
         const el=box.querySelector('[data-opt="'+d.id+'"] .price');
         if(el) el.textContent=diff>0 ? '+'+yen(diff) : (diff<0 ? '−'+yen(-diff) : '追加なし');
       }
-      if(token===SIM.token) priceBarPreview(cur.total);
+      if(token===SIM.token && optSel===sel) priceBarPreview(cur.total);
     })();
   }
 }
